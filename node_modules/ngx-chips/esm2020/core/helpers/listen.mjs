@@ -1,0 +1,19 @@
+/**
+ * @name listen
+ * @param listenerType
+ * @param action
+ * @param condition
+ */
+export function listen(listenerType, action, condition = true) {
+    // if the event provided does not exist, throw an error
+    if (!this.listeners.hasOwnProperty(listenerType)) {
+        throw new Error('The event entered may be wrong');
+    }
+    // if a condition is present and is false, exit early
+    if (!condition) {
+        return;
+    }
+    // fire listener
+    this.listeners[listenerType].push(action);
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibGlzdGVuLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vbW9kdWxlcy9jb3JlL2hlbHBlcnMvbGlzdGVuLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUNBOzs7OztHQUtHO0FBQ0gsTUFBTSxVQUFVLE1BQU0sQ0FBQyxZQUFvQixFQUFFLE1BQWlCLEVBQUUsU0FBUyxHQUFHLElBQUk7SUFDNUUsdURBQXVEO0lBQ3ZELElBQUksQ0FBQyxJQUFJLENBQUMsU0FBUyxDQUFDLGNBQWMsQ0FBQyxZQUFZLENBQUMsRUFBRTtRQUM5QyxNQUFNLElBQUksS0FBSyxDQUFDLGdDQUFnQyxDQUFDLENBQUM7S0FDckQ7SUFFRCxxREFBcUQ7SUFDckQsSUFBSSxDQUFDLFNBQVMsRUFBRTtRQUNaLE9BQU87S0FDVjtJQUVELGdCQUFnQjtJQUNoQixJQUFJLENBQUMsU0FBUyxDQUFDLFlBQVksQ0FBQyxDQUFDLElBQUksQ0FBQyxNQUFNLENBQUMsQ0FBQztBQUM5QyxDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiXG4vKipcbiAqIEBuYW1lIGxpc3RlblxuICogQHBhcmFtIGxpc3RlbmVyVHlwZVxuICogQHBhcmFtIGFjdGlvblxuICogQHBhcmFtIGNvbmRpdGlvblxuICovXG5leHBvcnQgZnVuY3Rpb24gbGlzdGVuKGxpc3RlbmVyVHlwZTogc3RyaW5nLCBhY3Rpb246ICgpID0+IGFueSwgY29uZGl0aW9uID0gdHJ1ZSk6IHZvaWQge1xuICAgIC8vIGlmIHRoZSBldmVudCBwcm92aWRlZCBkb2VzIG5vdCBleGlzdCwgdGhyb3cgYW4gZXJyb3JcbiAgICBpZiAoIXRoaXMubGlzdGVuZXJzLmhhc093blByb3BlcnR5KGxpc3RlbmVyVHlwZSkpIHtcbiAgICAgICAgdGhyb3cgbmV3IEVycm9yKCdUaGUgZXZlbnQgZW50ZXJlZCBtYXkgYmUgd3JvbmcnKTtcbiAgICB9XG5cbiAgICAvLyBpZiBhIGNvbmRpdGlvbiBpcyBwcmVzZW50IGFuZCBpcyBmYWxzZSwgZXhpdCBlYXJseVxuICAgIGlmICghY29uZGl0aW9uKSB7XG4gICAgICAgIHJldHVybjtcbiAgICB9XG5cbiAgICAvLyBmaXJlIGxpc3RlbmVyXG4gICAgdGhpcy5saXN0ZW5lcnNbbGlzdGVuZXJUeXBlXS5wdXNoKGFjdGlvbik7XG59XG4iXX0=

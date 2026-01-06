@@ -1,0 +1,65 @@
+{
+  "name": "ngx-chips",
+  "version": "3.0.0",
+  "description": "Tag Input component for Angular",
+  "author": {
+    "name": "Giancarlo Buomprisco",
+    "email": "giancarlopsk@gmail.com"
+  },
+  "contributors": [],
+  "license": "MIT",
+  "dependencies": {
+    "ng2-material-dropdown": ">=1.0.0",
+    "tslib": "^2.3.0"
+  },
+  "peerDependencies": {
+    "@angular/animations": ">=10.1.5",
+    "@angular/common": ">=10.1.5",
+    "@angular/core": ">=10.1.5",
+    "@angular/forms": ">=10.1.5",
+    "@angular/compiler": ">=10.1.5"
+  },
+  "keywords": [
+    "angular tag input",
+    "tag input component",
+    "material tag input",
+    "angular chips component",
+    "material chips"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Gbuomprisco/ngx-chips"
+  },
+  "bugs": {
+    "url": "https://github.com/Gbuomprisco/ngx-chips/issues"
+  },
+  "homepage": "https://github.com/Gbuomprisco/ngx-chips",
+  "$schema": "./node_modules/ng-packagr/package.schema.json",
+  "bit": {
+    "env": {
+      "compiler": "bit.envs/compilers/angular@0.2.0"
+    },
+    "componentsDefaultDirectory": "components/{name}",
+    "packageManager": "npm"
+  },
+  "module": "fesm2015/ngx-chips.mjs",
+  "es2020": "fesm2020/ngx-chips.mjs",
+  "esm2020": "esm2020/ngx-chips.mjs",
+  "fesm2020": "fesm2020/ngx-chips.mjs",
+  "fesm2015": "fesm2015/ngx-chips.mjs",
+  "typings": "ngx-chips.d.ts",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    },
+    ".": {
+      "types": "./ngx-chips.d.ts",
+      "esm2020": "./esm2020/ngx-chips.mjs",
+      "es2020": "./fesm2020/ngx-chips.mjs",
+      "es2015": "./fesm2015/ngx-chips.mjs",
+      "node": "./fesm2015/ngx-chips.mjs",
+      "default": "./fesm2020/ngx-chips.mjs"
+    }
+  },
+  "sideEffects": false
+}

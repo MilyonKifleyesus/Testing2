@@ -1,0 +1,22 @@
+import { AfterViewChecked, ElementRef, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { Subject } from 'rxjs';
+import * as i0 from "@angular/core";
+export declare class NgOptionComponent implements OnChanges, AfterViewChecked, OnDestroy {
+    elementRef: ElementRef<HTMLElement>;
+    value: any;
+    disabled: boolean;
+    readonly stateChange$: Subject<{
+        value: any;
+        disabled: boolean;
+        label?: string;
+    }>;
+    private _previousLabel;
+    constructor(elementRef: ElementRef<HTMLElement>);
+    get label(): string;
+    ngOnChanges(changes: SimpleChanges): void;
+    ngAfterViewChecked(): void;
+    ngOnDestroy(): void;
+    static ɵfac: i0.ɵɵFactoryDeclaration<NgOptionComponent, never>;
+    static ɵcmp: i0.ɵɵComponentDeclaration<NgOptionComponent, "ng-option", never, { "value": { "alias": "value"; "required": false; }; "disabled": { "alias": "disabled"; "required": false; }; }, {}, never, ["*"], true, never>;
+    static ngAcceptInputType_disabled: unknown;
+}

@@ -1,0 +1,21 @@
+export declare enum Event {
+    onPagination = "onPagination",
+    onOrder = "onOrder",
+    onGlobalSearch = "onGlobalSearch",
+    onSearch = "onSearch",
+    onClick = "onClick",
+    onDoubleClick = "onDoubleClick",
+    onCheckboxSelect = "onCheckboxSelect",
+    onRadioSelect = "onRadioSelect",
+    onCheckboxToggle = "onCheckboxToggle",
+    onSelectAll = "onSelectAll",
+    onInfiniteScrollEnd = "onInfiniteScrollEnd",
+    onColumnResizeMouseDown = "onColumnResizeMouseDown",
+    onColumnResizeMouseUp = "onColumnResizeMouseUp",
+    onRowDrop = "onRowDrop",
+    onReorderStart = "onReorderStart",
+    onRowCollapsedShow = "onRowCollapsedShow",
+    onRowCollapsedHide = "onRowCollapsedHide",
+    onRowContextMenu = "onRowContextMenu"
+}
+//# sourceMappingURL=event.enum.d.ts.map

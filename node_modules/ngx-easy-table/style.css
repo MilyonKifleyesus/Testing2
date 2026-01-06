@@ -1,0 +1,514 @@
+@charset "UTF-8";
+/*! Based on Spectre.css v0.4.5 | MIT License | github.com/picturepan2/spectre */
+.ngx-container {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+.ngx-container--dark {
+  background-color: #50596c;
+}
+.ngx-table {
+  color: #50596c;
+  border-collapse: collapse;
+  border-spacing: 0;
+  display: table;
+  font-family: Montserrat, Verdana, serif;
+  font-size: 14px;
+  text-align: left;
+  width: 100%;
+}
+.ngx-table td {
+  border-bottom: 1px solid #e7e9ed;
+  padding: 12px 6px;
+}
+.ngx-table th {
+  padding: 12px 6px;
+  border-bottom: 2px solid #e7e9ed;
+}
+.ngx-table__table-row--selected, .ngx-table__table-col--selected, .ngx-table__table-cell--selected {
+  background: #e7e9ed !important;
+}
+.ngx-table__table-no-results {
+  text-align: center;
+}
+.ngx-table__table-loader-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+.ngx-table__body-loading:hover {
+  background: 0 !important;
+}
+.ngx-table__table-loader {
+  animation: spin 0.6s linear infinite;
+  border: 1px solid #e7e9ed;
+  border-radius: 50%;
+  border-top-color: #50596c;
+  height: 1.8rem;
+  width: 1.8rem;
+}
+.ngx-table__table-row-context-menu {
+  position: absolute;
+}
+.ngx-table__header-search {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: #fff none;
+  border: 0.05rem solid #e7e9ed;
+  border-radius: 0.1rem;
+  color: #50596c;
+  display: block;
+  font-size: 0.8rem;
+  height: 1.47rem;
+  line-height: 1rem;
+  max-width: 100%;
+  outline: 0;
+  padding: 0.15rem 0.3rem;
+  position: relative;
+  width: 97%;
+}
+.ngx-table__header-cell {
+  position: relative;
+}
+.ngx-table__header-cell .pointer {
+  cursor: pointer;
+}
+.ngx-table__horizontal-scroll {
+  display: block;
+  overflow-x: scroll;
+  white-space: nowrap;
+}
+.ngx-table__horizontal-scroll::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 3px;
+  height: 10px;
+}
+.ngx-table__horizontal-scroll::-webkit-scrollbar-thumb {
+  background-color: grey;
+}
+.ngx-table__column-resizer {
+  background-color: #e7e9ed;
+  cursor: col-resize;
+  display: block;
+  height: 20px;
+  margin-top: 10px;
+  position: absolute;
+  padding: 0;
+  right: 0;
+  top: 0;
+  width: 2px;
+}
+.ngx-table__table--borderless > tbody > tr > td,
+.ngx-table__table--borderless > thead > tr > th {
+  border-bottom: 0 !important;
+}
+.ngx-table__table--hoverable > tbody tr:hover {
+  background: #f6f7f9;
+}
+.ngx-table__table--striped > tbody tr:nth-of-type(odd) {
+  background: #f6f7f9;
+}
+.ngx-table__table--tiny > tbody > tr > td,
+.ngx-table__table--tiny > thead > tr > th {
+  border-bottom: 1px solid #e7e9ed;
+  padding: 4px 7px;
+}
+.ngx-table__table--normal > tbody > tr > td,
+.ngx-table__table--normal > thead > tr > th {
+  border-bottom: 1px solid #e7e9ed;
+  padding: 10px 6px;
+}
+.ngx-table__table--big > tbody > tr > td,
+.ngx-table__table--big > thead > tr > th {
+  border-bottom: 1px solid #e7e9ed;
+  padding: 12px 8px;
+}
+.ngx-table__table--dark {
+  background-color: #50596c;
+  color: #f6f7f9;
+}
+.ngx-table__table--dark > tbody tr:hover {
+  color: #50596c;
+}
+.ngx-table__table--dark.ngx-table__table--striped > tbody tr:nth-of-type(odd) {
+  background: #5f697d;
+}
+.ngx-table__table--dark-pagination ::ng-deep .ngx-pagination .current {
+  background: #f6f7f9;
+  color: #50596c;
+}
+.ngx-table__table--dark-pagination ::ng-deep pagination-template > ul {
+  -webkit-padding-start: 0;
+  -webkit-margin-before: 0;
+}
+.ngx-table__table--dark-pagination ::ng-deep pagination-template > ul > li {
+  border: 1px solid #e7e9ed;
+  background: #50596c;
+}
+.ngx-table__table--dark-pagination ::ng-deep pagination-template > ul > li.current {
+  border: 1px solid #50596c;
+}
+.ngx-table__table--dark-pagination ::ng-deep pagination-template > ul > li > a {
+  color: #f6f7f9;
+}
+.ngx-table__table--dark-pagination-wrapper {
+  background-color: #50596c;
+}
+.ngx-table__table--dark-pagination-range > #rowAmount > div > div {
+  color: #e7e9ed;
+  border: 1px solid #e7e9ed;
+  background-color: #50596c;
+}
+.ngx-table__table--dark-pagination-range > #rowAmount > div > ul {
+  color: #e7e9ed;
+  background-color: #50596c;
+}
+.ngx-table__table--dark-pagination-range > #rowAmount > div > ul > li {
+  color: #e7e9ed;
+  background-color: #50596c;
+}
+.ngx-table__header-title {
+  display: inline;
+}
+.ngx-menu {
+  background: #fff;
+  border: 1px solid #e7e9ed;
+  list-style: none;
+  margin: 0;
+  min-width: 60px;
+  z-index: 100;
+}
+.ngx-form-icon {
+  border-radius: 0.1rem;
+  background: #fff;
+  height: 0.9rem;
+  left: 0;
+  top: 0.2rem;
+  width: 0.9rem;
+  transition: all 0.2s ease;
+  border: 0.05rem solid #e7e9ed;
+  cursor: pointer;
+  display: inline-block;
+  position: absolute;
+}
+.ngx-form-checkbox {
+  line-height: 1rem;
+  margin: 0.2rem 0;
+  min-height: 1.2rem;
+  padding: 0.2rem 0.4rem 0.4rem 1rem;
+  position: relative;
+}
+.ngx-form-checkbox input {
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  position: absolute;
+  width: 1px;
+}
+.ngx-form-checkbox input:focus + .ngx-form-icon {
+  box-shadow: 0 0 0 0.1rem rgba(63, 134, 202, 0.2);
+  border-color: #3f86ca;
+}
+.ngx-form-checkbox input:checked + .ngx-form-icon {
+  background: #3f86ca;
+  border-color: #3f86ca;
+}
+.ngx-form-checkbox input:active + .ngx-form-icon {
+  background: #50596c;
+}
+.ngx-form-checkbox input:checked + .ngx-form-icon::before {
+  background-clip: padding-box;
+  border: 0.1rem solid #fff;
+  border-left-width: 0;
+  border-top-width: 0;
+  content: "";
+  height: 12px;
+  left: 50%;
+  margin-left: -3px;
+  margin-top: -8px;
+  position: absolute;
+  top: 50%;
+  transform: rotate(45deg);
+  width: 6px;
+}
+.ngx-icon {
+  box-sizing: border-box;
+  cursor: pointer;
+  display: inline-block;
+  font-size: inherit;
+  font-style: normal;
+  height: 1em;
+  position: relative;
+  text-indent: -9999px;
+  vertical-align: middle;
+  width: 1em;
+}
+.ngx-icon::before, .ngx-icon::after {
+  content: "";
+  display: block;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+.ngx-icon-arrow-down::before, .ngx-icon-arrow-right::before, .ngx-icon-arrow-up::before {
+  border: 0.1rem solid #50596c;
+  border-bottom: 0;
+  border-right: 0;
+  height: 0.65em;
+  width: 0.65em;
+}
+.ngx-icon-arrow-down::before {
+  transform: translate(-50%, -75%) rotate(225deg);
+}
+.ngx-icon-arrow-right::before {
+  transform: translate(-75%, -50%) rotate(135deg);
+}
+.ngx-icon-arrow-up::before {
+  transform: translate(-50%, -25%) rotate(45deg);
+}
+.ngx-icon-menu::before {
+  background: #50596c;
+  box-shadow: 0 -0.35em, 0 0.35em;
+  content: "";
+  height: 0.1rem;
+  width: 100%;
+}
+.ngx-icon-pin {
+  border-radius: 50%;
+  border: 4px solid #50596c;
+  width: 11px;
+  height: 11px;
+}
+.ngx-icon-more::before {
+  background: #50596c;
+  border-radius: 50%;
+  box-shadow: 0 -0.4em, 0 0.4em;
+  height: 3px;
+  width: 3px;
+}
+.ngx-dropdown {
+  display: inline;
+  position: relative;
+  float: right;
+}
+.ngx-dropdown .ngx-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: auto;
+}
+.ngx-dropdown a {
+  color: #50596c;
+}
+.ngx-btn-group {
+  display: inline;
+}
+.ngx-draggable-row {
+  cursor: move;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.cdk-drag-preview {
+  box-sizing: border-box;
+  border-radius: 1px;
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  background-color: white;
+  padding-top: 9px;
+  padding-left: 4px;
+  display: table;
+  table-layout: fixed;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ngx-draggable-row-area.cdk-drop-list-dragging .ngx-draggable-row:not(.cdk-drag-placeholder) {
+  transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ngx-table__header-cell--draggable {
+  cursor: move;
+  background-color: white;
+}
+
+.ngx-table__header--draggable.cdk-drop-list-dragging .ngx-table__header-cell--draggable:not(.cdk-drag-placeholder) {
+  transition: transform 150ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.ngx-pagination {
+  font-family: Montserrat, Verdana, serif;
+  display: inline-block;
+  margin-left: 0;
+  margin-bottom: 1rem;
+  -webkit-padding-start: 0;
+  -webkit-margin-before: 0;
+}
+
+.ngx-pagination::before,
+.ngx-pagination::after {
+  content: " ";
+  display: table;
+}
+
+.ngx-pagination::after {
+  clear: both;
+}
+
+.ngx-pagination li {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  margin-right: 0.0625rem;
+  border-radius: 0;
+  border: 1px solid #e7e9ed;
+}
+
+.ngx-pagination li.current {
+  border: 1px solid #50596c;
+}
+
+.ngx-pagination li {
+  display: inline-block;
+}
+
+.ngx-pagination a,
+.ngx-pagination button {
+  color: #50596c;
+  display: block;
+  padding: 0.1875rem 0.625rem;
+  border-radius: 0;
+}
+
+.ngx-pagination a:hover,
+.ngx-pagination button:hover {
+  background: #e6e6e6;
+}
+
+.ngx-pagination .current {
+  padding: 0.1875rem 0.625rem;
+  background: #3f86ca;
+  color: #fefefe;
+  cursor: default;
+}
+
+.ngx-pagination .disabled {
+  padding: 0.1875rem 0.625rem;
+  color: #cacaca;
+  cursor: default;
+}
+
+.ngx-pagination .disabled:hover {
+  background: transparent;
+}
+
+.ngx-pagination a,
+.ngx-pagination button {
+  cursor: pointer;
+}
+
+.ngx-pagination .pagination-previous a::before,
+.ngx-pagination .pagination-previous.disabled::before {
+  content: "«";
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+.ngx-pagination .pagination-next a::after,
+.ngx-pagination .pagination-next.disabled::after {
+  content: "»";
+  display: inline-block;
+  margin-left: 0.5rem;
+}
+
+.ngx-pagination .show-for-sr {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.ngx-pagination .small-screen {
+  display: none;
+}
+
+.ngx-pagination-wrapper {
+  margin-top: 8px;
+}
+
+.ngx-pagination-range {
+  display: inline-block;
+  float: right;
+}
+
+.ngx-pagination-steps {
+  display: inline-block;
+}
+
+.ngx-pagination-range-dropdown {
+  margin-top: 0;
+}
+
+.ngx-pagination-range-dropdown-button-item {
+  cursor: pointer;
+  color: #50596c;
+  padding: 0.4rem;
+}
+
+.ngx-pagination-range--selected {
+  background-color: #f6f7f9;
+}
+
+.ngx-pagination-range-dropdown-button {
+  color: #50596c;
+  border: 1px solid #e7e9ed;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.pinned-left {
+  position: sticky;
+  z-index: 1;
+  background-color: white;
+  box-shadow: 2px 0 0 rgba(128, 128, 128, 0.175);
+}
+
+@media screen and (max-width: 601px) {
+  .ngx-pagination.responsive .small-screen {
+    display: inline-block;
+    padding: 0.1875rem 0.625rem;
+    border-radius: 0;
+  }
+  .ngx-pagination.responsive li:not(.small-screen):not(.pagination-previous):not(.pagination-next) {
+    display: none;
+  }
+}
+.ngx-infinite-scroll-viewport {
+  display: block;
+  height: 250px;
+  overflow: auto;
+}
+
+.ngx-infinite-scroll-viewport tr,
+.ngx-infinite-scroll-viewport-thead {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+/*# sourceMappingURL=style.css.map */

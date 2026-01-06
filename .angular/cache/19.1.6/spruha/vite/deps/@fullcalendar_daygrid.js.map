@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../../../../../../node_modules/@fullcalendar/daygrid/index.js"],
+  "sourcesContent": ["import { createPlugin } from '@fullcalendar/core/index.js';\nimport { DayGridView as DayTableView, TableDateProfileGenerator } from './internal.js';\nimport '@fullcalendar/core/internal.js';\nimport '@fullcalendar/core/preact.js';\nvar index = createPlugin({\n  name: '@fullcalendar/daygrid',\n  initialView: 'dayGridMonth',\n  views: {\n    dayGrid: {\n      component: DayTableView,\n      dateProfileGeneratorClass: TableDateProfileGenerator\n    },\n    dayGridDay: {\n      type: 'dayGrid',\n      duration: {\n        days: 1\n      }\n    },\n    dayGridWeek: {\n      type: 'dayGrid',\n      duration: {\n        weeks: 1\n      }\n    },\n    dayGridMonth: {\n      type: 'dayGrid',\n      duration: {\n        months: 1\n      },\n      fixedWeekCount: true\n    },\n    dayGridYear: {\n      type: 'dayGrid',\n      duration: {\n        years: 1\n      }\n    }\n  }\n});\nexport { index as default };"],
+  "mappings": ";;;;;;;;;;AAIA,IAAI,QAAQ,aAAa;AAAA,EACvB,MAAM;AAAA,EACN,aAAa;AAAA,EACb,OAAO;AAAA,IACL,SAAS;AAAA,MACP,WAAW;AAAA,MACX,2BAA2B;AAAA,IAC7B;AAAA,IACA,YAAY;AAAA,MACV,MAAM;AAAA,MACN,UAAU;AAAA,QACR,MAAM;AAAA,MACR;AAAA,IACF;AAAA,IACA,aAAa;AAAA,MACX,MAAM;AAAA,MACN,UAAU;AAAA,QACR,OAAO;AAAA,MACT;AAAA,IACF;AAAA,IACA,cAAc;AAAA,MACZ,MAAM;AAAA,MACN,UAAU;AAAA,QACR,QAAQ;AAAA,MACV;AAAA,MACA,gBAAgB;AAAA,IAClB;AAAA,IACA,aAAa;AAAA,MACX,MAAM;AAAA,MACN,UAAU;AAAA,QACR,OAAO;AAAA,MACT;AAAA,IACF;AAAA,EACF;AACF,CAAC;",
+  "names": []
+}

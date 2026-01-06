@@ -1,0 +1,1 @@
+{"version":3,"file":"config-service.d.ts","sourceRoot":"","sources":["../../../../projects/ngx-easy-table/src/lib/services/config-service.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,MAAM,EAAgB,MAAM,iBAAiB,CAAC;;AAGvD,eAAO,MAAM,aAAa,EAAE,MAqC3B,CAAC;AAEF,qBACa,oBAAoB;IAC/B,OAAc,MAAM,EAAE,MAAM,CAAiB;yCADlC,oBAAoB;6CAApB,oBAAoB;CAEhC"}
