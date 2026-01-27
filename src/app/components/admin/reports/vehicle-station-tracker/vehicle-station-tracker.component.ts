@@ -39,6 +39,11 @@ export class VehicleStationTrackerComponent implements OnInit {
   currentPage: number = 1;
   pageSize: number = 10;
   totalCount: number = 0;
+
+    // Sorting
+    sortColumn: string = '';
+    sortDirection: 'asc' | 'desc' = 'asc';
+    sortTracker: { [key: string]: 'asc' | 'desc' } = {};
   
   // Station column definitions
   stationColumns = [
@@ -178,8 +183,29 @@ export class VehicleStationTrackerComponent implements OnInit {
    */
   filterData() {
     this.currentPage = 1; // Reset to first page when searching
-    if (this.reportGenerated) {
-      this.loadReport();
+      if (this.reportGenerated) {
+        // Apply search filter
+        let filtered = this.trackerData;
+        if (this.searchTerm) {
+          const term = this.searchTerm.toLowerCase();
+          filtered = filtered.filter(item =>
+            (item.fleetNumber && item.fleetNumber.toLowerCase().includes(term)) ||
+            (item.vin && item.vin.toLowerCase().includes(term)) ||
+            (item.frameNumber && item.frameNumber.toLowerCase().includes(term))
+          );
+        }
+
+        // Apply sorting
+        if (this.sortColumn) {
+          filtered = [...filtered].sort((a, b) => {
+            const aValue = (a as any)[this.sortColumn] || '';
+            const bValue = (b as any)[this.sortColumn] || '';
+            if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
+            if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
+            return 0;
+          });
+        }
+        this.filteredData = filtered;
     }
   }
 
@@ -510,4 +536,19 @@ export class VehicleStationTrackerComponent implements OnInit {
     }
     return count;
   }
+
+    /**
+     * Handle sorting when header clicked
+     */
+    sortByColumn(column: string): void {
+      if (this.sortColumn === column) {
+        // Toggle direction
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+      }
+      this.sortTracker[column] = this.sortDirection;
+      this.filterData();
+    }
 }

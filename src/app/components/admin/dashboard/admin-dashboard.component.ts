@@ -1,3 +1,4 @@
+// ...existing code...
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SharedModule } from '../../../shared/shared.module';
 import * as chartData from '../../../shared/data/dashboard';
@@ -43,6 +44,34 @@ export interface DashboardWidget {
   styleUrls: ['./admin-dashboard.component.scss']
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
+    showOpenProjects = true;
+    filteredProjects: { id: string; name: string }[] = [];
+
+    ngOnInit(): void {
+      this.applyFilters();
+      this.initializeWidgets();
+      this.loadLayoutFromStorage();
+      this.filterProjects();
+      // ...existing code...
+      // Add global mouse event listeners for resize
+      document.addEventListener('mousemove', this.onMouseMove.bind(this));
+      document.addEventListener('mouseup', this.onMouseUp.bind(this));
+      // Add ResizeObserver to redraw charts when container size changes
+      this.observeChartContainers();
+    }
+
+    toggleOpenClosed(): void {
+      this.filterProjects();
+    }
+
+    filterProjects(): void {
+      // Example: Assume projects with even id are open, odd are closed (replace with real logic)
+      if (this.showOpenProjects) {
+        this.filteredProjects = this.projects.filter(p => p.id === 'all' || p.id.endsWith('1') || p.id.endsWith('3'));
+      } else {
+        this.filteredProjects = this.projects.filter(p => p.id === 'all' || p.id.endsWith('2') || p.id.endsWith('4'));
+      }
+    }
   
   // ========== Centralized State: Dashboard Store ==========
   // This is the "brain" that manages all widgets
@@ -84,6 +113,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     { id: 'proj4', name: 'Project Delta' },
   ];
 
+  trackByIndex(index: number, item: any): number {
+    return index;
+  }
+
   vehicles = [
     { id: 'all', name: 'All Vehicles' },
     { id: 'veh1', name: 'Bus-001' },
@@ -96,18 +129,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   selectedProject = 'all';
   selectedVehicle = 'all';
 
-  ngOnInit(): void { 
-    this.applyFilters();
-    this.initializeWidgets();
-    this.loadLayoutFromStorage();
-    
-    // Add global mouse event listeners for resize
-    document.addEventListener('mousemove', this.onMouseMove.bind(this));
-    document.addEventListener('mouseup', this.onMouseUp.bind(this));
-    
-    // Add ResizeObserver to redraw charts when container size changes
-    this.observeChartContainers();
-  }
+  // ...existing code...
 
   private observeChartContainers(): void {
     // Trigger chart redraw after DOM updates
@@ -690,44 +712,34 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   // ========== Recent Activities Data ==========
   recentActivities = [
     {
-      icon: 'fe fe-user-plus',
-      iconClass: 'bg-primary-transparent',
-      title: 'New Driver Added',
-      description: 'John Smith added to fleet roster',
-      date: '2 hours ago',
-      time: '10:30 AM'
+      lastSync: '2026-01-26 10:30 AM',
+      ticketsGenerated: 5,
+      hoursWorked: 8,
+      inspector: 'John Doe'
     },
     {
-      icon: 'fe fe-check-circle',
-      iconClass: 'bg-success-transparent',
-      title: 'Inspection Completed',
-      description: 'Bus-045 passed safety inspection',
-      date: '4 hours ago',
-      time: '08:15 AM'
+      lastSync: '2026-01-26 08:15 AM',
+      ticketsGenerated: 2,
+      hoursWorked: 6,
+      inspector: 'Jane Smith'
     },
     {
-      icon: 'fe fe-tool',
-      iconClass: 'bg-warning-transparent',
-      title: 'Maintenance Scheduled',
-      description: 'Bus-023 scheduled for service',
-      date: '6 hours ago',
-      time: '06:45 AM'
+      lastSync: '2026-01-25 06:45 AM',
+      ticketsGenerated: 3,
+      hoursWorked: 7,
+      inspector: 'Carlos Ruiz'
     },
     {
-      icon: 'fe fe-alert-triangle',
-      iconClass: 'bg-danger-transparent',
-      title: 'Critical Alert',
-      description: 'Bus-012 requires immediate attention',
-      date: '8 hours ago',
-      time: '04:20 AM'
+      lastSync: '2026-01-25 04:20 AM',
+      ticketsGenerated: 1,
+      hoursWorked: 5,
+      inspector: 'Emily Chen'
     },
     {
-      icon: 'fe fe-file-text',
-      iconClass: 'bg-info-transparent',
-      title: 'Report Generated',
-      description: 'Monthly fleet performance report',
-      date: 'Yesterday',
-      time: '11:50 PM'
+      lastSync: '2026-01-24 11:50 PM',
+      ticketsGenerated: 4,
+      hoursWorked: 9,
+      inspector: 'Amit Patel'
     }
   ];
 

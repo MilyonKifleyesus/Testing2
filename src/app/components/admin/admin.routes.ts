@@ -12,7 +12,7 @@ export const adminRoutingModule: Routes = [
     path: 'dashboard',
     canActivate: [roleGuard],
     data: { roles: ['superadmin'] },
-    loadComponent: () => import('./dashboard').then(m => m.AdminDashboardComponent)
+    loadComponent: () => import('./dashboard/index').then(m => m.AdminDashboardComponent)
   },
   {
     path: 'projects',
@@ -243,5 +243,6 @@ export const adminRoutingModule: Routes = [
     canActivate: [roleGuard],
     data: { roles: ['superadmin'] },
     loadComponent: () => import('./tickets/tickets.component').then(m => m.TicketsComponent)
-  }
+  },
+  // YRT Data route removed
 ];

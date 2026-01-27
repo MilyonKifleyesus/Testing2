@@ -30,7 +30,7 @@
         <div class="col-12 col-md-6 col-lg-4">
           <label for="projectFilter" class="form-label fw-500 mb-2">Filter by Project</label>
           <select id="projectFilter" class="form-select form-select-sm" [(ngModel)]="selectedProject" (change)="onProjectChange(selectedProject)">
-            <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
+            <option *ngFor="let project of filteredProjects" [value]="project.id">{{ project.name }}</option>
           </select>
         </div>
         <div class="col-12 col-md-6 col-lg-4">
@@ -39,7 +39,13 @@
             <option *ngFor="let vehicle of vehicles" [value]="vehicle.id">{{ vehicle.name }}</option>
           </select>
         </div>
-        <div class="col-12 col-md-12 col-lg-4 ms-lg-auto d-flex justify-content-end">
+        <div class="col-12 col-md-12 col-lg-4 ms-lg-auto d-flex justify-content-end align-items-center">
+          <div class="form-check form-switch me-3">
+            <input class="form-check-input" type="checkbox" id="toggleOpenClosed" [(ngModel)]="showOpenProjects" (change)="toggleOpenClosed()">
+            <label class="form-check-label" for="toggleOpenClosed">
+              {{ showOpenProjects ? 'Show Open Projects' : 'Show Closed Projects' }}
+            </label>
+          </div>
           <button class="btn btn-sm btn-success" (click)="resetDashboard()">
             <i class="fas fa-sync-alt me-1"></i> Reset
           </button>
@@ -213,26 +219,39 @@
 
               <!-- Recent Activities Widget -->
               <div *ngIf="widget.id === 'widget-14'" class="recent-activities-container">
-                <div class="activity-list">
-                  @for (activity of recentActivities; track $index) {
-                    <div class="activity-item">
-                      <div class="activity-icon-wrapper">
-                        <div class="activity-icon" [ngClass]="activity.iconClass">
-                          <i [class]="activity.icon"></i>
-                        </div>
+                <ng-template #activityRow let-activity>
+                  <tr>
+                    <td>
+                      <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary">{{ activity.inspector }}</span>
+                        <span>{{ activity.lastSync }}</span>
                       </div>
-                      <div class="activity-details">
-                        <h6 class="activity-title">{{ activity.title }}</h6>
-                        <p class="activity-description">{{ activity.description }}</p>
-                        <div class="activity-meta">
-                          <span class="activity-date">
-                            <i class="fe fe-clock"></i> {{ activity.date }}
-                          </span>
-                          <span class="activity-time text-muted">{{ activity.time }}</span>
-                        </div>
-                      </div>
-                    </div>
-                  }
+                    </td>
+                    <td>
+                      <span class="fw-bold text-success">{{ activity.ticketsGenerated }}</span>
+                      <span class="ms-2 text-muted small">tickets</span>
+                    </td>
+                    <td>
+                      <span class="fw-bold text-info">{{ activity.hoursWorked }}</span>
+                      <span class="ms-2 text-muted small">hours</span>
+                    </td>
+                  </tr>
+                </ng-template>
+                <div class="table-responsive">
+                  <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Inspector & Last Sync</th>
+                        <th>Tickets Generated</th>
+                        <th>Hours Worked</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container *ngFor="let activity of recentActivities; trackBy: trackByIndex">
+                        <ng-container *ngTemplateOutlet="activityRow; context: { $implicit: activity }"></ng-container>
+                      </ng-container>
+                    </tbody>
+                  </table>
                 </div>
                 <div class="activity-footer">
                   <button (click)="openActivitiesModal()" class="btn btn-sm btn-light w-100">
@@ -287,26 +306,39 @@
           
           <!-- Recent Activities fullscreen view -->
           <div *ngIf="fullscreenWidget.id === 'widget-14'" class="recent-activities-container fullscreen-activities">
-            <div class="activity-list">
-              @for (activity of recentActivities; track $index) {
-                <div class="activity-item">
-                  <div class="activity-icon-wrapper">
-                    <div class="activity-icon" [ngClass]="activity.iconClass">
-                      <i [class]="activity.icon"></i>
-                    </div>
+            <ng-template #activityRowFull let-activity>
+              <tr>
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-primary">{{ activity.inspector }}</span>
+                    <span>{{ activity.lastSync }}</span>
                   </div>
-                  <div class="activity-details">
-                    <h6 class="activity-title">{{ activity.title }}</h6>
-                    <p class="activity-description">{{ activity.description }}</p>
-                    <div class="activity-meta">
-                      <span class="activity-date">
-                        <i class="fe fe-clock"></i> {{ activity.date }}
-                      </span>
-                      <span class="activity-time text-muted">{{ activity.time }}</span>
-                    </div>
-                  </div>
-                </div>
-              }
+                </td>
+                <td>
+                  <span class="fw-bold text-success">{{ activity.ticketsGenerated }}</span>
+                  <span class="ms-2 text-muted small">tickets</span>
+                </td>
+                <td>
+                  <span class="fw-bold text-info">{{ activity.hoursWorked }}</span>
+                  <span class="ms-2 text-muted small">hours</span>
+                </td>
+              </tr>
+            </ng-template>
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Inspector & Last Sync</th>
+                    <th>Tickets Generated</th>
+                    <th>Hours Worked</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container *ngFor="let activity of recentActivities; trackBy: trackByIndex">
+                    <ng-container *ngTemplateOutlet="activityRowFull; context: { $implicit: activity }"></ng-container>
+                  </ng-container>
+                </tbody>
+              </table>
             </div>
             <div class="activity-footer">
               <a href="javascript:void(0)" class="btn btn-sm btn-light w-100">
@@ -331,26 +363,25 @@
         
         <!-- Modal Body -->
         <div class="activities-modal-body">
-          <div class="activities-modal-list">
-            @for (activity of recentActivities; track $index) {
-              <div class="activities-modal-item">
-                <div class="activity-icon-wrapper">
-                  <div class="activity-icon" [ngClass]="activity.iconClass">
-                    <i [class]="activity.icon"></i>
-                  </div>
-                </div>
-                <div class="activity-details">
-                  <h6 class="activity-title">{{ activity.title }}</h6>
-                  <p class="activity-description">{{ activity.description }}</p>
-                  <div class="activity-meta">
-                    <span class="activity-date">
-                      <i class="fe fe-clock"></i> {{ activity.date }}
-                    </span>
-                    <span class="activity-time text-muted">{{ activity.time }}</span>
-                  </div>
-                </div>
-              </div>
-            }
+          <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+              <thead>
+                <tr>
+                  <th>Last Sync</th>
+                  <th>Tickets Generated</th>
+                  <th>Hours Worked</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (activity of recentActivities; track $index) {
+                  <tr>
+                    <td>{{ activity.lastSync }}</td>
+                    <td>{{ activity.ticketsGenerated }}</td>
+                    <td>{{ activity.hoursWorked }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

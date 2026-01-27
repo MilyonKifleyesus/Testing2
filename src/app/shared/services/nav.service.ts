@@ -326,6 +326,9 @@ export class NavService implements OnDestroy {
       icon: 'ti-ticket',
       type: 'link',
       active: false,
+    },
+    {
+      // YRT Data entry removed
     }
   ];
 
@@ -423,6 +426,10 @@ export class NavService implements OnDestroy {
           type: 'link',
         }
       ]
+    },
+
+    {
+      // YRT Data entry removed
     },
 
 {

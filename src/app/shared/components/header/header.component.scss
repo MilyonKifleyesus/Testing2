@@ -151,3 +151,12 @@
         }
     }
 }
+
+/* --- FIX: Only one logo in header --- */
+::ng-deep .header-logo img {
+    display: none;
+}
+::ng-deep .header-logo .desktop-logo {
+    display: block;
+}
+/* --- END FIX --- */

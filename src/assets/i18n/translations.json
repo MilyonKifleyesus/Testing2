@@ -1,0 +1,18 @@
+{
+  "EN": {
+    "HELLO": "Hello",
+    "WELCOME": "Welcome",
+    "SIDEBAR": {
+      "DASHBOARD": "Dashboard",
+      "SETTINGS": "Settings"
+    }
+  },
+  "ES": {
+    "HELLO": "Hola",
+    "WELCOME": "Bienvenido",
+    "SIDEBAR": {
+      "DASHBOARD": "Tablero",
+      "SETTINGS": "Configuraciones"
+    }
+  }
+}

@@ -5,14 +5,34 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { NgCircleProgressModule } from 'ng-circle-progress';
 import { NgApexchartsModule } from 'ng-apexcharts';
-import { SpkApexChartsComponent } from '../../../@spk/reusable-charts/spk-apex-charts/spk-apex-charts.component';
+import { SharedProjectBudgetChartComponent } from '../../../shared/charts/shared-project-budget-chart.component';
+import { SharedTodayTasksChartComponent } from '../../../shared/charts/shared-today-tasks-chart.component';
+import { SharedWebsiteDesignChartComponent } from '../../../shared/charts/shared-website-design-chart.component';
+import { SharedTicketsBarChartComponent } from '../../../shared/charts/shared-tickets-bar-chart.component';
+import { SharedOngoingProjectsChartComponent } from '../../../shared/charts/shared-ongoing-projects-chart.component';
+import { SharedOngoingProjects2ChartComponent } from '../../../shared/charts/shared-ongoing-projects2-chart.component';
 import { SpkDashboardComponent } from '../../../@spk/reusable-dashboard/spk-dashboard/spk-dashboard.component';
 import { SpkReusableTablesComponent } from '../../../@spk/reusable-tables/spk-reusable-tables/spk-reusable-tables.component';
 import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [SharedModule,NgbModule,NgSelectModule,NgCircleProgressModule,NgApexchartsModule,SpkApexChartsComponent,SpkDashboardComponent,SpkReusableTablesComponent,CommonModule],
+  imports: [
+    SharedModule,
+    NgbModule,
+    NgSelectModule,
+    NgCircleProgressModule,
+    NgApexchartsModule,
+    SpkDashboardComponent,
+    SpkReusableTablesComponent,
+    CommonModule,
+    SharedProjectBudgetChartComponent,
+    SharedTodayTasksChartComponent,
+    SharedWebsiteDesignChartComponent,
+    SharedTicketsBarChartComponent,
+    SharedOngoingProjectsChartComponent,
+    SharedOngoingProjects2ChartComponent
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

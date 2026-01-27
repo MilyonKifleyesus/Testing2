@@ -23,7 +23,7 @@ interface StateType {
 export class AppStateService {
   private readonly localStorageKey = 'rixzo-ng'; // Customize this key
   private initialState: StateType = {
-    theme: 'dark',            // light, dark
+    theme: 'light',            // light, dark
     direction: 'ltr',               // ltr, rtl
     navigationStyles: 'vertical',   // vertical, horizontal
     menuStyles: '',                 // menu-click, menu-hover, icon-click, icon-hover
@@ -33,7 +33,7 @@ export class AppStateService {
     menuPosition: 'fixed',          // fixed, scrollable
     headerPosition: 'fixed',        // fixed, scrollable
     menuColor: 'color',                  // light, dark, color, gradient, transparent
-    headerColor: 'dark',                // light, dark, color, gradient, transparent, green
+    headerColor: 'green',                // light, dark, color, gradient, transparent, green
     themePrimary: '',               // '58, 88, 146', '92, 144, 163', '161, 90, 223', '78, 172, 76', '223, 90, 90'
     themeBackground: '',
     backgroundImage: '',            // bgimg1, bgimg2, bgimg3, bgimg4, bgimg5
@@ -53,7 +53,8 @@ export class AppStateService {
       const storedState = localStorage.getItem(this.localStorageKey);
       if (storedState) {
         const parsed = JSON.parse(storedState);
-        // Don't override stored state - let it use what was saved
+        // Ensure header stays green
+        parsed.headerColor = 'green';
         return parsed;
       }
     } catch (error) {
@@ -66,13 +67,6 @@ export class AppStateService {
   private initializeState() {
     const state = { ...this.initialState }; // Clone initial state to avoid mutation
     this.applyDirectionSpecificChanges(state.direction); // Apply initial changes
-    this.applythemeSpecificChanges(state.theme); // Apply theme
-    this.applymenuColorSpecificChanges(state.menuColor); // Apply menu color
-    this.applyheaderColorSpecificChanges(state.headerColor); // Apply header color
-    this.applyNavigationStylesSpecificChanges(state.navigationStyles); // Apply navigation
-    if (state.layoutStyles) {
-      this.applyLayoutStylesSpecificChanges(state.layoutStyles);
-    }
     this.stateSubject.next(state); // Emit initial state after changes
   }
 

@@ -96,11 +96,11 @@
             <table class="table table-bordered text-nowrap border-bottom">
               <thead>
                 <tr>
-                  <th>ID Num</th>
-                  <th>Client</th>
-                  <th>Project</th>
-                  <th>Fleet Number</th>
-                  <th>VIN</th>
+                  <th (click)="sortReports('idNumber')" style="cursor:pointer">ID Num <span *ngIf="sortColumn === 'idNumber'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortReports('clientName')" style="cursor:pointer">Client <span *ngIf="sortColumn === 'clientName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortReports('projectName')" style="cursor:pointer">Project <span *ngIf="sortColumn === 'projectName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortReports('fleetNumber')" style="cursor:pointer">Fleet Number <span *ngIf="sortColumn === 'fleetNumber'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortReports('vin')" style="cursor:pointer">VIN <span *ngIf="sortColumn === 'vin'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
                   <th>Action</th>
                 </tr>
               </thead>

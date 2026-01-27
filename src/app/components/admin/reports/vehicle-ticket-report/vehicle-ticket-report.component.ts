@@ -15,6 +15,51 @@ import ExcelJS from 'exceljs';
   styleUrls: ['./vehicle-ticket-report.component.scss']
 })
 export class VehicleTicketReportComponent implements OnInit {
+    // Sorting state
+    sortColumn: string = '';
+    sortDirection: 'asc' | 'desc' = 'asc';
+    /**
+     * Sort tickets by column
+     */
+    sortTickets(column: string) {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+      }
+      // Map column to VehicleTicket property
+      const columnMap: { [key: string]: keyof VehicleTicket } = {
+        ticketNumber: 'ticketNumber',
+        clientName: 'clientName',
+        projectName: 'projectName',
+        vehicleNumber: 'vehicleNumber',
+        safetyCritical: 'safetyCritical',
+        createdDate: 'createdDate',
+        defectType: 'defectType',
+        defectLocation: 'defectLocation',
+        description: 'description',
+        hasImages: 'hasImages',
+        assignedByName: 'assignedByName',
+        assignedToName: 'assignedToName',
+        stationName: 'stationName',
+        status: 'status',
+        resolvedDate: 'resolvedDate'
+      };
+      const prop = columnMap[column];
+      if (!prop) return;
+      this.filteredTickets.sort((a, b) => {
+        let aValue = a[prop] ?? '';
+        let bValue = b[prop] ?? '';
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
+        if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
   
   // Expose Math to template
   Math = Math;
@@ -182,15 +227,22 @@ export class VehicleTicketReportComponent implements OnInit {
   filterTickets() {
     if (!this.searchTerm) {
       this.filteredTickets = [...this.tickets];
+      // Re-apply sorting after filtering
+      if (this.sortColumn) {
+        this.sortTickets(this.sortColumn);
+      }
       return;
     }
-    
     const search = this.searchTerm.toLowerCase();
     this.filteredTickets = this.tickets.filter(ticket =>
       ticket.ticketNumber.toLowerCase().includes(search) ||
       ticket.description.toLowerCase().includes(search) ||
       ticket.defectType.toLowerCase().includes(search)
     );
+    // Re-apply sorting after filtering
+    if (this.sortColumn) {
+      this.sortTickets(this.sortColumn);
+    }
   }
 
   /**

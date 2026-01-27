@@ -9,16 +9,25 @@ import { LandingpageLayoutComponent } from './shared/layouts/landingpage-layout/
 import { landing } from './shared/routes/landingpage';
 
 export const App_Route: Route[] = [
-      { path: '', redirectTo: '/custom/sign-in', pathMatch: 'full' },
-      {
-        path: 'auth/login',
-        loadComponent: () =>
-          import('../app/authentication/login/login.component').then((m) => m.LoginComponent),
-      },
-      { path: '', component: FullLayoutComponent, children: content },
-      { path: '', component: MessageLayoutComponent, children:  Message_Routes },
-
-      { path: '', component: ContentLayoutComponent, children: Authen_Routes },
-      { path: '', component: LandingpageLayoutComponent, children: landing },
-
-    ]
+  { path: '', redirectTo: '/custom/sign-in', pathMatch: 'full' },
+  {
+    path: 'custom',
+    loadChildren: () => import('./components/authentication/authentication.routes').then(m => m.authenticationRoutingModule)
+  },
+  {
+    path: '',
+    component: FullLayoutComponent,
+    children: content
+  },
+  {
+    path: 'auth/login',
+    loadComponent: () =>
+      import('../app/authentication/login/login.component').then((m) => m.LoginComponent)
+  },
+  // No cart route present
+  {
+    path: '**',
+    redirectTo: '/custom/sign-in',
+    pathMatch: 'full'
+  }
+];

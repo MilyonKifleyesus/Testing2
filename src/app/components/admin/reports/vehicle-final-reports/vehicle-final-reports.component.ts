@@ -12,6 +12,41 @@ import { VehicleReportService, VehicleFinalReport, VehicleFinalReportRequest, Cl
   styleUrls: ['./vehicle-final-reports.component.scss']
 })
 export class VehicleFinalReportsComponent implements OnInit {
+    // Sorting state
+    sortColumn: string = '';
+    sortDirection: 'asc' | 'desc' = 'asc';
+    /**
+     * Sort reports by column
+     */
+    sortReports(column: string) {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+      }
+      // Map column to VehicleFinalReport property
+      const columnMap: { [key: string]: keyof VehicleFinalReport } = {
+        idNumber: 'idNumber',
+        clientName: 'clientName',
+        projectName: 'projectName',
+        fleetNumber: 'fleetNumber',
+        vin: 'vin'
+      };
+      const prop = columnMap[column];
+      if (!prop) return;
+      this.filteredReports.sort((a, b) => {
+        let aValue = a[prop] ?? '';
+        let bValue = b[prop] ?? '';
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
+        if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
   
   // Expose Math to template
   Math = Math;
@@ -124,8 +159,11 @@ export class VehicleFinalReportsComponent implements OnInit {
     this.currentPage = 1; // Reset to first page when searching
     if (this.reportGenerated) {
       this.loadReport();
+      // Re-apply sorting after filtering
+      if (this.sortColumn) {
+        this.sortReports(this.sortColumn);
+      }
     }
-    
     const search = this.searchTerm.toLowerCase();
     this.filteredReports = this.reports.filter(report =>
       report.fleetNumber.toLowerCase().includes(search) ||

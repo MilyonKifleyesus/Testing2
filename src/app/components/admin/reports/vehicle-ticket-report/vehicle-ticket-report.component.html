@@ -122,21 +122,21 @@
                       <input type="checkbox"><span></span>
                     </label>
                   </th>
-                  <th>Ticket #</th>
-                  <th>Client</th>
-                  <th>Project</th>
-                  <th>Vehicle</th>
-                  <th>Safety Critical</th>
-                  <th>Created Date</th>
-                  <th>Defect Type</th>
-                  <th>Defect Location</th>
-                  <th>Description</th>
-                  <th>Images</th>
-                  <th>Assign By</th>
-                  <th>Assign To</th>
-                  <th>Station</th>
-                  <th>Status</th>
-                  <th>Resolved Date</th>
+                  <th (click)="sortTickets('ticketNumber')" style="cursor:pointer">Ticket # <span *ngIf="sortColumn === 'ticketNumber'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('clientName')" style="cursor:pointer">Client <span *ngIf="sortColumn === 'clientName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('projectName')" style="cursor:pointer">Project <span *ngIf="sortColumn === 'projectName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('vehicleNumber')" style="cursor:pointer">Vehicle <span *ngIf="sortColumn === 'vehicleNumber'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('safetyCritical')" style="cursor:pointer">Safety Critical <span *ngIf="sortColumn === 'safetyCritical'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('createdDate')" style="cursor:pointer">Created Date <span *ngIf="sortColumn === 'createdDate'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('defectType')" style="cursor:pointer">Defect Type <span *ngIf="sortColumn === 'defectType'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('defectLocation')" style="cursor:pointer">Defect Location <span *ngIf="sortColumn === 'defectLocation'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('description')" style="cursor:pointer">Description <span *ngIf="sortColumn === 'description'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('hasImages')" style="cursor:pointer">Images <span *ngIf="sortColumn === 'hasImages'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('assignedByName')" style="cursor:pointer">Assign By <span *ngIf="sortColumn === 'assignedByName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('assignedToName')" style="cursor:pointer">Assign To <span *ngIf="sortColumn === 'assignedToName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('stationName')" style="cursor:pointer">Station <span *ngIf="sortColumn === 'stationName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('status')" style="cursor:pointer">Status <span *ngIf="sortColumn === 'status'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('resolvedDate')" style="cursor:pointer">Resolved Date <span *ngIf="sortColumn === 'resolvedDate'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
                 </tr>
               </thead>
               <tbody>

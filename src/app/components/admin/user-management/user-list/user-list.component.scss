@@ -1,3 +1,43 @@
+/* Fix dropdown stacking and compact action button */
+.btn-group {
+  position: relative !important;
+}
+.btn-group .dropdown-menu {
+  position: absolute !important;
+  top: 100% !important;
+  left: 0 !important;
+  z-index: 3000 !important;
+  min-width: 120px !important;
+  padding: 0.25rem 0 !important;
+}
+.btn-group .btn.btn-primary {
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  min-width: 0 !important;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.btn-group .btn i {
+  margin: 0 2px 0 0 !important;
+  font-size: 14px !important;
+}
+/* Compact action button and visible dropdown for user table */
+.btn-group .btn.btn-primary {
+  padding: 2px 8px !important;
+  font-size: 12px !important;
+  min-width: 0 !important;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.btn-group .btn i {
+  margin: 0 2px 0 0 !important;
+  font-size: 14px !important;
+}
+.btn-group .dropdown-menu {
+  z-index: 2000 !important;
+}
 .main-container {
   width: 100%;
   padding: 0 15px;

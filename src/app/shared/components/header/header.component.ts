@@ -20,6 +20,10 @@ interface Item {
   styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent implements OnInit {
+  profile = {
+    name: 'Aditya Kumar',
+    role: 'Admin'
+  };
   Selection=[
     {label:'Choose one',value:1},
     {label:'T-Projects...',value:2},

@@ -117,7 +117,12 @@
                   <th style="min-width: 180px;">VIN</th>
                   <th style="min-width: 100px;">Frame</th>
                   <th *ngFor="let station of stationColumns" class="text-center station-col" [title]="station.label">
-                    {{ station.key.replace('station', '') }}
+                    <span (click)="sortByColumn(station.key)" style="cursor:pointer;">
+                      {{ station.key.replace('station', '') }}
+                      <span *ngIf="sortColumn === station.key">
+                        <i [ngClass]="sortDirection === 'asc' ? 'ti-arrow-up' : 'ti-arrow-down'"></i>
+                      </span>
+                    </span>
                   </th>
                 </tr>
               </thead>

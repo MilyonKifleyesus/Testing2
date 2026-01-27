@@ -19,6 +19,15 @@ import { NgCircleProgressModule } from 'ng-circle-progress';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
+import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+
+export function HttpLoaderFactory(http: HttpClient) {
+  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
+}
+
 
 export const appConfig: ApplicationConfig = {
   providers: [provideRouter(App_Route),RouterOutlet,ColorPickerModule,ColorPickerService,provideAnimations(), 
@@ -27,6 +36,7 @@ export const appConfig: ApplicationConfig = {
     AngularFirestoreModule,
     AngularFireAuthModule,provideCharts(withDefaultRegisterables()),
   importProvidersFrom(
+    HttpClientModule,
     NgSelectModule,
     ToastrModule.forRoot(),
     CalendarModule.forRoot({
@@ -44,9 +54,16 @@ export const appConfig: ApplicationConfig = {
     timeOut: 15000, // 15 seconds
     closeButton: true,
     progressBar: true,
+  }),
+  TranslateModule.forRoot({
+    defaultLanguage: 'EN',
+    loader: {
+      provide: TranslateLoader,
+      useFactory: HttpLoaderFactory,
+      deps: [HttpClient]
+    }
   })
-  )   
-  // ,
+  )
 ]
 };
 

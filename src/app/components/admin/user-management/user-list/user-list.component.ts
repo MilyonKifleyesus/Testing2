@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { SpkDropdownsComponent } from '../../../../@spk/reusable-ui-elements/spk-dropdowns/spk-dropdowns.component';
+import { NgbModal, NgbModalRef, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 interface User {
   id: number;
@@ -18,11 +20,17 @@ interface User {
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, SpkDropdownsComponent, NgbModule],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.scss']
 })
 export class UserListComponent implements OnInit {
+  confirmModalRef: NgbModalRef | null = null;
+  confirmAction: (() => void) | null = null;
+  confirmMessage: string = '';
+  confirmTitle: string = '';
+
+  constructor(private modalService: NgbModal) {}
   
   filteredUsers: User[] = [];
   allUsers: User[] = [];
@@ -275,18 +283,50 @@ export class UserListComponent implements OnInit {
     return roleClassMap[role.toLowerCase()] || 'bg-secondary';
   }
 
-  resetPassword(user: User): void {
-    if (confirm(`Send password reset email to ${user.email}?`)) {
-      console.log('Reset password for user:', user.id);
-      alert('Password reset email sent successfully!');
+  openConfirmModal(message: string, title: string, action: () => void, modalContent: any) {
+    this.confirmMessage = message;
+    this.confirmTitle = title;
+    this.confirmAction = action;
+    this.confirmModalRef = this.modalService.open(modalContent, { centered: true });
+  }
+
+  confirmModalYes() {
+    if (this.confirmAction) {
+      this.confirmAction();
+    }
+    if (this.confirmModalRef) {
+      this.confirmModalRef.close();
     }
   }
 
-  deleteUser(user: User): void {
-    if (confirm(`Are you sure you want to delete user "${user.name}"? This action cannot be undone.`)) {
-      this.allUsers = this.allUsers.filter(u => u.id !== user.id);
-      this.filterUsers();
-      alert('User deleted successfully!');
+  confirmModalNo() {
+    if (this.confirmModalRef) {
+      this.confirmModalRef.dismiss();
     }
+  }
+
+  resetPassword(user: User, modalContent: any): void {
+    this.openConfirmModal(
+      `Send password reset email to ${user.email}?`,
+      'Reset Password',
+      () => {
+        console.log('Reset password for user:', user.id);
+        alert('Password reset email sent successfully!');
+      },
+      modalContent
+    );
+  }
+
+  deleteUser(user: User, modalContent: any): void {
+    this.openConfirmModal(
+      `Are you sure you want to delete user "${user.name}"? This action cannot be undone.`,
+      'Delete User',
+      () => {
+        this.allUsers = this.allUsers.filter(u => u.id !== user.id);
+        this.filterUsers();
+        alert('User deleted successfully!');
+      },
+      modalContent
+    );
   }
 }

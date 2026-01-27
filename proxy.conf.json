@@ -1,0 +1,9 @@
+{
+  "/yrt": {
+    "target": "http://rtu.york.ca",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": { "^/yrt": "" }
+  }
+}

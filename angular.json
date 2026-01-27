@@ -93,6 +93,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "hmr": false,
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "spruha:build:production"
@@ -100,9 +104,6 @@
             "development": {
               "buildTarget": "spruha:build:development"
             }
-          },
-          "options": {
-            "hmr": false
           },
           "defaultConfiguration": "development"
         },

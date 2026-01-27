@@ -139,24 +139,34 @@
                     <span *ngIf="!user.manufacturer" class="text-muted">—</span>
                   </td>
 
-                  <!-- Action -->
+                  <!-- Action (using spk-dropdowns) -->
                   <td class="text-center">
-                    <div class="btn-group" role="group">
-                      <button 
-                        class="btn btn-sm btn-primary" 
-                        [attr.data-bs-toggle]="'dropdown'"
-                        aria-expanded="false">
-                        <i class="ti ti-dots-vertical me-1"></i>Action
-                        <i class="ti ti-chevron-down ms-1"></i>
-                      </button>
-                      <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" [routerLink]="['/admin/users/view', user.id]"><i class="ti ti-eye me-2"></i>View</a></li>
-                        <li><a class="dropdown-item" [routerLink]="['/admin/users/edit', user.id]"><i class="ti ti-edit me-2"></i>Edit</a></li>
-                        <li><a class="dropdown-item" (click)="resetPassword(user)" href="javascript:void(0);"><i class="ti ti-lock me-2"></i>Reset Password</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" (click)="deleteUser(user)" href="javascript:void(0);"><i class="ti ti-trash me-2"></i>Delete</a></li>
-                      </ul>
-                    </div>
+                    <spk-dropdowns
+                      [title]="'Action'"
+                      [Arrowicon]="false"
+                      [Menuclass]="'dropdown-menu dropdown-menu-end'"
+                      [class]="'btn btn-sm btn-primary'"
+                    >
+                      <li><a class="dropdown-item" [routerLink]="['/admin/users/view', user.id]"><i class="ti ti-eye me-2"></i>View</a></li>
+                      <li><a class="dropdown-item" [routerLink]="['/admin/users/edit', user.id]"><i class="ti ti-edit me-2"></i>Edit</a></li>
+                      <li><a class="dropdown-item" (click)="resetPassword(user, confirmModal)" href="javascript:void(0);"><i class="ti ti-lock me-2"></i>Reset Password</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" (click)="deleteUser(user, confirmModal)" href="javascript:void(0);"><i class="ti ti-trash me-2"></i>Delete</a></li>
+                    <!-- Confirmation Modal Template -->
+                    <ng-template #confirmModal let-modal>
+                      <div class="modal-header">
+                        <h5 class="modal-title">{{ confirmTitle }}</h5>
+                        <button type="button" class="btn-close" aria-label="Close" (click)="confirmModalNo()"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>{{ confirmMessage }}</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" (click)="confirmModalNo()">Cancel</button>
+                        <button type="button" class="btn btn-danger" (click)="confirmModalYes()">Yes</button>
+                      </div>
+                    </ng-template>
+                    </spk-dropdowns>
                   </td>
                 </tr>
               </tbody>

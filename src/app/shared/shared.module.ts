@@ -30,6 +30,7 @@ import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { SwitcherComponent } from './components/switcher/switcher.component';
 import { SpkNgSelectComponent } from '../@spk/reusable-plugins/spk-ng-select/spk-ng-select.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 
@@ -43,7 +44,9 @@ import { SpkNgSelectComponent } from '../@spk/reusable-plugins/spk-ng-select/spk
     SimplebarAngularModule,
     ColorPickerModule,
     NgSelectModule,
-    FormsModule,SpkNgSelectComponent
+    FormsModule,
+    SpkNgSelectComponent,
+    TranslateModule
   ],
   providers: [
     // other providers

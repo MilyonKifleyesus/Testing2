@@ -31,7 +31,7 @@ export class SwitcherComponent {
   updateTheme(theme: string) {
     this.appStateService.updateState({ theme, menuColor: theme, headerColor: theme });
     if (theme == 'light') {
-      this.appStateService.updateState({ theme, themeBackground: '', headerColor: 'light', menuColor: 'dark' });
+      this.appStateService.updateState({ theme, themeBackground: '', headerColor: 'light', menuColor: 'color' });
       let html = document.querySelector('html');
       html?.style.removeProperty('--body-bg-rgb');
       html?.style.removeProperty('--body-bg-rgb2');

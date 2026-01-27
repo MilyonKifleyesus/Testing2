@@ -12,6 +12,51 @@ import { ReportService, TicketReport, TicketReportRequest, Project, Inspector } 
   styleUrls: ['./ticket-reports.component.scss']
 })
 export class TicketReportsComponent implements OnInit {
+    // Sorting state
+    sortColumn: string = '';
+    sortDirection: 'asc' | 'desc' = 'asc';
+    /**
+     * Sort tickets by column
+     */
+    sortTickets(column: string) {
+      if (this.sortColumn === column) {
+        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortColumn = column;
+        this.sortDirection = 'asc';
+      }
+      // Map column to TicketReport property
+      const columnMap: { [key: string]: keyof TicketReport } = {
+        ticketNumber: 'ticketNumber',
+        clientName: 'clientName',
+        projectName: 'projectName',
+        vehicleIdentifier: 'vehicleIdentifier',
+        safetyCritical: 'safetyCritical',
+        createdDate: 'createdDate',
+        defectType: 'defectType',
+        defectLocation: 'defectLocation',
+        description: 'description',
+        hasImages: 'hasImages',
+        assignedByName: 'assignedByName',
+        assignedToName: 'assignedToName',
+        stationName: 'stationName',
+        status: 'status',
+        resolvedDate: 'resolvedDate'
+      };
+      const prop = columnMap[column];
+      if (!prop) return;
+      this.filteredTickets.sort((a, b) => {
+        let aValue = a[prop] ?? '';
+        let bValue = b[prop] ?? '';
+        if (typeof aValue === 'string' && typeof bValue === 'string') {
+          aValue = aValue.toLowerCase();
+          bValue = bValue.toLowerCase();
+        }
+        if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
+        if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
   
   // Expose Math to template
   Math = Math;
@@ -180,6 +225,10 @@ export class TicketReportsComponent implements OnInit {
     this.currentPage = 1; // Reset to first page when searching
     if (this.reportGenerated) {
       this.loadReport();
+      // Re-apply sorting after filtering
+      if (this.sortColumn) {
+        this.sortTickets(this.sortColumn);
+      }
     }
   }
 

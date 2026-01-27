@@ -49,10 +49,7 @@
                 <i class="side-menu__icon  {{ menuItem.icon }}"></i>
                 }
                 
-                <span class="side-menu__label"
-                  >{{ menuItem.title }}
-                 </span
-                >
+                <span class="side-menu__label">{{ menuItem.title }}</span>
                 
             
               </a>
@@ -87,9 +84,7 @@
                     <i class="side-menu__icon  {{ menuItem.icon }}"></i>
                     }
                 <!-- </span> -->
-                <span class="side-menu__label"
-                  >{{ menuItem.title }}
-                 </span>
+                <span class="side-menu__label">{{ menuItem.title }}</span>
     
                 <i class="ri-arrow-right-s-line side-menu__angle"></i>
               </a>
@@ -149,7 +144,7 @@
                     [routerLink]="childrenItem.type ? null : [childrenItem.path]"
                     (click)="toggleNavActive($event, childrenItem)"
                   >
-                    <span class="">{{ childrenItem.title }}</span>
+                    {{ childrenItem.title }}
                     <i class="ri-arrow-right-s-line side-menu__angle"></i>
                   </a>
                   }
