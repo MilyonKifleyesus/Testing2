@@ -11,7 +11,7 @@ export const adminRoutingModule: Routes = [
   {
     path: 'dashboard',
     canActivate: [roleGuard],
-    data: { roles: ['superadmin'] },
+    data: { roles: ['superadmin', 'admin'] },
     loadComponent: () => import('./dashboard/index').then(m => m.AdminDashboardComponent)
   },
   {

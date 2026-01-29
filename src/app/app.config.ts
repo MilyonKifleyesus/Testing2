@@ -20,9 +20,10 @@ import { NgSelectModule } from '@ng-select/ng-select';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { HttpClientModule } from '@angular/common/http';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { AuthInterceptor } from './shared/interceptors/auth.interceptor';
 
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -30,8 +31,10 @@ export function HttpLoaderFactory(http: HttpClient) {
 
 
 export const appConfig: ApplicationConfig = {
-  providers: [provideRouter(App_Route),RouterOutlet,ColorPickerModule,ColorPickerService,provideAnimations(), 
-     AngularFireModule,
+  providers: [
+    provideHttpClient(withInterceptorsFromDi()),
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },provideRouter(App_Route),RouterOutlet,ColorPickerModule,ColorPickerService,provideAnimations(), 
+    AngularFireModule,
     AngularFireDatabaseModule,
     AngularFirestoreModule,
     AngularFireAuthModule,provideCharts(withDefaultRegisterables()),

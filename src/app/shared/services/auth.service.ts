@@ -1,268 +1,98 @@
-import { Injectable,NgZone } from '@angular/core';
-import { AngularFireModule } from '@angular/fire/compat';
-import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, finalize, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { AngularFirestoreDocument } from '@angular/fire/compat/firestore';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { LoginRequest, LoginResponse } from '../models/auth.models';
 
-export interface User {
-  uid: string;
-  email: string;
-  displayName: string;
-  photoURL: string;
-  emailVerified: boolean;
-  role?: 'superadmin' | 'admin' | 'inspector' | 'client';
+export interface CurrentUser {
+  userId: number;
+  username: string;
+  email?: string;
+  role: string;
+  clientId: number;
+  isGeneralAdmin: boolean;
 }
-@Injectable({
-  providedIn: 'root',
-})
+
+const LS_TOKEN = 'bp_access_token';
+const LS_USER = 'bp_current_user';
+
+@Injectable({ providedIn: 'root' })
 export class AuthService {
-  authState: any;
-  afAuth: any;
-  afs: any;
-  public showLoader:boolean=false;
-  
-  // Role-based authentication
-  private currentUserSubject: BehaviorSubject<User | null>;
-  public currentUserRole: Observable<User | null>;
+  private currentUserSubject = new BehaviorSubject<CurrentUser | null>(
+    this.readUser(),
+  );
+  currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private afu: AngularFireAuth, private router: Router,public ngZone: NgZone) {
-    this.afu.authState.subscribe((auth: any) => {
-      this.authState = auth;
-    });
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {}
 
-    // Initialize role-based user subject from localStorage
-    const storedUser = localStorage.getItem('currentUser');
-    let parsedUser: User | null = null;
-    
-    if (storedUser) {
-      try {
-        parsedUser = JSON.parse(storedUser);
-        console.log('User loaded from localStorage:', parsedUser);
-      } catch (e) {
-        console.error('Error parsing stored user', e);
-        localStorage.removeItem('currentUser');
-      }
-    }
-    
-    this.currentUserSubject = new BehaviorSubject<User | null>(parsedUser);
-    this.currentUserRole = this.currentUserSubject.asObservable();
-  }
+  public showLoader = false;
 
-  // all firebase getdata functions
+  login(req: LoginRequest): Observable<LoginResponse> {
+    this.showLoader = true;
 
-  get isUserAnonymousLoggedIn(): boolean {
-    return this.authState !== null ? this.authState.isAnonymous : false;
-  }
-
-  get currentUserId(): string {
-    return this.authState !== null ? this.authState.uid : '';
-  }
-
-  get currentUserName(): string {
-    return this.authState['email'];
-  }
-
-  get currentUser(): any {
-    return this.authState !== null ? this.authState : null;
-  }
-
-  get isUserEmailLoggedIn(): boolean {
-    if (this.authState !== null && !this.isUserAnonymousLoggedIn) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  registerWithEmail(email: string, password: string) {
-    return this.afu
-      ['createUserWithEmailAndPassword'](email, password)
-      .then((user: any) => {
-        this.authState = user;
-      })
-      .catch((_error: any) => {
-        console.log(_error);
-        throw _error;
-      });
-  }
-
-  loginWithEmail(email: string, password: string) {
-    return this.afu
-      ['signInWithEmailAndPassword'](email, password)
-      .then((user: any) => {
-        this.authState = user;
-      })
-      .catch((_error: any) => {
-        console.log(_error);
-        throw _error;
-      });
-  }
-
-  singout(): void {
-    // this.afu.signOut();
-    this.router.navigate(['/login']);
-  }
-  
-
-    // Sign up with email/password
-    SignUp(email:any, password:any) {
-      return this.afAuth.createUserWithEmailAndPassword(email, password)
-        .then((result:any) => {
-          /* Call the SendVerificaitonMail() function when new user sign
-          up and returns promise */
-          this.SendVerificationMail();
-          this.SetUserData(result.user);
-        }).catch((error:any) => {
-          window.alert(error.message)
-        })
-    }
-
-
-    // main verification function
-    SendVerificationMail() {
-      return this.afAuth.currentUser.then((u:any) => u.sendEmailVerification()).then(() => {
-          this.router.navigate(['/dashboard']);
-        })
-    }
-      // Set user
-  SetUserData(user:any) {
-    const userRef: AngularFirestoreDocument<any> = this.afs.doc(`users/${user.uid}`);
-    const userData: User = {
-      email: user.email,
-      displayName: user.displayName,
-      uid: user.uid,
-      photoURL: user.photoURL || 'src/favicon.ico',
-      emailVerified: user.emailVerified
-    };
-    userRef.delete().then(function () {})
-          .catch(function (error:any) {});
-    return userRef.set(userData, {
-      merge: true
-    });
-  }
- // sign in function
- SignIn(email:any, password:any) {
-  return this.afAuth.signInWithEmailAndPassword(email, password)
-    .then((result:any) => {
-      if (result.user.emailVerified !== true) {
-        this.SetUserData(result.user);
-        this.SendVerificationMail();
-        this.showLoader = true;
-      } else {
-        this.showLoader = false;
-        this.ngZone.run(() => {
-          this.router.navigate(['/auth/login']);
-        });
-      }
-    }).catch((error:any) => {
-      throw error;
-    })
-}
-ForgotPassword(passwordResetEmail:any) {
-  return this.afAuth.sendPasswordResetEmail(passwordResetEmail)
-    .then(() => {
-      window.alert('Password reset email sent, check your inbox.');
-    }).catch((error:any) => {
-      window.alert(error);
-    });
-}
-
-  // Role-based authentication methods
-  public get currentUserValue(): User | null {
-    return this.currentUserSubject.value;
-  }
-
-  public get userRole(): string | null {
-    return this.currentUserSubject.value?.role || null;
-  }
-
-  // Mock role-based login (replace with actual API call)
-  loginWithRole(username: string, password: string): Observable<User> {
-    return new Observable(observer => {
-      setTimeout(() => {
-        let user: User;
-        
-        // Mock user based on credentials
-        if (username === 'superadmin' && password === 'admin123') {
-          user = {
-            uid: '1',
-            email: 'superadmin@buspulse.com',
-            displayName: 'Super Admin',
-            photoURL: '',
-            emailVerified: true,
-            role: 'superadmin'
+    return this.http
+      .post<LoginResponse>(`${environment.apiBaseUrl}/auth/login`, req)
+      .pipe(
+        tap((res) => {
+          localStorage.setItem(LS_TOKEN, res.accessToken);
+          const user: CurrentUser = {
+            userId: res.userId,
+            username: res.username,
+            email: res.email,
+            role: res.role,
+            clientId: res.clientId,
+            isGeneralAdmin: res.isGeneralAdmin,
           };
-        } else if (username === 'admin' && password === 'admin123') {
-          user = {
-            uid: '2',
-            email: 'admin@buspulse.com',
-            displayName: 'Admin User',
-            photoURL: '',
-            emailVerified: true,
-            role: 'admin'
-          };
-        } else if (username === 'inspector' && password === 'inspector123') {
-          user = {
-            uid: '3',
-            email: 'inspector@buspulse.com',
-            displayName: 'Inspector User',
-            photoURL: '',
-            emailVerified: true,
-            role: 'inspector'
-          };
-        } else if (username === 'client' && password === 'client123') {
-          user = {
-            uid: '4',
-            email: 'client@buspulse.com',
-            displayName: 'Client User',
-            photoURL: '',
-            emailVerified: true,
-            role: 'client'
-          };
-        } else {
-          observer.error({ message: 'Invalid username or password' });
-          return;
-        }
-
-        // Store user details in local storage
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        this.currentUserSubject.next(user);
-        observer.next(user);
-        observer.complete();
-      }, 1000);
-    });
+          localStorage.setItem(LS_USER, JSON.stringify(user));
+          this.currentUserSubject.next(user);
+        }),
+        finalize(() => {
+          this.showLoader = false;
+        }),
+      );
   }
 
   logout(): void {
-    localStorage.removeItem('currentUser');
+    localStorage.removeItem(LS_TOKEN);
+    localStorage.removeItem(LS_USER);
     this.currentUserSubject.next(null);
     this.router.navigate(['/custom/sign-in']);
   }
 
+  get accessToken(): string | null {
+    return localStorage.getItem(LS_TOKEN);
+  }
+
+  get currentUserValue(): CurrentUser | null {
+    return this.currentUserSubject.value;
+  }
+
+  get userRole(): string | null {
+    const role = this.currentUserSubject.value?.role ?? null;
+    return role ? role.toLowerCase().trim() : null;
+  }
+
   isAuthenticated(): boolean {
-    return !!this.currentUserValue;
+    return !!this.accessToken;
   }
 
   hasRole(roles: string[]): boolean {
     const userRole = this.userRole;
-    return userRole ? roles.includes(userRole) : false;
+    const expected = roles.map((r) => (r ?? '').toLowerCase().trim());
+    return userRole ? expected.includes(userRole) : false;
   }
 
-  isSuperAdmin(): boolean {
-    return this.userRole === 'superadmin';
-  }
-
-  isAdmin(): boolean {
-    return this.userRole === 'admin';
-  }
-
-  isInspector(): boolean {
-    return this.userRole === 'inspector';
-  }
-
-  isClient(): boolean {
-    return this.userRole === 'client';
+  private readUser(): CurrentUser | null {
+    const raw = localStorage.getItem(LS_USER);
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as CurrentUser;
+    } catch {
+      return null;
+    }
   }
 }
