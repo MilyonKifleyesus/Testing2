@@ -27,6 +27,13 @@ $sidebar-bg: var(--default-background, #f8faf9);
 $card-bg: var(--custom-white, #ffffff);
 $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
 
+// Accessibility: Focus states
+:focus-visible {
+  outline: 2px solid $tactical-green !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(0, 255, 65, 0.2) !important;
+}
+
 .war-room-container {
   display: flex;
   flex-direction: column;
@@ -88,6 +95,21 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
 .map-filter-btn {
   position: relative;
   white-space: nowrap;
+
+  &.btn-primary-transparent {
+    background-color: var(--primary01, rgba(27, 67, 50, 0.1));
+    border-color: var(--primary05, rgba(45, 106, 79, 0.5));
+    color: var(--primary-bg-color, #1B4332);
+    font-weight: 600;
+  }
+}
+
+.clear-filters-quick {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.55rem;
+  padding: 0.25rem 0.5rem;
+  height: 100%;
 }
 
 .war-room-filters {
@@ -190,7 +212,7 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   box-shadow: none;
   font-weight: 400;
   color: var(--gray-4, #71717a);
-  
+
   // Layout and positioning
   background: var(--custom-white, #ffffff);
   border: 1px solid var(--primary02, rgba(27, 67, 50, 0.12));
@@ -496,9 +518,12 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
 
 // Animations
 @keyframes pulse-green {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -508,6 +533,7 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   from {
     stroke-dashoffset: 72;
   }
+
   to {
     stroke-dashoffset: 0;
   }
@@ -536,4 +562,53 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   font-feature-settings: 'liga';
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
+}
+
+// Active Filters Bar
+.active-filters-bar {
+  .badge {
+    font-weight: 500;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(var(--primary-rgb), 0.15) !important;
+    }
+
+    .cursor-pointer {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// Empty State Overlay enhancements
+.empty-state-overlay {
+  // Ensure it sits on top of map but below modals if any
+  pointer-events: auto;
+
+  // Dark mode support handled via bg-light/text-muted classes, 
+  // but let's add specific overrides if needed
+  [data-theme-mode="dark"] & {
+    background: rgba(0, 0, 0, 0.7) !important;
+
+    .empty-state-content {
+      background: #1e1e1e; // Approx dark card bg
+      color: #fff;
+    }
+
+    .avatar.bg-light {
+      background: #2d2d2d !important;
+      color: #8c9097 !important;
+    }
+  }
+}
+
+// Ensure map area is relative for absolute overlay
+.war-room-map-area {
+  position: relative;
 }

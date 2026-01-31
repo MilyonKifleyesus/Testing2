@@ -224,6 +224,7 @@ export interface TransitRoute {
   animated?: boolean; // Whether to show animated chevrons
   strokeColor?: string; // Line color
   strokeWidth?: number;
+  dashArray?: string; // SVG dash array pattern (e.g., '5,5')
 }
 
 /**

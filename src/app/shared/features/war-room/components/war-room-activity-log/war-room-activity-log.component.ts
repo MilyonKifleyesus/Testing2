@@ -33,12 +33,10 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
     description: string;
     status: NodeStatus;
   }>();
-  subsidiaryDetailsUpdated = output<{
-    subsidiaryId: string;
-    name: string;
-    location: string;
-    description: string;
-    status: OperationalStatus;
+  readonly subsidiaryDetailsUpdated = output<{ subsidiaryId: string; name: string; location: string; description: string; status: OperationalStatus }>();
+  readonly batchUpdateRequested = output<{
+    factories: Array<{ factoryId: string; name: string; location: string; description: string; status: NodeStatus }>;
+    subsidiaries: Array<{ subsidiaryId: string; name: string; location: string; description: string; status: OperationalStatus }>;
   }>();
   subsidiaryDeleted = output<string>();
   factoryDeleted = output<string>();
@@ -48,16 +46,13 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
 
   readonly expandedParents = signal<string[]>([]);
   readonly expandedSubsidiaries = signal<string[]>([]);
+
+  // Multi-item draft storage
+  readonly factoryDrafts = signal<Map<string, { name: string; location: string; description: string; status: NodeStatus }>>(new Map());
+  readonly subsidiaryDrafts = signal<Map<string, { name: string; location: string; description: string; status: OperationalStatus }>>(new Map());
+
   readonly editingFactoryId = signal<string | null>(null);
   readonly editingSubsidiaryId = signal<string | null>(null);
-  readonly draftName = signal<string>('');
-  readonly draftLocation = signal<string>('');
-  readonly draftDescription = signal<string>('');
-  readonly draftSubsidiaryName = signal<string>('');
-  readonly draftSubsidiaryLocation = signal<string>('');
-  readonly draftSubsidiaryDescription = signal<string>('');
-  readonly draftFactoryStatus = signal<NodeStatus>('ACTIVE');
-  readonly draftSubsidiaryStatus = signal<OperationalStatus>('ACTIVE');
 
   readonly latestLogByFactory = computed(() => {
     const logs = this.activityLogs();
@@ -184,98 +179,179 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
   startEditFactory(factory: FactoryLocation): void {
     const latestLog = this.getLatestLog(factory.id);
     this.editingFactoryId.set(factory.id);
-    this.draftName.set(factory.name);
-    this.draftLocation.set([factory.city, factory.country].filter(Boolean).join(', '));
-    this.draftDescription.set(latestLog?.description || factory.description || '');
-    this.draftFactoryStatus.set(factory.status);
+
+    // Initialize draft if not exists
+    if (!this.factoryDrafts().has(factory.id)) {
+      this.updateFactoryDraft(factory.id, {
+        name: factory.name,
+        location: [factory.city, factory.country].filter(Boolean).join(', '),
+        description: latestLog?.description || factory.description || '',
+        status: factory.status
+      });
+    }
   }
 
   startEditSubsidiary(subsidiary: SubsidiaryCompany): void {
     this.editingSubsidiaryId.set(subsidiary.id);
-    this.draftSubsidiaryName.set(subsidiary.name);
-    this.draftSubsidiaryLocation.set(subsidiary.location || this.getSubsidiaryLocation(subsidiary));
-    this.draftSubsidiaryDescription.set(subsidiary.description || '');
-    this.draftSubsidiaryStatus.set(subsidiary.status);
+
+    // Initialize draft if not exists
+    if (!this.subsidiaryDrafts().has(subsidiary.id)) {
+      this.updateSubsidiaryDraft(subsidiary.id, {
+        name: subsidiary.name,
+        location: subsidiary.location || this.getSubsidiaryLocation(subsidiary),
+        description: subsidiary.description || '',
+        status: subsidiary.status
+      });
+    }
   }
 
-  onNameInput(event: Event): void {
+  private updateFactoryDraft(id: string, updates: Partial<{ name: string; location: string; description: string; status: NodeStatus }>): void {
+    const drafts = new Map(this.factoryDrafts());
+    const existing = drafts.get(id) || { name: '', location: '', description: '', status: 'ACTIVE' };
+    drafts.set(id, { ...existing, ...updates });
+    this.factoryDrafts.set(drafts);
+  }
+
+  private updateSubsidiaryDraft(id: string, updates: Partial<{ name: string; location: string; description: string; status: OperationalStatus }>): void {
+    const drafts = new Map(this.subsidiaryDrafts());
+    const existing = drafts.get(id) || { name: '', location: '', description: '', status: 'ACTIVE' };
+    drafts.set(id, { ...existing, ...updates });
+    this.subsidiaryDrafts.set(drafts);
+  }
+
+  onNameInput(event: Event, factoryId: string): void {
     const target = event.target as HTMLInputElement | null;
-    this.draftName.set(target?.value ?? '');
+    this.updateFactoryDraft(factoryId, { name: target?.value ?? '' });
   }
 
-  onLocationInput(event: Event): void {
+  onLocationInput(event: Event, factoryId: string): void {
     const target = event.target as HTMLInputElement | null;
-    this.draftLocation.set(target?.value ?? '');
+    this.updateFactoryDraft(factoryId, { location: target?.value ?? '' });
   }
 
-  onSubsidiaryNameInput(event: Event): void {
+  onSubsidiaryNameInput(event: Event, subsidiaryId: string): void {
     const target = event.target as HTMLInputElement | null;
-    this.draftSubsidiaryName.set(target?.value ?? '');
+    this.updateSubsidiaryDraft(subsidiaryId, { name: target?.value ?? '' });
   }
 
-  onSubsidiaryLocationInput(event: Event): void {
+  onSubsidiaryLocationInput(event: Event, subsidiaryId: string): void {
     const target = event.target as HTMLInputElement | null;
-    this.draftSubsidiaryLocation.set(target?.value ?? '');
+    this.updateSubsidiaryDraft(subsidiaryId, { location: target?.value ?? '' });
   }
 
-  onSubsidiaryDescriptionInput(event: Event): void {
+  onSubsidiaryDescriptionInput(event: Event, subsidiaryId: string): void {
     const target = event.target as HTMLTextAreaElement | null;
-    this.draftSubsidiaryDescription.set(target?.value ?? '');
+    this.updateSubsidiaryDraft(subsidiaryId, { description: target?.value ?? '' });
   }
 
-  onFactoryStatusChange(event: Event): void {
+  onFactoryStatusChange(event: Event, factoryId: string): void {
     const target = event.target as HTMLSelectElement | null;
     const value = target?.value as NodeStatus | undefined;
     if (value) {
-      this.draftFactoryStatus.set(value);
+      this.updateFactoryDraft(factoryId, { status: value });
     }
   }
 
-  onSubsidiaryStatusChange(event: Event): void {
+  onSubsidiaryStatusChange(event: Event, subsidiaryId: string): void {
     const target = event.target as HTMLSelectElement | null;
     const value = target?.value as OperationalStatus | undefined;
     if (value) {
-      this.draftSubsidiaryStatus.set(value);
+      this.updateSubsidiaryDraft(subsidiaryId, { status: value });
     }
   }
 
-  onDescriptionInput(event: Event): void {
+  onDescriptionInput(event: Event, factoryId: string): void {
     const target = event.target as HTMLTextAreaElement | null;
-    this.draftDescription.set(target?.value ?? '');
+    this.updateFactoryDraft(factoryId, { description: target?.value ?? '' });
   }
 
   saveFactoryDetails(factoryId: string): void {
-    const name = this.draftName().trim();
-    const location = this.draftLocation().trim();
-    const description = this.draftDescription().trim();
-    const status = this.draftFactoryStatus();
-    this.factoryDetailsUpdated.emit({ factoryId, name, location, description, status });
-    this.cancelEditFactory();
+    const draft = this.factoryDrafts().get(factoryId);
+    if (!draft || !draft.name.trim()) {
+      return;
+    }
+
+    this.factoryDetailsUpdated.emit({
+      factoryId,
+      name: draft.name.trim(),
+      location: draft.location.trim(),
+      description: draft.description.trim(),
+      status: draft.status
+    });
+
+    this.removeFromDrafts('factory', factoryId);
+    this.editingFactoryId.set(null);
   }
 
   saveSubsidiaryDetails(subsidiaryId: string): void {
-    const name = this.draftSubsidiaryName().trim();
-    const location = this.draftSubsidiaryLocation().trim();
-    const description = this.draftSubsidiaryDescription().trim();
-    const status = this.draftSubsidiaryStatus();
-    this.subsidiaryDetailsUpdated.emit({ subsidiaryId, name, location, description, status });
-    this.cancelEditSubsidiary();
+    const draft = this.subsidiaryDrafts().get(subsidiaryId);
+    if (!draft || !draft.name.trim()) {
+      return;
+    }
+
+    this.subsidiaryDetailsUpdated.emit({
+      subsidiaryId,
+      name: draft.name.trim(),
+      location: draft.location.trim(),
+      description: draft.description.trim(),
+      status: draft.status
+    });
+
+    this.removeFromDrafts('subsidiary', subsidiaryId);
+    this.editingSubsidiaryId.set(null);
   }
 
   cancelEditFactory(): void {
-    this.editingFactoryId.set(null);
-    this.draftName.set('');
-    this.draftLocation.set('');
-    this.draftDescription.set('');
-    this.draftFactoryStatus.set('ACTIVE');
+    if (this.editingFactoryId()) {
+      this.removeFromDrafts('factory', this.editingFactoryId()!);
+      this.editingFactoryId.set(null);
+    }
   }
 
   cancelEditSubsidiary(): void {
+    if (this.editingSubsidiaryId()) {
+      this.removeFromDrafts('subsidiary', this.editingSubsidiaryId()!);
+      this.editingSubsidiaryId.set(null);
+    }
+  }
+
+  saveAllDrafts(): void {
+    const factoryUpdates = Array.from(this.factoryDrafts().entries())
+      .filter(([_, draft]) => draft.name.trim().length > 0)
+      .map(([id, draft]) => ({ factoryId: id, ...draft }));
+
+    const subsidiaryUpdates = Array.from(this.subsidiaryDrafts().entries())
+      .filter(([_, draft]) => draft.name.trim().length > 0)
+      .map(([id, draft]) => ({ subsidiaryId: id, ...draft }));
+
+    if (factoryUpdates.length === 0 && subsidiaryUpdates.length === 0) {
+      this.clearAllDrafts();
+      return;
+    }
+
+    // We emit the batch updates. The parent component will handle the persistence.
+    // To satisfy the requirement of preserving drafts on failure, we don't clear them here anymore.
+    // Instead, we added a clearDrafts() method for the parent to call.
+    this.batchUpdateRequested.emit({ factories: factoryUpdates, subsidiaries: subsidiaryUpdates });
+  }
+
+  clearAllDrafts(): void {
+    this.factoryDrafts.set(new Map());
+    this.subsidiaryDrafts.set(new Map());
+    this.editingFactoryId.set(null);
     this.editingSubsidiaryId.set(null);
-    this.draftSubsidiaryName.set('');
-    this.draftSubsidiaryLocation.set('');
-    this.draftSubsidiaryDescription.set('');
-    this.draftSubsidiaryStatus.set('ACTIVE');
+  }
+
+  private removeFromDrafts(type: 'factory' | 'subsidiary', id: string): void {
+    if (type === 'factory') {
+      const drafts = new Map(this.factoryDrafts());
+      drafts.delete(id);
+      this.factoryDrafts.set(drafts);
+    } else {
+      const drafts = new Map(this.subsidiaryDrafts());
+      drafts.delete(id);
+      this.subsidiaryDrafts.set(drafts);
+    }
   }
 
   requestDeleteSubsidiary(subsidiaryId: string): void {

@@ -60,7 +60,8 @@ export class AddCompanyModalComponent implements OnDestroy {
   });
 
   // Form state
-  isSubmitting = signal<boolean>(false);
+  submissionState = signal<'IDLE' | 'SUBMITTING' | 'SUCCESS' | 'ERROR'>('IDLE');
+  isSubmitting = computed(() => this.submissionState() === 'SUBMITTING');
   errorMessage = signal<string | null>(null);
 
   @HostBinding('class.map-positioned') get isMapPositioned(): boolean {
@@ -168,6 +169,11 @@ export class AddCompanyModalComponent implements OnDestroy {
       return false;
     }
 
+    if (!this.location().trim()) {
+      this.errorMessage.set('Target company primary location is required');
+      return false;
+    }
+
     const sourceCompany = this.sourceCompanyName().trim();
     const sourceLocation = this.sourceLocation().trim();
     if (sourceCompany && !sourceLocation) {
@@ -218,13 +224,15 @@ export class AddCompanyModalComponent implements OnDestroy {
 
     // If not coordinates or city/province format, try geocoding service
     try {
+      this.logDebug(`[AddCompanyModalComponent] Geocoding location: "${trimmed}"`);
       const coords = await this.warRoomService.parseLocationInput(trimmed);
       // Use the input as city name if it's an address
       return { ...coords, city: trimmed };
     } catch (error) {
+      this.logWarn(`[AddCompanyModalComponent] Geocoding failed for "${trimmed}":`, error);
       // If geocoding fails but it looks like a valid location string, accept it
       // This allows "City, Province" format to work even without geocoding
-      if (trimmed.length > 0 && !trimmed.match(/^-?\d+\.?\d*\s*,\s*-?\d+\.?\d*$/)) {
+      if (trimmed.length > 2 && !trimmed.match(/^-?\d+\.?\d*\s*,\s*-?\d+\.?\d*$/)) {
         // Not coordinates, treat as location string (e.g., "Toronto, Ontario")
         return { latitude: null, longitude: null, city: trimmed, needsGeocoding: true };
       }
@@ -245,10 +253,10 @@ export class AddCompanyModalComponent implements OnDestroy {
       return;
     }
 
-    this.isSubmitting.set(true);
+    this.submissionState.set('SUBMITTING');
 
     try {
-      const locationValue = this.location().trim() || 'Toronto, Ontario';
+      const locationValue = this.location().trim();
       // Parse location
       const locationData = await this.parseLocation(locationValue);
       if (!locationData) {
@@ -279,7 +287,11 @@ export class AddCompanyModalComponent implements OnDestroy {
       console.error('Error message set:', errorMsg);
       // Don't auto-hide error - let user see it and fix the issue
     } finally {
-      this.isSubmitting.set(false);
+      // Note: We don't automatically set back to IDLE here if successful.
+      // The parent will call handleSuccess() or handleErrorMessage().
+      if (this.submissionState() === 'SUBMITTING' && this.errorMessage()) {
+        this.submissionState.set('ERROR');
+      }
     }
   }
 
@@ -297,6 +309,7 @@ export class AddCompanyModalComponent implements OnDestroy {
     this.subLocations.set([]);
     this.resetSubLocationForm();
     this.errorMessage.set(null);
+    this.submissionState.set('IDLE');
   }
 
   /**
@@ -308,11 +321,28 @@ export class AddCompanyModalComponent implements OnDestroy {
   }
 
   /**
+   * Handle successful submission
+   */
+  handleSuccess(): void {
+    this.submissionState.set('SUCCESS');
+  }
+
+  /**
+   * Handle submission error
+   */
+  handleError(message: string): void {
+    this.errorMessage.set(message);
+    this.submissionState.set('ERROR');
+  }
+
+  /**
    * Close modal after successful company addition
    * Called by parent when processing is complete
    */
   closeAfterSuccess(): void {
-    this.onClose();
+    setTimeout(() => {
+      this.onClose();
+    }, 2000); // Give user time to see the success message
   }
 
   /**
@@ -387,4 +417,11 @@ export class AddCompanyModalComponent implements OnDestroy {
     return status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE';
   }
 
+  private logDebug(message: string, ...args: any[]): void {
+    console.log(message, ...args);
+  }
+
+  private logWarn(message: string, ...args: any[]): void {
+    console.warn(message, ...args);
+  }
 }

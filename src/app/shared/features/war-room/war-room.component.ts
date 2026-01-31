@@ -7,8 +7,16 @@ import { WarRoomMapComponent } from './components/war-room-map/war-room-map.comp
 import { WarRoomActivityLogComponent } from './components/war-room-activity-log/war-room-activity-log.component';
 import { WarRoomHubStatusComponent } from './components/war-room-hub-status/war-room-hub-status.component';
 import { AddCompanyModalComponent, CompanyFormData } from './components/add-company-modal/add-company-modal.component';
+import { ToastrService } from 'ngx-toastr';
+import { OperationalStatus } from '../../../shared/models/war-room.interface';
 
 type FilterStatus = 'all' | 'active' | 'inactive';
+
+export interface ActiveFilterItem {
+  type: 'status' | 'region' | 'company';
+  label: string;
+  value: string;
+}
 
 interface WarRoomFilters {
   parentCompanyIds: string[];
@@ -36,9 +44,11 @@ const createDefaultFilters = (): WarRoomFilters => ({
   styleUrl: './war-room.component.scss',
 })
 export class WarRoomComponent implements OnInit, OnDestroy {
+  private readonly STORAGE_KEY = 'war-room-filters-v1';
   // Inject services
   private warRoomService = inject(WarRoomService);
   private realtimeService = inject(WarRoomRealtimeService);
+  private toastr = inject(ToastrService);
 
   // Signals from service
   readonly nodes = this.warRoomService.nodes;
@@ -99,6 +109,43 @@ export class WarRoomComponent implements OnInit, OnDestroy {
       count += 1;
     }
     return count;
+  });
+
+  readonly activeFilters = computed<ActiveFilterItem[]>(() => {
+    const filters = this.filterApplied();
+    const items: ActiveFilterItem[] = [];
+
+    // Status
+    if (filters.status !== 'all') {
+      items.push({
+        type: 'status',
+        label: `Status: ${filters.status === 'active' ? 'Active Only' : 'Inactive Only'}`,
+        value: filters.status
+      });
+    }
+
+    // Regions
+    filters.regions.forEach(region => {
+      items.push({
+        type: 'region',
+        label: `Region: ${region}`,
+        value: region
+      });
+    });
+
+    // Companies
+    const subs = this.subsidiaries();
+    filters.parentCompanyIds.forEach(id => {
+      const sub = subs.find(s => s.id === id);
+      const name = sub ? sub.name : 'Unknown Company';
+      items.push({
+        type: 'company',
+        label: `Company: ${name}`,
+        value: id
+      });
+    });
+
+    return items;
   });
 
   readonly statusCounts = computed(() => {
@@ -219,221 +266,107 @@ export class WarRoomComponent implements OnInit, OnDestroy {
   readonly filteredTransitRoutes = computed(() => {
     const routes = this.transitRoutes();
     const nodes = this.filteredNodes();
-    const allNodes = this.nodes(); // All nodes for finding route endpoints
+    const allNodes = this.nodes();
     const selected = this.selectedEntity();
 
-    console.log('[Route Filtering] Starting filter with:', {
-      totalRoutes: routes.length,
-      filteredNodes: nodes.length,
-      allNodes: allNodes.length,
-      selectedEntity: selected?.id
-    });
-
-    // Create a set of filtered node IDs for fast lookup
     const filteredNodeIds = new Set(nodes.map(n => n.id));
 
-    const filtered = routes.filter((route) => {
-      // VALIDATION 1: Ensure both source and destination coordinates exist
-      if (!route.fromCoordinates || !route.toCoordinates) {
-        console.warn(`[Route Filtering] Route ${route.id} missing coordinates:`, {
-          from: route.from,
-          to: route.to,
-          hasFromCoords: !!route.fromCoordinates,
-          hasToCoords: !!route.toCoordinates
-        });
-        return false;
-      }
+    return routes.filter((route) => {
+      // 1. Basic Coordinate Validation
+      if (!route.fromCoordinates || !route.toCoordinates) return false;
+      if (!Number.isFinite(route.fromCoordinates.latitude) || !Number.isFinite(route.fromCoordinates.longitude)) return false;
+      if (!Number.isFinite(route.toCoordinates.latitude) || !Number.isFinite(route.toCoordinates.longitude)) return false;
 
-      // VALIDATION 2: Validate that coordinates have required location fields
-      const hasValidFromCoords =
-        typeof route.fromCoordinates.latitude === 'number' &&
-        typeof route.fromCoordinates.longitude === 'number' &&
-        Number.isFinite(route.fromCoordinates.latitude) &&
-        Number.isFinite(route.fromCoordinates.longitude);
+      // 2. Resolve System Status
+      const fromIsExternal = route.from.startsWith('source-');
+      const toIsExternal = route.to.startsWith('source-');
+      const fromIsFleetZero = route.from.toLowerCase().includes('fleetzero') || route.from.toLowerCase().includes('fleet-zero');
+      const toIsFleetZero = route.to.toLowerCase().includes('fleetzero') || route.to.toLowerCase().includes('fleet-zero');
 
-      const hasValidToCoords =
-        typeof route.toCoordinates.latitude === 'number' &&
-        typeof route.toCoordinates.longitude === 'number' &&
-        Number.isFinite(route.toCoordinates.latitude) &&
-        Number.isFinite(route.toCoordinates.longitude);
-
-      // VALIDATION 3: Prevent drawing lines when either endpoint is missing valid coordinates
-      if (!hasValidFromCoords || !hasValidToCoords) {
-        console.warn(`[Route Filtering] Route ${route.id} has invalid coordinates:`, {
-          from: route.from,
-          to: route.to,
-          fromCoords: route.fromCoordinates,
-          toCoordinates: route.toCoordinates,
-          validFrom: hasValidFromCoords,
-          validTo: hasValidToCoords
-        });
-        return false;
-      }
-
-      // Find the actual nodes that this route connects
-      const findNodeForRouteEndpoint = (identifier: string) => {
-        return allNodes.find(n =>
-          n.id === identifier ||
-          n.companyId === identifier ||
-          (n.level === 'factory' && n.subsidiaryId === identifier) ||
-          n.name === identifier ||
-          n.city === identifier ||
-          (!!n.company && n.company.toLowerCase() === identifier.toLowerCase())
+      // 3. Find Nodes (Level-agnostic resolution)
+      const findNode = (id: string) => {
+        const nid = id.toLowerCase();
+        // 1. Exact match in current nodes
+        const directMatch = allNodes.find(n =>
+          n.id === id || n.factoryId === id || n.subsidiaryId === id || n.parentGroupId === id
         );
+        if (directMatch) return directMatch;
+
+        // 2. Resolve Factory ID to Subsidiary/Parent nodes if we are in a higher-level view
+        // Check if ID is a factory
+        const factory = this.factories().find(f => f.id === id);
+        if (factory) {
+          return allNodes.find(n => n.id === factory.subsidiaryId || n.id === factory.parentGroupId);
+        }
+
+        // 3. Handle 'source-' and 'fleetzero' strings
+        if (nid.includes('fleetzero') || nid.includes('fleet-zero')) {
+          return allNodes.find(n => n.id === 'fleetzero' || (n.name && n.name.toLowerCase().includes('fleetzero')));
+        }
+
+        if (id.startsWith('source-')) {
+          const baseId = id.replace('source-', '');
+          return allNodes.find(n => n.id === baseId || n.factoryId === baseId || n.subsidiaryId === baseId);
+        }
+
+        return undefined;
       };
 
-      // Check if route endpoint is an external source or FleetZero
-      const fromIsExternalSource = route.from.startsWith('source-');
-      const toIsExternalSource = route.to.startsWith('source-');
-      const fromIsFleetZero = route.from.toLowerCase() === 'fleetzero' || route.from.toLowerCase().includes('fleet-zero');
-      const toIsFleetZero = route.to.toLowerCase() === 'fleetzero' || route.to.toLowerCase().includes('fleet-zero');
+      const fromNode = fromIsExternal || fromIsFleetZero ? null : findNode(route.from);
+      const toNode = toIsExternal || toIsFleetZero ? null : findNode(route.to);
 
-      // Find actual nodes for non-external/non-FleetZero endpoints
-      const fromNode = fromIsExternalSource || fromIsFleetZero ? null : findNodeForRouteEndpoint(route.from);
-      const toNode = toIsExternalSource || toIsFleetZero ? null : findNodeForRouteEndpoint(route.to);
+      // 5. General Visibility Filter
+      // A route is visible if BOTH ends are "active" (either system endpoints or visible nodes)
+      const fromVisible = fromIsExternal || fromIsFleetZero || (fromNode && filteredNodeIds.has(fromNode.id));
+      const toVisible = toIsExternal || toIsFleetZero || (toNode && filteredNodeIds.has(toNode.id));
+      const passesGeneralFilter = fromVisible && toVisible;
 
-      // Check if nodes are in the filtered list
-      // External sources and FleetZero are always considered "filtered" since they're not real nodes
-      const fromNodeIsFiltered = fromIsExternalSource || fromIsFleetZero ? true : (fromNode ? filteredNodeIds.has(fromNode.id) : false);
-      const toNodeIsFiltered = toIsExternalSource || toIsFleetZero ? true : (toNode ? filteredNodeIds.has(toNode.id) : false);
-
-      // Determine visibility based on endpoint types
-      let shouldShow = false;
-
-      if (fromIsExternalSource) {
-        // External source: show if the 'to' endpoint is in filtered nodes
-        shouldShow = toIsFleetZero || (toNode !== null && toNodeIsFiltered);
-        if (!shouldShow) {
-          console.log(`[Route Filtering] Filtered out ${route.id}: external source but 'to' not in filtered nodes`, {
-            from: route.from,
-            to: route.to,
-            toNode: toNode?.id,
-            toNodeIsFiltered,
-            toNodeExists: toNode !== null
-          });
-        }
-      } else if (toIsExternalSource) {
-        // External destination: show if the 'from' endpoint is in filtered nodes
-        shouldShow = fromIsFleetZero || (fromNode !== null && fromNodeIsFiltered);
-        if (!shouldShow) {
-          console.log(`[Route Filtering] Filtered out ${route.id}: external destination but 'from' not in filtered nodes`, {
-            from: route.from,
-            to: route.to,
-            fromNode: fromNode?.id,
-            fromNodeIsFiltered,
-            fromNodeExists: fromNode !== null
-          });
-        }
-      } else if (fromIsFleetZero || toIsFleetZero) {
-        // FleetZero connection: show if the other endpoint is in filtered nodes
-        shouldShow = fromIsFleetZero ? (toNode !== null && toNodeIsFiltered) : (fromNode !== null && fromNodeIsFiltered);
-        if (!shouldShow) {
-          console.log(`[Route Filtering] Filtered out ${route.id}: FleetZero connection but other endpoint not in filtered nodes`, {
-            from: route.from,
-            to: route.to,
-            fromNode: fromNode?.id,
-            toNode: toNode?.id,
-            fromNodeIsFiltered,
-            toNodeIsFiltered,
-            fromNodeExists: fromNode !== null,
-            toNodeExists: toNode !== null
-          });
-        }
-      } else {
-        // Node-to-node: both endpoints must be in filtered nodes
-        shouldShow = fromNode !== null && toNode !== null && fromNodeIsFiltered && toNodeIsFiltered;
-        if (!shouldShow) {
-          console.log(`[Route Filtering] Filtered out ${route.id}: node-to-node but not both in filtered nodes`, {
-            from: route.from,
-            to: route.to,
-            fromNode: fromNode?.id,
-            toNode: toNode?.id,
-            fromNodeIsFiltered,
-            toNodeIsFiltered,
-            fromNodeExists: fromNode !== null,
-            toNodeExists: toNode !== null
-          });
-        }
-      }
-
-      if (!shouldShow) {
-        return false;
-      }
-
-      // Selection filter: if an entity is selected, only show lines connecting to it
+      // 4. Selection Focus Mode (Optional refinement)
       if (selected) {
         const selId = selected.id;
         const selSubId = selected.subsidiaryId;
+        const selParentId = selected.parentGroupId;
 
-        let matchesSelection =
-          route.from === selId ||
-          route.to === selId ||
-          (!!selSubId && (route.from === selSubId || route.to === selSubId)) ||
-          (fromNode?.id === selId || toNode?.id === selId) ||
-          (fromNode?.companyId === selId || toNode?.companyId === selId);
+        const matchesEndpoint = (node: any, endpointId: string) => {
+          const eid = endpointId.toLowerCase();
+          const sid = selId.toLowerCase();
 
-        // Check if external source connects to selected node
-        if (!matchesSelection && (fromIsExternalSource || toIsExternalSource)) {
-          matchesSelection = route.from.includes(selId) || route.to.includes(selId);
-        }
+          // Direct ID match
+          if (endpointId === selId || endpointId === selSubId || endpointId === selParentId) return true;
+          // Handle source- prefix for selection
+          if (endpointId === `source-${selId}` || endpointId === `source-${selSubId}`) return true;
 
-        // If a parent group is selected, show routes for all its subsidiaries
-        if (!matchesSelection && selected.level === 'parent') {
-          const group = this.parentGroups().find((g) => g.id === selId);
-          if (group) {
-            const subIds = new Set(group.subsidiaries.map((s) => s.id));
+          // Logic for system nodes (FleetZero)
+          if (eid.includes('fleetzero') && (sid.includes('fleetzero') || selSubId?.toLowerCase().includes('fleetzero'))) return true;
 
-            matchesSelection =
-              subIds.has(route.from) ||
-              subIds.has(route.to) ||
-              (!!fromNode?.subsidiaryId && subIds.has(fromNode.subsidiaryId)) ||
-              (!!toNode?.subsidiaryId && subIds.has(toNode.subsidiaryId));
-          }
-        }
+          if (!node) return false;
 
-        // Show the line if it matches the selection OR if it involves a FleetZero/External endpoint that connects to selection
-        const isSystemConnectionToSelected =
-          (fromIsFleetZero || fromIsExternalSource) ? (toNode?.id === selId || toNode?.companyId === selId || toNode?.subsidiaryId === selId || route.to === selId) :
-            (toIsFleetZero || toIsExternalSource) ? (fromNode?.id === selId || fromNode?.companyId === selId || fromNode?.subsidiaryId === selId || route.from === selId) :
-              false;
+          // Hierarchy matching
+          return node.id === selId || node.subsidiaryId === selId || node.parentGroupId === selId || node.factoryId === selId ||
+            (!!selSubId && (node.subsidiaryId === selSubId || node.id === selSubId)) ||
+            (!!selParentId && (node.parentGroupId === selParentId || node.id === selParentId)) ||
+            (node.id === endpointId); // Final fallback
+        };
 
-        if (!matchesSelection && !isSystemConnectionToSelected) {
-          console.log(`[Route Filtering] Filtered out ${route.id}: doesn't match selection`, {
-            from: route.from,
-            to: route.to,
-            selectedId: selId,
-            isSystemConnectionToSelected
-          });
-          return false;
-        }
+        const isTargeted = matchesEndpoint(fromNode, route.from) || matchesEndpoint(toNode, route.to);
+
+        // If a selection exists, we focus on it. 
+        // If the route is targeted by selection, WE SHOW IT ALWAYS (high priority)
+        if (isTargeted) return true;
+
+        // If it's NOT targeted by selection, but passes general filter, 
+        // WE STILL SHOW IT to avoid the "everything disappeared" look, 
+        // unless we want a strict focus mode.
+        return passesGeneralFilter;
       }
 
-      console.log(`[Route Filtering] Keeping route ${route.id}`, {
-        from: route.from,
-        to: route.to,
-        fromNode: fromNode?.id,
-        toNode: toNode?.id,
-        fromInFiltered: fromNodeIsFiltered,
-        toInFiltered: toNodeIsFiltered,
-        fromIsExternal: fromIsExternalSource,
-        toIsExternal: toIsExternalSource,
-        fromIsFleetZero,
-        toIsFleetZero
-      });
-      return true;
+      return passesGeneralFilter;
     });
-
-    console.log('[Route Filtering] Completed:', {
-      totalRoutes: routes.length,
-      filteredRoutes: filtered.length,
-      filtered: filtered.map(r => ({ id: r.id, from: r.from, to: r.to }))
-    });
-
-    return filtered;
   });
 
   // ViewChild reference to map component
   readonly mapComponent = viewChild.required(WarRoomMapComponent);
+  readonly activityLogRef = viewChild<WarRoomActivityLogComponent>(WarRoomActivityLogComponent);
 
   readonly addCompanyModalRef = viewChild<AddCompanyModalComponent>('addCompanyModalRef');
 
@@ -470,6 +403,23 @@ export class WarRoomComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    // Load persisted filters
+    const saved = localStorage.getItem(this.STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        this.filterApplied.set(parsed);
+        this.filterDraft.set(parsed);
+      } catch (e) {
+        console.warn('Failed to parse saved filters', e);
+      }
+    }
+
+    // Save filters on change
+    effect(() => {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.filterApplied()));
+    });
+
     // Start real-time updates
     this.realtimeService.startRealTimeUpdates();
   }
@@ -528,6 +478,101 @@ export class WarRoomComponent implements OnInit, OnDestroy {
     this.hubStatusVisible.update(visible => !visible);
   }
 
+  onSaveChanges(): void {
+    const log = this.activityLogRef();
+    if (log) {
+      this.toastr.info('Submitting operational changes...', 'SYNC IN PROGRESS', {
+        timeOut: 2000,
+        progressBar: true
+      });
+
+      // Commit all drafts - this triggers batchUpdateRequested
+      log.saveAllDrafts();
+
+      // We do NOT exit edit mode here anymore.
+      // We wait for the batch update to succeed in onBatchUpdateRequested.
+    }
+  }
+
+  onCancelEdit(): void {
+    const log = this.activityLogRef();
+    if (log) {
+      log.clearAllDrafts();
+    }
+    this.activityLogEditMode.set(false);
+    this.toastr.warning('Operational changes discarded.', 'CANCELLED');
+  }
+
+
+  /**
+   * Helper to parse location string into parts
+   * Reused from onCompanyAdded
+   */
+  private parseLocationParts(location: string): { city: string; country: string; fullLocation: string } {
+    const parts = location.split(',').map((p) => p.trim());
+    let city = parts[0] || '';
+    let country = parts.length > 1 ? parts[parts.length - 1] : '';
+    // Basic heuristics if country is not explicitly last part
+    if (!country && parts.length === 1) {
+      // Single string, treat as City
+      country = 'Unknown';
+    }
+    return { city, country, fullLocation: location };
+  }
+
+  async onBatchUpdateRequested(payload: {
+    factories: Array<{ factoryId: string; name: string; location: string; description: string; status: NodeStatus }>;
+    subsidiaries: Array<{ subsidiaryId: string; name: string; location: string; description: string; status: OperationalStatus }>;
+  }): Promise<void> {
+    try {
+      let updateCount = 0;
+
+      // Process Subsidiary Updates
+      for (const sub of payload.subsidiaries) {
+        this.warRoomService.updateSubsidiaryDetails(sub.subsidiaryId, {
+          name: sub.name,
+          location: sub.location,
+          description: sub.description,
+          status: sub.status
+        });
+        updateCount++;
+      }
+
+      // Process Factory Updates
+      for (const fact of payload.factories) {
+        // Parse the location string to extract city/country for the update factory payload
+        const { city, country, fullLocation } = this.parseLocationParts(fact.location);
+
+        this.warRoomService.updateFactoryDetails(fact.factoryId, {
+          name: fact.name,
+          city: city,
+          country: country,
+          locationLabel: fullLocation,
+          description: fact.description,
+          status: fact.status
+        });
+        updateCount++;
+      }
+
+      if (updateCount > 0) {
+        this.toastr.success(`Successfully updated ${updateCount} operational entities.`, 'SYNC COMPLETE');
+      } else {
+        this.toastr.info('No changes detected to save.', 'SYNC COMPLETE');
+      }
+
+      // success! clear drafts and exit mode
+      // success! clear drafts and exit mode
+      const log = this.activityLogRef();
+      log?.clearAllDrafts();
+      this.activityLogEditMode.set(false);
+
+    } catch (error) {
+      console.error('Batch update failed', error);
+      this.toastr.error('Failed to save changes. Please try again.', 'SAVE ERROR');
+      // INTENTIONALLY DO NOT CLEAR DRAFTS OR EXIT EDIT MODE
+    }
+  }
+
   /**
    * Toggle filters panel visibility
    */
@@ -583,6 +628,27 @@ export class WarRoomComponent implements OnInit, OnDestroy {
   resetFilters(): void {
     this.filterDraft.set(createDefaultFilters());
     this.filterApplied.set(createDefaultFilters());
+  }
+
+  clearAllFilters(): void {
+    this.resetFilters();
+  }
+
+  removeFilter(item: ActiveFilterItem): void {
+    const current = this.filterApplied();
+    const next = { ...current };
+
+    if (item.type === 'status') {
+      next.status = 'all';
+    } else if (item.type === 'region') {
+      next.regions = next.regions.filter(r => r !== item.value);
+    } else if (item.type === 'company') {
+      next.parentCompanyIds = next.parentCompanyIds.filter(id => id !== item.value);
+    }
+
+    this.filterApplied.set(next);
+    // Sync draft so reopening the panel shows correct state
+    this.filterDraft.set(next);
   }
 
   /**
@@ -861,18 +927,6 @@ export class WarRoomComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  private parseLocationParts(locationInput: string): { city: string; country?: string } {
-    if (!locationInput) {
-      return { city: '' };
-    }
-    const parts = locationInput
-      .split(',')
-      .map((part) => part.trim())
-      .filter(Boolean);
-    const city = parts[0] || locationInput.trim();
-    const country = parts.length > 1 ? parts.slice(1).join(', ') : undefined;
-    return { city, country };
-  }
 
   onAddCompanyRequested(): void {
     this.addCompanyModalVisible.set(true);
@@ -886,297 +940,346 @@ export class WarRoomComponent implements OnInit, OnDestroy {
   async onCompanyAdded(formData: CompanyFormData): Promise<void> {
     if (!formData.companyName?.trim() || !formData.location?.trim()) {
       console.warn('Company name and location are required.');
+      this.addCompanyModalRef()?.handleError('Company name and location are required.');
       return;
     }
 
-    type SubLocationInput = NonNullable<CompanyFormData['subLocations']>[number];
-    const mapSubLocationStatusToNode = (status?: SubLocationInput['status']): NodeStatus => {
-      if (status === 'MAINTENANCE') return 'OFFLINE';
-      if (status === 'PAUSED') return 'ONLINE';
-      return 'ACTIVE';
-    };
-    const mapSubLocationStatusToLog = (status?: SubLocationInput['status']): ActivityStatus => {
-      if (status === 'MAINTENANCE') return 'WARNING';
-      if (status === 'PAUSED') return 'INFO';
-      return 'ACTIVE';
-    };
-    const parseLocationParts = (locationInput: string): { city: string; country?: string; fullLocation: string } => {
-      const parts = locationInput
-        .split(',')
-        .map((part) => part.trim())
-        .filter(Boolean);
-      const city = parts[0] || locationInput.trim();
-      const country = parts.length > 1 ? parts.slice(1).join(', ') : undefined;
-      return { city: city || 'Unknown', country, fullLocation: locationInput.trim() };
-    };
-    const isCoordinateInput = (value: string): boolean => {
-      return /^-?\d+\.?\d*\s*,\s*-?\d+\.?\d*$/.test(value.trim());
-    };
-    const clampCoordinate = (value: number, min: number, max: number): number => {
-      return Math.min(max, Math.max(min, value));
-    };
-    const buildFallbackCoordinates = (
-      seed: string,
-      base: { latitude: number; longitude: number } | null,
-      index: number
-    ): { latitude: number; longitude: number } => {
-      const offsets = [
-        { lat: 0.35, lng: 0.2 },
-        { lat: -0.28, lng: 0.24 },
-        { lat: 0.22, lng: -0.3 },
-        { lat: -0.2, lng: -0.22 },
-        { lat: 0.4, lng: -0.05 },
-      ];
-      if (base) {
-        const step = offsets[index % offsets.length];
-        const scale = 1 + Math.floor(index / offsets.length) * 0.35;
-        const latitude = clampCoordinate(base.latitude + step.lat * scale, -85, 85);
-        const longitude = clampCoordinate(base.longitude + step.lng * scale, -180, 180);
-        return { latitude, longitude };
-      }
-      const hash = seed.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
-      const latitude = clampCoordinate(((hash * 37) % 140) - 70, -85, 85);
-      const longitude = clampCoordinate(((hash * 91) % 320) - 160, -180, 180);
-      return { latitude, longitude };
-    };
-
-    let locationData: { latitude: number; longitude: number } | null = null;
-    const mainLocationIsCoords = isCoordinateInput(formData.location);
     try {
-      locationData = await this.warRoomService.parseLocationInput(formData.location);
-    } catch (error) {
-      console.warn('Failed to parse primary location. Using placeholder coordinates.', error);
-      locationData = { latitude: 0, longitude: 0 };
-    }
-    if (!locationData || !Number.isFinite(locationData.latitude) || !Number.isFinite(locationData.longitude)) {
-      console.warn('Primary location coordinates invalid. Using placeholder coordinates.');
-      locationData = { latitude: 0, longitude: 0 };
-    }
-    if (locationData.latitude === 0 && locationData.longitude === 0 && !mainLocationIsCoords) {
-      locationData = buildFallbackCoordinates(formData.location, null, 0);
-    }
-    const parentGroupId =
-      this.selectedEntity()?.parentGroupId ||
-      (this.selectedEntity()?.level === 'parent' ? this.selectedEntity()?.id : null) ||
-      this.parentGroups()[0]?.id ||
-      'global-group';
-
-    const companyName = formData.companyName.trim();
-    const subsidiaryId = this.warRoomService.generateSubsidiaryId(companyName);
-    const factoryId = this.warRoomService.generateFactoryId(`${companyName}-${formData.location}`);
-
-    const { city, country, fullLocation } = parseLocationParts(formData.location);
-    const hubCode = this.generateHubCode(companyName);
-    const logoValue = typeof formData.logo === 'string' ? formData.logo : undefined;
-
-    // Parse source company location if provided
-    let sourceLocationData: { latitude: number; longitude: number } | null = null;
-    if (formData.sourceLocation?.trim()) {
-      try {
-        sourceLocationData = await this.warRoomService.parseLocationInput(formData.sourceLocation);
-      } catch (error) {
-        console.warn('Failed to parse source location. Using placeholder coordinates.', error);
-        sourceLocationData = { latitude: 0, longitude: 0 };
-      }
-      if (!sourceLocationData || !Number.isFinite(sourceLocationData.latitude) || !Number.isFinite(sourceLocationData.longitude)) {
-        console.warn('Source location coordinates invalid. Using placeholder coordinates.');
-        sourceLocationData = { latitude: 0, longitude: 0 };
-      }
-    }
-
-    // Create transit route from source company to target company
-    const canCreateSourceRoute =
-      sourceLocationData &&
-      Number.isFinite(sourceLocationData.latitude) &&
-      Number.isFinite(sourceLocationData.longitude) &&
-      Number.isFinite(locationData.latitude) &&
-      Number.isFinite(locationData.longitude);
-
-    if (canCreateSourceRoute) {
-      const sourceCompanyName = formData.sourceCompanyName?.trim() || 'Your Company';
-      const transitRoute: TransitRoute = {
-        id: `route-src-${factoryId}-${Date.now()}`,
-        from: `source-${factoryId}`, // Use consistent identifier for external source
-        to: factoryId,
-        fromCoordinates: {
-          latitude: sourceLocationData!.latitude,
-          longitude: sourceLocationData!.longitude,
-        },
-        toCoordinates: {
-          latitude: locationData.latitude,
-          longitude: locationData.longitude,
-        },
-        animated: true,
-        strokeColor: '#6ee755',
-        strokeWidth: 2,
+      type SubLocationInput = NonNullable<CompanyFormData['subLocations']>[number];
+      const mapSubLocationStatusToNode = (status?: SubLocationInput['status']): NodeStatus => {
+        if (status === 'MAINTENANCE') return 'OFFLINE';
+        if (status === 'PAUSED') return 'ONLINE';
+        return 'ACTIVE';
+      };
+      const mapSubLocationStatusToLog = (status?: SubLocationInput['status']): ActivityStatus => {
+        if (status === 'MAINTENANCE') return 'WARNING';
+        if (status === 'PAUSED') return 'INFO';
+        return 'ACTIVE';
+      };
+      const parseLocationParts = (locationInput: string): { city: string; country?: string; fullLocation: string } => {
+        const parts = locationInput
+          .split(',')
+          .map((part) => part.trim())
+          .filter(Boolean);
+        const city = parts[0] || locationInput.trim();
+        const country = parts.length > 1 ? parts.slice(1).join(', ') : undefined;
+        return { city: city || 'Unknown', country, fullLocation: locationInput.trim() };
+      };
+      const isCoordinateInput = (value: string): boolean => {
+        return /^-?\d+\.?\d*\s*,\s*-?\d+\.?\d*$/.test(value.trim());
+      };
+      const clampCoordinate = (value: number, min: number, max: number): number => {
+        return Math.min(max, Math.max(min, value));
+      };
+      const buildFallbackCoordinates = (
+        seed: string,
+        base: { latitude: number; longitude: number } | null,
+        index: number
+      ): { latitude: number; longitude: number } => {
+        const offsets = [
+          { lat: 0.35, lng: 0.2 },
+          { lat: -0.28, lng: 0.24 },
+          { lat: 0.22, lng: -0.3 },
+          { lat: -0.2, lng: -0.22 },
+          { lat: 0.4, lng: -0.05 },
+        ];
+        if (base) {
+          const step = offsets[index % offsets.length];
+          const scale = 1 + Math.floor(index / offsets.length) * 0.35;
+          const latitude = clampCoordinate(base.latitude + step.lat * scale, -85, 85);
+          const longitude = clampCoordinate(base.longitude + step.lng * scale, -180, 180);
+          return { latitude, longitude };
+        }
+        const hash = seed.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+        const latitude = clampCoordinate(((hash * 37) % 140) - 70, -85, 85);
+        const longitude = clampCoordinate(((hash * 91) % 320) - 160, -180, 180);
+        return { latitude, longitude };
       };
 
-      this.warRoomService.addTransitRoute(transitRoute);
-    }
-
-    // Always create an automatic connection to FleetZero HQ
-    if (Number.isFinite(locationData.latitude) && Number.isFinite(locationData.longitude)) {
-      const fleetZeroRoute: TransitRoute = {
-        id: `route-fleetzero-${factoryId}-${Date.now()}`,
-        from: factoryId,
-        to: 'fleetzero', // Targets the fleetzero hub
-        fromCoordinates: {
-          latitude: locationData.latitude,
-          longitude: locationData.longitude,
-        },
-        toCoordinates: {
-          latitude: 43.6532, // Toronto HQ Latitude
-          longitude: -79.3832, // Toronto HQ Longitude
-        },
-        animated: true,
-        strokeColor: '#0ea5e9', // Blue connection for global sync
-        strokeWidth: 1.5,
-      };
-      this.warRoomService.addTransitRoute(fleetZeroRoute);
-    }
-
-    const newFactory: FactoryLocation = {
-      id: factoryId,
-      parentGroupId,
-      subsidiaryId,
-      name: `${companyName} - ${city}`,
-      city: city || 'Unknown',
-      country,
-      coordinates: { latitude: locationData.latitude, longitude: locationData.longitude },
-      status: 'ONLINE',
-      syncStability: 98,
-      assets: 0,
-      incidents: 0,
-      description: formData.description?.trim() || undefined,
-      logo: logoValue,
-    };
-
-    const subLocationEntries: SubLocationInput[] = (formData.subLocations ?? [])
-      .map((location) => ({
-        name: location.name?.trim() || '',
-        location: location.location?.trim() || '',
-        status: location.status,
-      }))
-      .filter((location) => location.name.length > 0 && location.location.length > 0);
-
-    const additionalFactories: FactoryLocation[] = [];
-    const additionalLogs: ActivityLog[] = [];
-
-    for (const [index, subLocation] of subLocationEntries.entries()) {
-      let subLocationCoords: { latitude: number; longitude: number } = { latitude: 0, longitude: 0 };
-      const subLocationIsCoords = isCoordinateInput(subLocation.location);
+      let locationData: { latitude: number; longitude: number } | null = null;
+      const mainLocationIsCoords = isCoordinateInput(formData.location);
       try {
-        subLocationCoords = await this.warRoomService.parseLocationInput(subLocation.location);
+        locationData = await this.warRoomService.parseLocationInput(formData.location);
       } catch (error) {
-        console.warn(`Failed to parse sub-location "${subLocation.location}". Using placeholder coordinates.`, error);
+        console.warn('Failed to parse primary location. Using placeholder coordinates.', error);
+        locationData = { latitude: 0, longitude: 0 };
       }
-      if (subLocationCoords.latitude === 0 && subLocationCoords.longitude === 0 && !subLocationIsCoords) {
-        subLocationCoords = buildFallbackCoordinates(
-          subLocation.location,
-          locationData ? { latitude: locationData.latitude, longitude: locationData.longitude } : null,
-          index
-        );
+      if (!locationData || !Number.isFinite(locationData.latitude) || !Number.isFinite(locationData.longitude)) {
+        console.warn('Primary location coordinates invalid. Using placeholder coordinates.');
+        locationData = { latitude: 0, longitude: 0 };
+      }
+      if (locationData.latitude === 0 && locationData.longitude === 0 && !mainLocationIsCoords) {
+        locationData = buildFallbackCoordinates(formData.location, null, 0);
+      }
+      const parentGroupId =
+        this.selectedEntity()?.parentGroupId ||
+        (this.selectedEntity()?.level === 'parent' ? this.selectedEntity()?.id : null) ||
+        this.parentGroups()[0]?.id ||
+        'global-group';
+
+      const companyName = formData.companyName.trim();
+      const subsidiaryId = this.warRoomService.generateSubsidiaryId(companyName);
+      const factoryId = this.warRoomService.generateFactoryId(`${companyName}-${formData.location}`);
+
+      const { city, country, fullLocation } = parseLocationParts(formData.location);
+      const hubCode = this.generateHubCode(companyName);
+      const logoValue = typeof formData.logo === 'string' ? formData.logo : undefined;
+
+      // Parse source company location if provided
+      let sourceLocationData: { latitude: number; longitude: number } | null = null;
+      if (formData.sourceLocation?.trim()) {
+        try {
+          sourceLocationData = await this.warRoomService.parseLocationInput(formData.sourceLocation);
+        } catch (error) {
+          console.warn('Failed to parse source location. Using placeholder coordinates.', error);
+          sourceLocationData = { latitude: 0, longitude: 0 };
+        }
+        if (!sourceLocationData || !Number.isFinite(sourceLocationData.latitude) || !Number.isFinite(sourceLocationData.longitude)) {
+          console.warn('Source location coordinates invalid. Using placeholder coordinates.');
+          sourceLocationData = { latitude: 0, longitude: 0 };
+        }
       }
 
-      const { city: subCity, country: subCountry, fullLocation: subFullLocation } = parseLocationParts(subLocation.location);
-      const subFactoryId = this.warRoomService.generateFactoryId(
-        `${companyName}-${subLocation.name}-${subLocation.location}`
-      );
-      const factoryName = subLocation.name || `${companyName} - ${subCity}`;
-      const factoryStatus = mapSubLocationStatusToNode(subLocation.status);
+      // Create transit route from source company to target company
+      const canCreateSourceRoute =
+        sourceLocationData &&
+        Number.isFinite(sourceLocationData.latitude) &&
+        Number.isFinite(sourceLocationData.longitude) &&
+        Number.isFinite(locationData.latitude) &&
+        Number.isFinite(locationData.longitude);
 
-      const subFactory: FactoryLocation = {
-        id: subFactoryId,
+      if (canCreateSourceRoute) {
+        const transitRoute: TransitRoute = {
+          id: `route-src-${factoryId}-${Date.now()}`,
+          from: `source-${factoryId}`, // Use consistent identifier for external source
+          to: factoryId,
+          fromCoordinates: {
+            latitude: sourceLocationData!.latitude,
+            longitude: sourceLocationData!.longitude,
+          },
+          toCoordinates: {
+            latitude: locationData.latitude,
+            longitude: locationData.longitude,
+          },
+          animated: true,
+          strokeColor: '#6ee755',
+          strokeWidth: 2,
+        };
+
+        this.warRoomService.addTransitRoute(transitRoute);
+      }
+
+      // Always create an automatic connection to FleetZero HQ
+      if (Number.isFinite(locationData.latitude) && Number.isFinite(locationData.longitude)) {
+        const fleetZeroRoute: TransitRoute = {
+          id: `route-fleetzero-${factoryId}-${Date.now()}`,
+          from: factoryId,
+          to: 'fleetzero', // Targets the fleetzero hub
+          fromCoordinates: {
+            latitude: locationData.latitude,
+            longitude: locationData.longitude,
+          },
+          toCoordinates: {
+            latitude: 43.6532, // Toronto HQ Latitude
+            longitude: -79.3832, // Toronto HQ Longitude
+          },
+          animated: true,
+          strokeColor: '#0ea5e9', // Blue connection for global sync
+          strokeWidth: 1.5,
+        };
+        this.warRoomService.addTransitRoute(fleetZeroRoute);
+      }
+
+      const newFactory: FactoryLocation = {
+        id: factoryId,
         parentGroupId,
         subsidiaryId,
-        name: factoryName,
-        city: subCity || 'Unknown',
-        country: subCountry,
-        coordinates: subLocationCoords,
-        status: factoryStatus,
-        syncStability: factoryStatus === 'OFFLINE' ? 72 : factoryStatus === 'ONLINE' ? 88 : 96,
+        name: `${companyName} - ${city}`,
+        city: city || 'Unknown',
+        country,
+        coordinates: { latitude: locationData.latitude, longitude: locationData.longitude },
+        status: 'ONLINE',
+        syncStability: 98,
         assets: 0,
         incidents: 0,
         description: formData.description?.trim() || undefined,
         logo: logoValue,
       };
 
-      additionalFactories.push(subFactory);
+      const subLocationEntries: SubLocationInput[] = (formData.subLocations ?? [])
+        .map((location) => ({
+          name: location.name?.trim() || '',
+          location: location.location?.trim() || '',
+          status: location.status,
+        }))
+        .filter((location) => location.name.length > 0 && location.location.length > 0);
 
-      const logStatus = mapSubLocationStatusToLog(subLocation.status);
-      const logTitle = `${companyName.toUpperCase()} | ${factoryName.toUpperCase()}`;
-      const logDescription =
-        logStatus === 'WARNING'
-          ? 'SUB-LOCATION MAINTENANCE // CREW DISPATCHED'
-          : logStatus === 'INFO'
-            ? 'SUB-LOCATION PAUSED // STANDBY MODE'
-            : 'SUB-LOCATION ONLINE // SYNC CONFIRMED';
+      const additionalFactories: FactoryLocation[] = [];
+      const additionalLogs: ActivityLog[] = [];
 
-      additionalLogs.push({
-        id: `log-${subFactoryId}`,
+      for (const [index, subLocation] of subLocationEntries.entries()) {
+        let subLocationCoords: { latitude: number; longitude: number } = { latitude: 0, longitude: 0 };
+        const subLocationIsCoords = isCoordinateInput(subLocation.location);
+        try {
+          subLocationCoords = await this.warRoomService.parseLocationInput(subLocation.location);
+        } catch (error) {
+          console.warn(`Failed to parse sub-location "${subLocation.location}". Using placeholder coordinates.`, error);
+        }
+        if (subLocationCoords.latitude === 0 && subLocationCoords.longitude === 0 && !subLocationIsCoords) {
+          subLocationCoords = buildFallbackCoordinates(
+            subLocation.location,
+            locationData ? { latitude: locationData.latitude, longitude: locationData.longitude } : null,
+            index
+          );
+        }
+
+        const { city: subCity, country: subCountry, fullLocation: subFullLocation } = parseLocationParts(subLocation.location);
+        const subFactoryId = this.warRoomService.generateFactoryId(
+          `${companyName}-${subLocation.name}-${subLocation.location}`
+        );
+        const factoryName = subLocation.name || `${companyName} - ${subCity}`;
+        const factoryStatus = mapSubLocationStatusToNode(subLocation.status);
+
+        const subFactory: FactoryLocation = {
+          id: subFactoryId,
+          parentGroupId,
+          subsidiaryId,
+          name: factoryName,
+          city: subCity || 'Unknown',
+          country: subCountry,
+          coordinates: subLocationCoords,
+          status: factoryStatus,
+          syncStability: factoryStatus === 'OFFLINE' ? 72 : factoryStatus === 'ONLINE' ? 88 : 96,
+          assets: 0,
+          incidents: 0,
+          description: formData.description?.trim() || undefined,
+          logo: logoValue,
+        };
+
+        additionalFactories.push(subFactory);
+
+        // Create automatic connection from Sub-location to FleetZero HQ
+        if (Number.isFinite(subLocationCoords.latitude) && Number.isFinite(subLocationCoords.longitude)) {
+          const subLocationRoute: TransitRoute = {
+            id: `route-fleetzero-${subFactoryId}-${Date.now()}`,
+            from: subFactoryId,
+            to: 'fleetzero',
+            fromCoordinates: {
+              latitude: subLocationCoords.latitude,
+              longitude: subLocationCoords.longitude,
+            },
+            toCoordinates: {
+              latitude: 43.6532, // Toronto HQ Latitude
+              longitude: -79.3832, // Toronto HQ Longitude
+            },
+            animated: true,
+            strokeColor: '#0ea5e9', // Blue connection
+            strokeWidth: 1.0, // Slightly thinner for sub-locations
+            dashArray: '5,5', // Dashed line for sub-locations
+          };
+          this.warRoomService.addTransitRoute(subLocationRoute);
+        }
+
+        const logStatus = mapSubLocationStatusToLog(subLocation.status);
+        const logTitle = `${companyName.toUpperCase()} | ${factoryName.toUpperCase()}`;
+        const logDescription =
+          logStatus === 'WARNING'
+            ? 'SUB-LOCATION MAINTENANCE // CREW DISPATCHED'
+            : logStatus === 'INFO'
+              ? 'SUB-LOCATION PAUSED // STANDBY MODE'
+              : 'SUB-LOCATION ONLINE // SYNC CONFIRMED';
+
+        additionalLogs.push({
+          id: `log-${subFactoryId}`,
+          timestamp: new Date(),
+          status: logStatus,
+          title: logTitle,
+          description: logDescription,
+          parentGroupId,
+          subsidiaryId,
+          factoryId: subFactoryId,
+          location: subFullLocation,
+          logo: logoValue,
+        });
+      }
+
+      const newSubsidiary: SubsidiaryCompany = {
+        id: subsidiaryId,
+        parentGroupId,
+        name: companyName.toUpperCase(),
+        status: 'ACTIVE',
+        metrics: { assetCount: 0, incidentCount: 0, syncStability: 98 },
+        factories: [newFactory, ...additionalFactories],
+        hubs: [
+          {
+            id: `hub-${subsidiaryId}-${Date.now()}`,
+            code: hubCode,
+            companyId: subsidiaryId,
+            companyName: companyName.toUpperCase(),
+            status: 'ONLINE',
+            capacity: '100% CAP',
+            capacityPercentage: 100,
+            statusColor: 'text-tactical-green',
+            capColor: 'text-tactical-green',
+          },
+        ],
+        quantumChart: { dataPoints: [85, 88, 90, 92, 89, 91], highlightedIndex: 3 },
+        logo: logoValue,
+        description: formData.description?.trim() || undefined,
+        location: fullLocation || undefined,
+      };
+
+      this.warRoomService.addSubsidiary(newSubsidiary);
+
+      const activityLog: ActivityLog = {
+        id: `log-${factoryId}`,
         timestamp: new Date(),
-        status: logStatus,
-        title: logTitle,
-        description: logDescription,
+        status: 'ACTIVE',
+        title: `${companyName.toUpperCase()} | ${city.toUpperCase()}`,
+        description: formData.description?.trim() || 'SYSTEM REGISTERED // FACTORY INITIALIZED',
         parentGroupId,
         subsidiaryId,
-        factoryId: subFactoryId,
-        location: subFullLocation,
+        factoryId,
+        location: fullLocation,
         logo: logoValue,
+      };
+
+      this.warRoomService.addActivityLog(activityLog);
+      additionalLogs.forEach((log) => this.warRoomService.addActivityLog(log));
+
+      // Ensure filters don't hide the newly added locations.
+      this.filterDraft.set(createDefaultFilters());
+      this.filterApplied.set(createDefaultFilters());
+      this.warRoomService.setFactoryFilterSubsidiaryId(null);
+
+      // Signal success to modal
+      this.addCompanyModalRef()?.handleSuccess();
+
+      // Show success notification
+      const totalLocations = 1 + (formData.subLocations?.length || 0);
+      this.toastr.success(`Successfully connected ${formData.companyName} with ${totalLocations} locations.`, 'BOOTSTRAP COMPLETE', {
+        timeOut: 5000,
+        progressBar: true,
+        closeButton: true
+      });
+
+      // Update map and view states
+      this.warRoomService.setMapViewMode('factory');
+      this.warRoomService.selectEntity({ level: 'factory', id: factoryId, parentGroupId, subsidiaryId, factoryId });
+      this.activityLogVisible.set(true);
+
+      // Delayed close
+      this.addCompanyModalRef()?.closeAfterSuccess();
+    } catch (error) {
+      console.error('Critical error adding company:', error);
+      const errorMsg = error instanceof Error ? error.message : 'A fatal system error occurred during registration.';
+      this.addCompanyModalRef()?.handleError(errorMsg);
+      this.toastr.error(errorMsg, 'REGISTRATION FAILED', {
+        timeOut: 8000,
+        closeButton: true,
+        disableTimeOut: true
       });
     }
-
-    const newSubsidiary: SubsidiaryCompany = {
-      id: subsidiaryId,
-      parentGroupId,
-      name: companyName.toUpperCase(),
-      status: 'ACTIVE',
-      metrics: { assetCount: 0, incidentCount: 0, syncStability: 98 },
-      factories: [newFactory, ...additionalFactories],
-      hubs: [
-        {
-          id: `hub-${subsidiaryId}-${Date.now()}`,
-          code: hubCode,
-          companyId: subsidiaryId,
-          companyName: companyName.toUpperCase(),
-          status: 'ONLINE',
-          capacity: '100% CAP',
-          capacityPercentage: 100,
-          statusColor: 'text-tactical-green',
-          capColor: 'text-tactical-green',
-        },
-      ],
-      quantumChart: { dataPoints: [85, 88, 90, 92, 89, 91], highlightedIndex: 3 },
-      logo: logoValue,
-      description: formData.description?.trim() || undefined,
-      location: fullLocation || undefined,
-    };
-
-    this.warRoomService.addSubsidiary(newSubsidiary);
-
-    const activityLog: ActivityLog = {
-      id: `log-${factoryId}`,
-      timestamp: new Date(),
-      status: 'ACTIVE',
-      title: `${companyName.toUpperCase()} | ${city.toUpperCase()}`,
-      description: formData.description?.trim() || 'SYSTEM REGISTERED // FACTORY INITIALIZED',
-      parentGroupId,
-      subsidiaryId,
-      factoryId,
-      location: fullLocation,
-      logo: logoValue,
-    };
-
-    this.warRoomService.addActivityLog(activityLog);
-    additionalLogs.forEach((log) => this.warRoomService.addActivityLog(log));
-    // Ensure filters don't hide the newly added locations.
-    this.filterDraft.set(createDefaultFilters());
-    this.filterApplied.set(createDefaultFilters());
-    this.warRoomService.setFactoryFilterSubsidiaryId(null);
-    this.warRoomService.setMapViewMode('factory');
-    this.warRoomService.selectEntity({ level: 'factory', id: factoryId, parentGroupId, subsidiaryId, factoryId });
-    this.activityLogVisible.set(true);
-    this.addCompanyModalRef()?.closeAfterSuccess();
   }
 
   private generateHubCode(companyName: string): string {

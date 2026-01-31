@@ -50,8 +50,9 @@
     @for (route of projectedRoutes(); track route.id) {
     <g class="transit-route-group" [style.--route-index]="route.index">
       <!-- Animated Connection Path -->
-      <path [attr.d]="route.path" class="route-path" fill="none" stroke="url(#path-gradient)" stroke-width="1.2"
-        stroke-dasharray="1000" stroke-dashoffset="1000" pathLength="1000">
+      <path [attr.d]="route.path" class="route-path" [class.highlighted]="route.highlighted" fill="none"
+        stroke="url(#path-gradient)" stroke-width="1.2" [attr.stroke-dasharray]="route.dashArray || '1000'"
+        stroke-dashoffset="1000" pathLength="1000">
         <animate attributeName="stroke-dashoffset" values="1000;1000;0;0;1000;1000" keyTimes="0;0.1;0.45;0.65;0.95;1"
           dur="6s" [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
         <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.05;0.15;0.85;0.95;1" dur="6s"
@@ -100,7 +101,8 @@
     @for (node of nodes(); track node.id) {
     @if (!node.logo) {
     <div class="node-marker-wrapper" [style.top.px]="getNodePosition(node).top"
-      [style.left.px]="getNodePosition(node).left" [class.selected]="isNodeSelected(node)" [class.hub]="isHub(node)">
+      [style.left.px]="getNodePosition(node).left" [class.selected]="isNodeSelected(node)" [class.hub]="isHub(node)"
+      (click)="nodeSelected.emit(node)">
       <div class="node-marker" [class.hub-marker]="isHub(node)"></div>
     </div>
     }
@@ -120,6 +122,10 @@
         <div class="tooltip-title">{{ hoveredCompanyTooltip()!.displayName }}</div>
       </div>
       <div class="tooltip-body">
+        <div class="tooltip-type">
+          <span class="tooltip-label">TYPE:</span>
+          <span class="tooltip-value">{{ getTypeLabel(hoveredCompanyTooltip()!.node) }}</span>
+        </div>
         <div class="tooltip-description">{{ hoveredCompanyTooltip()!.description }}</div>
         <div class="tooltip-location">
           <span class="tooltip-label">LOCATION:</span>
