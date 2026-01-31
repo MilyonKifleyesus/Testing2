@@ -34,6 +34,18 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   box-shadow: 0 0 0 4px rgba(0, 255, 65, 0.2) !important;
 }
 
+.btn-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
 .war-room-container {
   display: flex;
   flex-direction: column;
@@ -89,7 +101,22 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
 .map-view-btn {
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  font-size: 0.6rem;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-width: 2px;
+
+  &[aria-checked="true"]::before {
+    content: '✓';
+    font-weight: 700;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  &[aria-checked="true"] {
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.15);
+  }
 }
 
 .map-filter-btn {
@@ -107,9 +134,9 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
 .clear-filters-quick {
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  font-size: 0.55rem;
+  font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
-  height: 100%;
+  min-height: 2rem;
 }
 
 .war-room-filters {
@@ -140,6 +167,24 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+
+  .btn[aria-pressed="true"] {
+    border-width: 2px;
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.15);
+  }
+
+  .btn[aria-pressed="true"]::before {
+    content: '✓';
+    font-weight: 700;
+    font-size: 0.7rem;
+    margin-right: 0.35rem;
+  }
+}
+
+.filters-options {
+  .form-check-input:checked {
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+  }
 }
 
 // ---- Hud label utility (cellular / JetBrains Mono) ----
@@ -147,7 +192,7 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   font-family: 'JetBrains Mono', monospace;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 0.75rem;
 }
 
 .war-room-sidebar {
@@ -179,6 +224,32 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
     max-width: 320px;
   }
 
+  &.collapsed {
+    width: 56px;
+    min-width: 56px;
+    max-width: 56px;
+    padding: 0.5rem 0.35rem;
+
+    .sidebar-section,
+    .sidebar-edit-actions {
+      display: none;
+    }
+
+    .sidebar-collapse-btn .collapse-text {
+      display: none;
+    }
+
+    .sidebar-toggle-btn {
+      justify-content: center;
+      padding: 0.45rem;
+      min-height: 40px;
+    }
+
+    .sidebar-toggle-btn .toggle-text {
+      display: none;
+    }
+  }
+
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -201,12 +272,48 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   scrollbar-color: var(--gray-4, #8f8fb7) transparent;
 }
 
+.sidebar-collapse-btn {
+  border: 1px solid var(--primary02, rgba(27, 67, 50, 0.12));
+  background: var(--custom-white, #ffffff);
+  color: var(--gray-4, #71717a);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: rgb(var(--primary-rgb));
+    border-color: rgb(var(--primary-rgb));
+    background: rgba(var(--primary-rgb), 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(var(--primary-rgb), 0.9);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+  }
+
+  .collapse-text {
+    flex: 1;
+    text-align: left;
+  }
+}
+
 // ---- Toggle buttons matching website button structure ----
 .sidebar-toggle-btn {
   // Base button structure from website
   position: sticky;
   z-index: 2;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   border-radius: 0.188rem;
   padding: 0.5rem 0.85rem;
   box-shadow: none;
@@ -297,7 +404,7 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   }
 
   .toggle-icon {
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     font-weight: 700;
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s ease;
     display: inline-flex;
@@ -315,7 +422,7 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   }
 
   .toggle-text {
-    font-size: 0.85rem;
+    font-size: 0.875rem;
     font-weight: 400;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -340,11 +447,11 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   background: var(--custom-white, #ffffff);
   color: var(--text-muted, #8f8fb1);
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 0.4rem 0.6rem;
+  padding: 0.5rem 0.75rem;
   border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -405,6 +512,12 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
       min-width: 280px;
       max-width: 280px;
     }
+
+    &.collapsed {
+      width: 52px;
+      min-width: 52px;
+      max-width: 52px;
+    }
   }
 }
 
@@ -449,15 +562,15 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   }
 
   .sidebar-toggle-btn {
-    padding: 0.4rem 0.5rem;
-    font-size: 0.5625rem;
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
 
     .toggle-icon {
-      font-size: 0.625rem;
+      font-size: 0.75rem;
     }
 
     .toggle-text {
-      font-size: 0.5rem;
+      font-size: 0.75rem;
     }
   }
 
@@ -469,8 +582,8 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
   }
 
   .map-view-btn {
-    font-size: 0.5rem;
-    padding: 0.25rem 0.4rem;
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
   }
 
   .war-room-filters {
@@ -566,9 +679,36 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
 
 // Active Filters Bar
 .active-filters-bar {
+  padding-left: 340px;
+  min-height: 3rem;
+  margin-top: 5.75rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.35rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
   .badge {
     font-weight: 500;
     transition: all 0.2s ease;
+    white-space: nowrap;
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
 
     &:hover {
       background-color: rgba(var(--primary-rgb), 0.15) !important;
@@ -583,6 +723,14 @@ $card-border: var(--primary02, rgba(27, 67, 50, 0.12));
         opacity: 1;
       }
     }
+  }
+
+  @media (max-width: 991.98px) {
+    padding-left: 0;
+    min-height: auto;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+    overflow-x: visible;
   }
 }
 

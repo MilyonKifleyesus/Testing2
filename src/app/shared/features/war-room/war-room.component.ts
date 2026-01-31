@@ -45,6 +45,7 @@ const createDefaultFilters = (): WarRoomFilters => ({
 })
 export class WarRoomComponent implements OnInit, OnDestroy {
   private readonly STORAGE_KEY = 'war-room-filters-v1';
+  private lastFocusedElement: HTMLElement | null = null;
   // Inject services
   private warRoomService = inject(WarRoomService);
   private realtimeService = inject(WarRoomRealtimeService);
@@ -62,12 +63,19 @@ export class WarRoomComponent implements OnInit, OnDestroy {
   readonly selectedEntity = this.warRoomService.selectedEntity;
   readonly selectedSubsidiary = this.warRoomService.selectedSubsidiary;
 
+  // Screen reader announcement message
+  readonly announcementMessage = signal<string>('');
+
   // Activity log visibility - hidden by default
   readonly activityLogVisible = signal<boolean>(false);
   readonly activityLogEditMode = signal<boolean>(false);
+  readonly activityLogBusy = signal<boolean>(false);
 
   // Hub status visibility - hidden by default
   readonly hubStatusVisible = signal<boolean>(false);
+
+  // Sidebar collapse state
+  readonly sidebarCollapsed = signal<boolean>(false);
 
   // Add company modal (over map)
   readonly addCompanyModalVisible = signal<boolean>(false);
@@ -271,19 +279,21 @@ export class WarRoomComponent implements OnInit, OnDestroy {
 
     const filteredNodeIds = new Set(nodes.map(n => n.id));
 
-    return routes.filter((route) => {
-      // 1. Basic Coordinate Validation
-      if (!route.fromCoordinates || !route.toCoordinates) return false;
-      if (!Number.isFinite(route.fromCoordinates.latitude) || !Number.isFinite(route.fromCoordinates.longitude)) return false;
-      if (!Number.isFinite(route.toCoordinates.latitude) || !Number.isFinite(route.toCoordinates.longitude)) return false;
+    const isValidCoordinates = (coords?: { latitude: number; longitude: number } | null): boolean => {
+      if (!coords) return false;
+      if (!Number.isFinite(coords.latitude) || !Number.isFinite(coords.longitude)) return false;
+      if (coords.latitude === 0 && coords.longitude === 0) return false;
+      return true;
+    };
 
-      // 2. Resolve System Status
+    return routes.reduce<TransitRoute[]>((acc, route) => {
+      // 1. Resolve System Status
       const fromIsExternal = route.from.startsWith('source-');
       const toIsExternal = route.to.startsWith('source-');
       const fromIsFleetZero = route.from.toLowerCase().includes('fleetzero') || route.from.toLowerCase().includes('fleet-zero');
       const toIsFleetZero = route.to.toLowerCase().includes('fleetzero') || route.to.toLowerCase().includes('fleet-zero');
 
-      // 3. Find Nodes (Level-agnostic resolution)
+      // 2. Find Nodes (Level-agnostic resolution)
       const findNode = (id: string) => {
         const nid = id.toLowerCase();
         // 1. Exact match in current nodes
@@ -315,7 +325,14 @@ export class WarRoomComponent implements OnInit, OnDestroy {
       const fromNode = fromIsExternal || fromIsFleetZero ? null : findNode(route.from);
       const toNode = toIsExternal || toIsFleetZero ? null : findNode(route.to);
 
-      // 5. General Visibility Filter
+      const fromCoordinates = fromIsExternal || fromIsFleetZero ? route.fromCoordinates : fromNode?.coordinates;
+      const toCoordinates = toIsExternal || toIsFleetZero ? route.toCoordinates : toNode?.coordinates;
+
+      if (!isValidCoordinates(fromCoordinates) || !isValidCoordinates(toCoordinates)) {
+        return acc;
+      }
+
+      // 3. General Visibility Filter
       // A route is visible if BOTH ends are "active" (either system endpoints or visible nodes)
       const fromVisible = fromIsExternal || fromIsFleetZero || (fromNode && filteredNodeIds.has(fromNode.id));
       const toVisible = toIsExternal || toIsFleetZero || (toNode && filteredNodeIds.has(toNode.id));
@@ -349,19 +366,20 @@ export class WarRoomComponent implements OnInit, OnDestroy {
         };
 
         const isTargeted = matchesEndpoint(fromNode, route.from) || matchesEndpoint(toNode, route.to);
-
-        // If a selection exists, we focus on it. 
-        // If the route is targeted by selection, WE SHOW IT ALWAYS (high priority)
-        if (isTargeted) return true;
-
-        // If it's NOT targeted by selection, but passes general filter, 
-        // WE STILL SHOW IT to avoid the "everything disappeared" look, 
-        // unless we want a strict focus mode.
-        return passesGeneralFilter;
+        const shouldInclude = isTargeted || passesGeneralFilter;
+        if (!shouldInclude) return acc;
+      } else if (!passesGeneralFilter) {
+        return acc;
       }
 
-      return passesGeneralFilter;
-    });
+      acc.push({
+        ...route,
+        fromCoordinates: fromCoordinates!,
+        toCoordinates: toCoordinates!,
+      });
+
+      return acc;
+    }, []);
   });
 
   // ViewChild reference to map component
@@ -373,6 +391,7 @@ export class WarRoomComponent implements OnInit, OnDestroy {
   // Timeout for zoom effect
   private zoomTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private skipInitialAutoZoom = true;
+  private addCompanyInFlight = false;
 
   constructor() {
     effect(() => {
@@ -400,6 +419,11 @@ export class WarRoomComponent implements OnInit, OnDestroy {
         }
       };
     });
+
+    // Save filters on change
+    effect(() => {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.filterApplied()));
+    });
   }
 
   ngOnInit(): void {
@@ -414,11 +438,6 @@ export class WarRoomComponent implements OnInit, OnDestroy {
         console.warn('Failed to parse saved filters', e);
       }
     }
-
-    // Save filters on change
-    effect(() => {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.filterApplied()));
-    });
 
     // Start real-time updates
     this.realtimeService.startRealTimeUpdates();
@@ -468,14 +487,35 @@ export class WarRoomComponent implements OnInit, OnDestroy {
    * Toggle activity log visibility
    */
   toggleActivityLog(): void {
+    if (this.sidebarCollapsed()) {
+      this.sidebarCollapsed.set(false);
+    }
     this.activityLogVisible.update(visible => !visible);
+    this.announce(this.activityLogVisible() ? 'Activity log opened.' : 'Activity log hidden.');
   }
 
   /**
    * Toggle hub status visibility
    */
   toggleHubStatus(): void {
+    if (this.sidebarCollapsed()) {
+      this.sidebarCollapsed.set(false);
+    }
     this.hubStatusVisible.update(visible => !visible);
+    this.announce(this.hubStatusVisible() ? 'Hub status opened.' : 'Hub status hidden.');
+  }
+
+  toggleSidebarCollapsed(): void {
+    this.sidebarCollapsed.update((collapsed) => {
+      const next = !collapsed;
+      if (next) {
+        this.activityLogVisible.set(false);
+        this.hubStatusVisible.set(false);
+        this.activityLogEditMode.set(false);
+      }
+      return next;
+    });
+    this.announce(this.sidebarCollapsed() ? 'Sidebar collapsed.' : 'Sidebar expanded.');
   }
 
   onSaveChanges(): void {
@@ -524,6 +564,7 @@ export class WarRoomComponent implements OnInit, OnDestroy {
     factories: Array<{ factoryId: string; name: string; location: string; description: string; status: NodeStatus }>;
     subsidiaries: Array<{ subsidiaryId: string; name: string; location: string; description: string; status: OperationalStatus }>;
   }): Promise<void> {
+    this.activityLogBusy.set(true);
     try {
       let updateCount = 0;
 
@@ -570,6 +611,8 @@ export class WarRoomComponent implements OnInit, OnDestroy {
       console.error('Batch update failed', error);
       this.toastr.error('Failed to save changes. Please try again.', 'SAVE ERROR');
       // INTENTIONALLY DO NOT CLEAR DRAFTS OR EXIT EDIT MODE
+    } finally {
+      setTimeout(() => this.activityLogBusy.set(false), 400);
     }
   }
 
@@ -623,6 +666,7 @@ export class WarRoomComponent implements OnInit, OnDestroy {
       regions: [...this.filterDraft().regions],
     });
     this.filtersPanelVisible.set(false);
+    this.announce('Filters applied. ' + this.activeFilterCount() + ' filters active.');
   }
 
   resetFilters(): void {
@@ -632,6 +676,7 @@ export class WarRoomComponent implements OnInit, OnDestroy {
 
   clearAllFilters(): void {
     this.resetFilters();
+    this.announce('All filters cleared.');
   }
 
   removeFilter(item: ActiveFilterItem): void {
@@ -644,6 +689,16 @@ export class WarRoomComponent implements OnInit, OnDestroy {
       next.regions = next.regions.filter(r => r !== item.value);
     } else if (item.type === 'company') {
       next.parentCompanyIds = next.parentCompanyIds.filter(id => id !== item.value);
+
+      // NEW: Clear selection if the entity is no longer visible (whitelist filter)
+      // Only if parentCompanyIds is NOT empty (empty means show all)
+      if (next.parentCompanyIds.length > 0) {
+        const selection = this.selectedEntity();
+        if (selection && (selection.id === item.value || selection.parentGroupId === item.value)) {
+          this.warRoomService.selectEntity(null);
+          this.announce('Selection cleared as filtered company was removed.');
+        }
+      }
     }
 
     this.filterApplied.set(next);
@@ -657,6 +712,7 @@ export class WarRoomComponent implements OnInit, OnDestroy {
   setMapViewMode(mode: MapViewMode): void {
     this.warRoomService.setFactoryFilterSubsidiaryId(null);
     this.warRoomService.setMapViewMode(mode);
+    this.announce('Switched to ' + mode + ' view.');
   }
 
   /**
@@ -929,15 +985,22 @@ export class WarRoomComponent implements OnInit, OnDestroy {
 
 
   onAddCompanyRequested(): void {
+    const active = document.activeElement;
+    this.lastFocusedElement = active instanceof HTMLElement ? active : null;
     this.addCompanyModalVisible.set(true);
     this.hubStatusVisible.set(true);
+    this.announce('Add Company modal opened.');
   }
 
   onAddCompanyModalClose(): void {
     this.addCompanyModalVisible.set(false);
+    this.restoreFocusAfterModalClose();
   }
 
   async onCompanyAdded(formData: CompanyFormData): Promise<void> {
+    if (this.addCompanyInFlight) {
+      return;
+    }
     if (!formData.companyName?.trim() || !formData.location?.trim()) {
       console.warn('Company name and location are required.');
       this.addCompanyModalRef()?.handleError('Company name and location are required.');
@@ -945,6 +1008,7 @@ export class WarRoomComponent implements OnInit, OnDestroy {
     }
 
     try {
+      this.addCompanyInFlight = true;
       type SubLocationInput = NonNullable<CompanyFormData['subLocations']>[number];
       const mapSubLocationStatusToNode = (status?: SubLocationInput['status']): NodeStatus => {
         if (status === 'MAINTENANCE') return 'OFFLINE';
@@ -1253,7 +1317,9 @@ export class WarRoomComponent implements OnInit, OnDestroy {
       this.warRoomService.setFactoryFilterSubsidiaryId(null);
 
       // Signal success to modal
-      this.addCompanyModalRef()?.handleSuccess();
+      this.addCompanyModalRef()?.handleSuccess(
+        `Successfully connected ${formData.companyName} with ${1 + (formData.subLocations?.length || 0)} locations.`
+      );
 
       // Show success notification
       const totalLocations = 1 + (formData.subLocations?.length || 0);
@@ -1263,22 +1329,26 @@ export class WarRoomComponent implements OnInit, OnDestroy {
         closeButton: true
       });
 
-      // Update map and view states
       this.warRoomService.setMapViewMode('factory');
       this.warRoomService.selectEntity({ level: 'factory', id: factoryId, parentGroupId, subsidiaryId, factoryId });
+      this.warRoomService.requestPanToEntity(factoryId);
       this.activityLogVisible.set(true);
+
+      this.announce('Company ' + formData.companyName + ' added successfully.');
 
       // Delayed close
       this.addCompanyModalRef()?.closeAfterSuccess();
     } catch (error) {
       console.error('Critical error adding company:', error);
       const errorMsg = error instanceof Error ? error.message : 'A fatal system error occurred during registration.';
-      this.addCompanyModalRef()?.handleError(errorMsg);
+      this.addCompanyModalRef()?.handleError('Failed to add subsidiary. Please try again.');
       this.toastr.error(errorMsg, 'REGISTRATION FAILED', {
         timeOut: 8000,
         closeButton: true,
         disableTimeOut: true
       });
+    } finally {
+      this.addCompanyInFlight = false;
     }
   }
 
@@ -1292,5 +1362,19 @@ export class WarRoomComponent implements OnInit, OnDestroy {
       return (firstChar + secondChar + thirdChar).substring(0, 3);
     }
     return companyName.toUpperCase().substring(0, 3).padEnd(3, 'X');
+  }
+
+  private announce(message: string): void {
+    this.announcementMessage.set(message);
+    // clear after a delay so it can be re-announced if needed
+    setTimeout(() => this.announcementMessage.set(''), 3000);
+  }
+
+  private restoreFocusAfterModalClose(): void {
+    const element = this.lastFocusedElement;
+    this.lastFocusedElement = null;
+    if (element && element.isConnected && typeof element.focus === 'function') {
+      setTimeout(() => element.focus(), 0);
+    }
   }
 }

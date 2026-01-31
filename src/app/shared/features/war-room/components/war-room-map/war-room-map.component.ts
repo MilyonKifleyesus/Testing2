@@ -169,7 +169,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
   }
 
   private getNodeIndex(node: WarRoomNode): number {
-    const nodes = this.nodes();
+    const nodes = this.getNodesWithValidCoordinates(this.nodes());
     const nodeId = node.id;
     if (nodeId === undefined || nodeId === null) {
       return nodes.indexOf(node);
@@ -185,9 +185,16 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
 
     await Promise.all(
       candidates.map(async ({ node, label }) => {
+        if (this.isValidCoordinates(node.coordinates)) {
+          return;
+        }
         try {
           const coords = await this.geocodeLocation(label);
-          node.coordinates = { latitude: coords.latitude, longitude: coords.longitude };
+          if (this.isValidCoordinates(coords)) {
+            node.coordinates = { latitude: coords.latitude, longitude: coords.longitude };
+          } else {
+            console.warn('Geocoding returned invalid coordinates for node location:', label, coords);
+          }
         } catch (error) {
           console.warn('Geocoding failed for node location:', label, error);
         }
@@ -200,6 +207,17 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     const country = (node.country || '').trim();
     if (city && country) return `${city}, ${country}`;
     return city || country || '';
+  }
+
+  private isValidCoordinates(coords?: { latitude: number; longitude: number } | null): boolean {
+    if (!coords) return false;
+    if (!Number.isFinite(coords.latitude) || !Number.isFinite(coords.longitude)) return false;
+    if (coords.latitude === 0 && coords.longitude === 0) return false;
+    return true;
+  }
+
+  private getNodesWithValidCoordinates(nodes: WarRoomNode[]): WarRoomNode[] {
+    return nodes.filter((node) => this.isValidCoordinates(node.coordinates));
   }
 
   getTooltipStatusClass(): string {
@@ -360,6 +378,8 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     this.syncMapViewport(true);
     this.updateLabelPositions();
     this.updateCompanyLogosAndLabelsPositions();
+    // Sync the signal to update transit lines overlay
+    this.syncViewBoxFromMap();
   }
 
   private syncMapViewport(force: boolean = false): void {
@@ -598,8 +618,11 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
   /** Flag to track initialization phase to ignore automated layout shifts */
   private isInitializing: boolean = false;
 
-  // Signal for current map viewBox to sync SVG overlays
-  private mapViewBox = signal<string>('0 0 950 550');
+  // Signal for current  // SVG viewBox for responsive transit routes overlay
+  readonly mapViewBox = signal<string>('0 0 950 550');
+
+  // Map transform for synchronizing transit routes overlay with internal map transforms
+  readonly mapTransform = signal<string>('');
 
   // Signal for marker SVG coordinates to ensure perfect alignment
   private markerCoordinates = signal<Map<string, { x: number; y: number }>>(new Map());
@@ -659,6 +682,23 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
       });
     });
 
+    // NEW: React to pan/zoom requests from service or other components
+    effect(() => {
+      const panRequest = this.warRoomService.panToEntity();
+      if (panRequest && this.mapInstance && !this.destroyed) {
+        // Use the timestamp to ensure effect re-runs even for same entity
+        this.zoomToEntity(panRequest.id, 8);
+      }
+    });
+
+    // NEW: React to hover state changes for cross-component highlighting
+    effect(() => {
+      const hovered = this.warRoomService.hoveredEntity();
+      if (!this.destroyed) {
+        this.updateHoveredMarkerStyles(hovered);
+      }
+    });
+
     effect(() => {
       const selected = this.selectedEntity();
       if (!selected && this.mapInstance && this.scriptsLoaded) {
@@ -681,130 +721,118 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
   readonly projectedRoutes = computed(() => {
     const routes = this.transitRoutes();
     const markers = this.markerCoordinates();
-    const nodes = this.nodes();
+    const nodes = this.getNodesWithValidCoordinates(this.nodes());
     if (!routes || routes.length === 0) return [];
 
-    return routes
-      .filter((route) => {
-        // Validate coordinates exist and are valid before projection
-        if (!route.fromCoordinates || !route.toCoordinates) {
-          return false;
+    const projected = routes.map((route, index) => {
+      const selected = this.selectedEntity();
+
+      // Find all matching nodes for source and destination (Level-agnostic)
+      const findMatches = (id: string): WarRoomNode[] => {
+        const nid = id.toLowerCase();
+
+        // 1. Direct ID match
+        const direct = nodes.filter((n: WarRoomNode) =>
+          n.id === id || n.factoryId === id || n.subsidiaryId === id || n.parentGroupId === id
+        );
+        if (direct.length > 0) return direct;
+
+        // 2. Resolve Factory ID to higher level nodes
+        const factory = this.warRoomService.factories().find(f => f.id === id);
+        if (factory) {
+          const resolved = nodes.filter(n => n.id === factory.subsidiaryId || n.id === factory.parentGroupId);
+          if (resolved.length > 0) return resolved;
         }
 
-        const hasValidFromCoords =
-          typeof route.fromCoordinates.latitude === 'number' &&
-          typeof route.fromCoordinates.longitude === 'number' &&
-          Number.isFinite(route.fromCoordinates.latitude) &&
-          Number.isFinite(route.fromCoordinates.longitude);
-
-        const hasValidToCoords =
-          typeof route.toCoordinates.latitude === 'number' &&
-          typeof route.toCoordinates.longitude === 'number' &&
-          Number.isFinite(route.toCoordinates.latitude) &&
-          Number.isFinite(route.toCoordinates.longitude);
-
-        return hasValidFromCoords && hasValidToCoords;
-      })
-      .map((route, index) => {
-        const selected = this.selectedEntity();
-
-        // Find all matching nodes for source and destination (Level-agnostic)
-        const findMatches = (id: string): WarRoomNode[] => {
-          const nid = id.toLowerCase();
-
-          // 1. Direct ID match
-          const direct = nodes.filter((n: WarRoomNode) =>
-            n.id === id || n.factoryId === id || n.subsidiaryId === id || n.parentGroupId === id
-          );
-          if (direct.length > 0) return direct;
-
-          // 2. Resolve Factory ID to higher level nodes
-          const factory = this.warRoomService.factories().find(f => f.id === id);
-          if (factory) {
-            const resolved = nodes.filter(n => n.id === factory.subsidiaryId || n.id === factory.parentGroupId);
-            if (resolved.length > 0) return resolved;
-          }
-
-          // 3. System matches
-          if (nid.includes('fleetzero') || nid.includes('fleet-zero')) {
-            return nodes.filter(n => n.id === 'fleetzero' || (n.name && n.name.toLowerCase().includes('fleetzero')));
-          }
-
-          // 4. Source handling
-          if (id.startsWith('source-')) {
-            const baseId = id.replace('source-', '');
-            const resolved = nodes.filter(n => n.id === baseId || n.factoryId === baseId || n.subsidiaryId === baseId);
-            if (resolved.length > 0) return resolved;
-
-            // Try resolving baseId as factory
-            const baseFactory = this.warRoomService.factories().find(f => f.id === baseId);
-            if (baseFactory) {
-              return nodes.filter(n => n.id === baseFactory.subsidiaryId || n.id === baseFactory.parentGroupId);
-            }
-          }
-
-          // 5. Name match fallback
-          return nodes.filter((n: WarRoomNode) =>
-            (!!n.name && n.name.toLowerCase() === nid) ||
-            (!!n.company && n.company.toLowerCase().includes(nid))
-          );
-        };
-
-        const fromMatches = findMatches(route.from);
-        const toMatches = findMatches(route.to);
-
-        // Prioritize the selected entity if it's among the matches
-        const fromNode = fromMatches.find((n: WarRoomNode) =>
-          n.id === selected?.id || n.subsidiaryId === selected?.id || n.factoryId === selected?.id
-        ) || fromMatches[0];
-
-        const toNode = toMatches.find((n: WarRoomNode) =>
-          n.id === selected?.id || n.subsidiaryId === selected?.id || n.factoryId === selected?.id
-        ) || toMatches[0];
-
-        // Try to get coordinates from the markers first (most accurate)
-        let start = fromNode ? markers.get(fromNode.id) : null;
-        let end = toNode ? markers.get(toNode.id) : null;
-
-        // Fallback to projection if markers not yet available
-        // Coordinates are already validated above, safe to use
-        if (!start) {
-          start = this.projectCoordinatesToSVG(
-            route.fromCoordinates.latitude,
-            route.fromCoordinates.longitude
-          );
-        }
-        if (!end) {
-          end = this.projectCoordinatesToSVG(
-            route.toCoordinates.latitude,
-            route.toCoordinates.longitude
-          );
+        // 3. System matches
+        if (nid.includes('fleetzero') || nid.includes('fleet-zero')) {
+          return nodes.filter(n => n.id === 'fleetzero' || (n.name && n.name.toLowerCase().includes('fleetzero')));
         }
 
-        return {
-          id: route.id,
-          from: route.from,
-          to: route.to,
-          start,
-          end,
-          fromLabel: fromNode ? fromNode.city || fromNode.name : route.from,
-          toLabel: toNode ? toNode.city || toNode.name : route.to,
-          path: this.createCurvedPath(start, end),
-          strokeColor: route.strokeColor || '#0ea5e9',
-          strokeWidth: route.strokeWidth || 1.5,
-          dashArray: route.dashArray,
-          animated: route.animated !== false,
-          index,
-          highlighted: !!selected && (
-            route.from === selected.id ||
-            route.to === selected.id ||
-            route.from === selected.subsidiaryId ||
-            route.to === selected.subsidiaryId ||
-            route.from === selected.factoryId ||
-            route.to === selected.factoryId
-          )
-        };
-      });
+        // 4. Source handling
+        if (id.startsWith('source-')) {
+          const baseId = id.replace('source-', '');
+          const resolved = nodes.filter(n => n.id === baseId || n.factoryId === baseId || n.subsidiaryId === baseId);
+          if (resolved.length > 0) return resolved;
+
+          // Try resolving baseId as factory
+          const baseFactory = this.warRoomService.factories().find(f => f.id === baseId);
+          if (baseFactory) {
+            return nodes.filter(n => n.id === baseFactory.subsidiaryId || n.id === baseFactory.parentGroupId);
+          }
+        }
+
+        // 5. Name match fallback
+        return nodes.filter((n: WarRoomNode) =>
+          (!!n.name && n.name.toLowerCase() === nid) ||
+          (!!n.company && n.company.toLowerCase().includes(nid))
+        );
+      };
+
+      const fromMatches = findMatches(route.from);
+      const toMatches = findMatches(route.to);
+
+      if (fromMatches.length === 0 || toMatches.length === 0) {
+        return null;
+      }
+
+      // Prioritize the selected entity if it's among the matches
+      const fromNode = fromMatches.find((n: WarRoomNode) =>
+        n.id === selected?.id || n.subsidiaryId === selected?.id || n.factoryId === selected?.id
+      ) || fromMatches[0];
+
+      const toNode = toMatches.find((n: WarRoomNode) =>
+        n.id === selected?.id || n.subsidiaryId === selected?.id || n.factoryId === selected?.id
+      ) || toMatches[0];
+
+      // Try to get coordinates from the markers first (most accurate)
+      let start = fromNode ? markers.get(fromNode.id) : null;
+      let end = toNode ? markers.get(toNode.id) : null;
+
+      // Fallback to projection if markers not yet available and route coords are valid
+      if (!start && this.isValidCoordinates(route.fromCoordinates)) {
+        start = this.projectCoordinatesToSVG(
+          route.fromCoordinates.latitude,
+          route.fromCoordinates.longitude
+        );
+      }
+      if (!end && this.isValidCoordinates(route.toCoordinates)) {
+        end = this.projectCoordinatesToSVG(
+          route.toCoordinates.latitude,
+          route.toCoordinates.longitude
+        );
+      }
+
+      if (!start || !end) {
+        return null;
+      }
+
+      return {
+        id: route.id,
+        from: route.from,
+        to: route.to,
+        start,
+        end,
+        fromLabel: fromNode ? fromNode.city || fromNode.name : route.from,
+        toLabel: toNode ? toNode.city || toNode.name : route.to,
+        path: this.createCurvedPath(start, end),
+        strokeColor: route.strokeColor || '#0ea5e9',
+        strokeWidth: route.strokeWidth || 1.5,
+        dashArray: route.dashArray,
+        animated: route.animated !== false,
+        index,
+        highlighted: !!selected && (
+          route.from === selected.id ||
+          route.to === selected.id ||
+          route.from === selected.subsidiaryId ||
+          route.to === selected.subsidiaryId ||
+          route.from === selected.factoryId ||
+          route.to === selected.factoryId
+        )
+      };
+    });
+
+    return projected.filter((route): route is NonNullable<typeof route> => !!route);
   });
 
   // Computed property for SVG viewBox
@@ -814,33 +842,65 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
   });
 
   /**
+   * Synchronize the mapViewBox signal with the current SVG viewBox
+   * This ensures transit lines overlay stays aligned with the map during zoom/pan
+   */
+  private syncViewBoxFromMap(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const viewBox = svg.getAttribute('viewBox');
+    if (viewBox && !viewBox.includes('NaN')) {
+      // Only update if the viewBox actually changed to avoid unnecessary recomputes
+      if (this.mapViewBox() !== viewBox) {
+        this.mapViewBox.set(viewBox);
+      }
+    }
+  }
+
+  /**
    * Project latitude/longitude coordinates to SVG coordinate space
    * Uses Mercator projection to match jsVectorMap's coordinate system
    */
   private projectCoordinatesToSVG(lat: number, lng: number): { x: number; y: number } {
-    // Use the robust latLngToPixel method which delegates to mapInstance
-    const container = document.getElementById('war-room-map');
-    const width = container ? container.clientWidth : 950;
-    const height = container ? container.clientHeight : 550;
-
-    // Use latLngToPixel to get consistent coordinates with markers
-    // This handles the map projection correctly
-    const pixel = this.latLngToPixel(lat, lng, width, height);
-
-    // If we have a viewBox (which we usually do), we need to ensure the coordinates
-    // are in the SVG coordinate space, not just pixel space
-    if (container) {
-      const svg = container.querySelector('svg');
-      if (svg) {
-        // If latLngToPixel already returned SVG-relative coords (computed via viewBox logic),
-        // we can return them directly.
-        // Let's verify what latLngToPixel returns.
-        // It tries to return coords adjusted for viewBox.
-        return pixel;
+    // Try to use the map instance's coordinate conversion if available
+    if (this.mapInstance && typeof this.mapInstance.latLngToPoint === 'function') {
+      try {
+        const point = this.mapInstance.latLngToPoint([lat, lng]);
+        if (point && typeof point.x === 'number' && typeof point.y === 'number') {
+          return { x: point.x, y: point.y };
+        }
+      } catch (e) {
+        console.warn('Failed to use mapInstance.latLngToPoint, falling back to manual projection:', e);
       }
     }
 
-    return pixel;
+    // Fallback: Manual Miller Cylindrical projection aligned with map's default viewport
+    // Base dimensions match the map's full world view (950x550)
+    const baseWidth = 950;
+    const baseHeight = 550;
+    const centralMeridian = 11.5;
+
+    // Longitudinal projection (linear mapping with central meridian offset)
+    let x = (lng - centralMeridian) * (baseWidth / 360) + (baseWidth / 2);
+
+    // Normalize X to map bounds
+    if (x < 0) x += baseWidth;
+    if (x > baseWidth) x -= baseWidth;
+
+    // Miller Latitudinal projection
+    const latRad = (lat * Math.PI) / 180;
+    const millerY = 1.25 * Math.log(Math.tan(Math.PI / 4 + 0.4 * latRad));
+
+    // The multiplier for Y depends on the map's specifically tuned dimensions
+    // Adjusted for 950x550 viewport
+    const multiplier = baseWidth / (2 * Math.PI) * 0.82;
+    const y = baseHeight / 2 - (multiplier * millerY);
+
+    return { x, y };
   }
 
   /**
@@ -1090,7 +1150,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
 
     console.log('Map container dimensions:', rect.width, 'x', rect.height);
 
-    const nodes = this.nodes();
+      const nodes = this.getNodesWithValidCoordinates(this.nodes());
     if (nodes.length === 0) {
       console.warn('No nodes available for map initialization. Rendering map without markers.');
     }
@@ -1116,6 +1176,16 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     // Clear element cache
     this.elementCache.clear();
 
+    // Ensure observers are disconnected before creating new ones
+    if (this.nodeObserver) {
+      this.nodeObserver.disconnect();
+      this.nodeObserver = null;
+    }
+    if (this.labelObserver) {
+      this.labelObserver.disconnect();
+      this.labelObserver = null;
+    }
+
     setTimeout(async () => {
       try {
         if (this.destroyed) return;
@@ -1133,9 +1203,11 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
 
         await this.ensureNodeCoordinates(nodes);
 
+        const nodesWithCoordinates = nodes.filter((node) => this.isValidCoordinates(node.coordinates));
+
         // Convert nodes to jsVectorMap markers format
         // jsVectorMap typically expects [latitude, longitude] format for both coords and latLng
-        const allMarkers = nodes.map((node) => ({
+        const allMarkers = nodesWithCoordinates.map((node) => ({
           name: node.name,
           coords: [node.coordinates.latitude, node.coordinates.longitude] as [number, number], // [lat, lng]
           latLng: [node.coordinates.latitude, node.coordinates.longitude] as [number, number], // [lat, lng]
@@ -1152,12 +1224,17 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
           }
         }));
 
-        // Get transit routes from service
-        const transitRoutes = this.warRoomService.transitRoutes();
-        const lines = transitRoutes.map((route) => ({
-          from: [route.fromCoordinates.latitude, route.fromCoordinates.longitude],
-          to: [route.toCoordinates.latitude, route.toCoordinates.longitude],
-        }));
+        // Get transit routes from filtered input
+        const transitRoutes = this.transitRoutes();
+        const lines = transitRoutes
+          .filter((route) =>
+            this.isValidCoordinates(route.fromCoordinates) &&
+            this.isValidCoordinates(route.toCoordinates)
+          )
+          .map((route) => ({
+            from: [route.fromCoordinates.latitude, route.fromCoordinates.longitude],
+            to: [route.toCoordinates.latitude, route.toCoordinates.longitude],
+          }));
 
         // Get current theme for initial map colors
         const currentTheme = this.currentTheme();
@@ -1209,7 +1286,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
 
         // Add tooltip handler
         mapConfig.onMarkerTipShow = (event: any, label: any, index: number) => {
-          const node = nodes[index];
+          const node = nodesWithCoordinates[index];
           if (!node) return;
 
           console.log('Tooltip show for node:', node.company, 'index:', index);
@@ -1231,7 +1308,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
 
         // Add click handler with zoom functionality
         mapConfig.onMarkerClick = (event: any, index: number) => {
-          const node = nodes[index];
+          const node = nodesWithCoordinates[index];
           console.log('Marker clicked via jsVectorMap handler:', node);
           this.nodeSelected.emit(node);
         };
@@ -1243,6 +1320,9 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
           if (!this.isInitializing) {
             this.userHasZoomed = true;
           }
+
+          // Sync the viewBox signal first to ensure transit lines update correctly
+          this.syncViewBoxFromMap();
 
           this.updateLabelPositions();
           // Update logo and label positions when viewport changes - ensure text sticks to circle
@@ -1495,6 +1575,16 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     return `${node.city.toUpperCase()} (${displayName})`;
   }
 
+  getMarkerAriaLabel(node: WarRoomNode): string {
+    const name = this.getCompanyDisplayName(node);
+    const location = node.city ? (node.country ? `${node.city}, ${node.country}` : node.city) : '';
+    const typeLabel = this.getTypeLabel(node);
+    const statusLabel = node.status ? `Status ${node.status}` : '';
+    const parts = [name, typeLabel, location].filter(Boolean);
+    const base = parts.length > 0 ? parts.join(' - ') : 'Map location';
+    return statusLabel ? `View ${base}. ${statusLabel}.` : `View ${base}.`;
+  }
+
   /**
    * Check if node is selected
    */
@@ -1654,25 +1744,55 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     }, 0);
   }
 
+  // Cache for stable coordinate projection
+  private cachedMapDimensions: { width: number; height: number } | null = null;
+  private cachedViewBox: { x: number; y: number; width: number; height: number } | null = null;
+
   /**
    * Convert latitude/longitude to pixel coordinates on the map
    * Uses Mercator projection similar to jsVectorMap
    */
-  private latLngToPixel(lat: number, lng: number, containerWidth: number, containerHeight: number): { x: number; y: number } {
+  private latLngToPixel(lat: number, lng: number, containerWidth?: number, containerHeight?: number): { x: number; y: number } {
     // Try to use jsVectorMap's internal coordinate conversion if available
     if (this.mapInstance && this.mapInstance.latLngToPoint) {
       try {
         const point = this.mapInstance.latLngToPoint([lat, lng]);
         return { x: point.x, y: point.y };
       } catch (e) {
-        console.warn('Could not use map instance coordinate conversion:', e);
+        // console.warn('Could not use map instance coordinate conversion:', e);
       }
     }
 
-    // Fallback: Manual Mercator projection
-    // jsVectorMap typically uses a world map with these dimensions
-    const mapWidth = 1000; // Base map width
-    const mapHeight = 500; // Base map height
+    // Update cached dimensions if container is available
+    const container = document.getElementById('war-room-map');
+    let width = containerWidth || (this.cachedMapDimensions?.width || 950);
+    let height = containerHeight || (this.cachedMapDimensions?.height || 550);
+
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        this.cachedMapDimensions = { width: rect.width, height: rect.height };
+        width = rect.width;
+        height = rect.height;
+      }
+
+      const svg = container.querySelector('svg');
+      if (svg) {
+        const viewBox = svg.getAttribute('viewBox');
+        if (viewBox) {
+          const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+          this.cachedViewBox = { x: vbX, y: vbY, width: vbWidth, height: vbHeight };
+        }
+      }
+    }
+
+    // Use cached viewBox if available, otherwise default
+    const vb = this.cachedViewBox;
+
+    // Manual Mercator projection fallback
+    // jsVectorMap typically uses a world map with these dimensions (base)
+    const mapWidth = 1000;
+    const mapHeight = 500;
 
     // Convert longitude to x (0 to 360 degrees, centered at 0)
     const x = ((lng + 180) / 360) * mapWidth;
@@ -1682,31 +1802,44 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
     const y = mapHeight / 2 - (mapWidth * mercN) / (2 * Math.PI);
 
-    // Get actual SVG dimensions to account for zoom/pan
-    const container = document.getElementById('war-room-map');
-    if (container) {
-      const svg = container.querySelector('svg');
-      if (svg) {
-        const svgRect = svg.getBoundingClientRect();
-        const viewBox = svg.getAttribute('viewBox');
+    // If we have viewBox info (either current or cached), we can project correctly to SVG space
+    if (vb) {
+      // Calculate scale factors - how much the SVG is scaled relative to the viewBox
+      // Note: In SVG space, we just want coordinates relative to the viewBox origin
+      // The rendering is handled by the browser scaling the viewBox to the container
 
-        if (viewBox) {
-          const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(' ').map(Number);
-          const scaleX = svgRect.width / vbWidth;
-          const scaleY = svgRect.height / vbHeight;
+      // However, our markers might be transformed or our parent SVG might be scaled.
+      // But typically we want coordinates that match the circle cx/cy which are in viewBox space usually?
+      // Actually jsVectorMap places markers in "map space".
 
-          // Adjust for viewBox offset
-          const adjustedX = (x - vbX) * scaleX;
-          const adjustedY = (y - vbY) * scaleY;
+      // Let's rely on standard mercator to map-space conversion used by specific map region (world)
+      // For World map in jsVectorMap:
+      // it shifts and scales.
 
-          return { x: adjustedX, y: adjustedY };
-        }
-      }
+      // If we are here, mapInstance didn't help. 
+      // We return the raw map-space coordinates shifted by viewBox if needed?
+      // Actually, standard projection above gives global map coordinates.
+
+      // If we have a viewBox, we likely want to project these global coords into the current viewport 
+      // primarily if we are drawing overlays effectively.
+
+      // Let's assume standard scaling for now.
+
+      // Adjust for viewBox offset
+      const adjustedX = (x); // - vb.x? depends on if x is absolute or relative
+      const adjustedY = (y); // - vb.y?
+
+      // Note: jsVectorMap internal coords might be different, but this is a decent approximation
+      // provided we are drawing in the same SVG coordinate system.
+      // If our transit overlay shares the viewBox of the map (which it does via svgViewBox computed),
+      // then we just need coordinates in that same space.
+
+      return { x: adjustedX, y: adjustedY };
     }
 
-    // Scale to container size (fallback)
-    const scaleX = containerWidth / mapWidth;
-    const scaleY = containerHeight / mapHeight;
+    // Fallback scaling to container size
+    const scaleX = width / mapWidth;
+    const scaleY = height / mapHeight;
 
     return {
       x: x * scaleX,
@@ -1719,13 +1852,26 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
    */
   private updateLabelPositions(): void {
     const container = document.getElementById('war-room-map');
-    if (!container || !this.mapInstance) return;
+    // Allow update even if mapInstance is null, using cached data if possible
+    if (!container && !this.cachedMapDimensions) return;
 
-    const rect = container.getBoundingClientRect();
-    if (rect.width === 0 || rect.height === 0) return;
+    // Use cached dimensions if container is missing (during re-render)
+    const width = container ? container.clientWidth : (this.cachedMapDimensions?.width || 0);
+    const height = container ? container.clientHeight : (this.cachedMapDimensions?.height || 0);
 
-    const nodes = this.nodes();
-    const svg = container.querySelector('svg');
+    if (width === 0 || height === 0) return;
+
+    const nodes = this.getNodesWithValidCoordinates(this.nodes());
+    const svg = container?.querySelector('svg');
+
+    // Update cached viewBox if available
+    if (svg) {
+      const viewBox = svg.getAttribute('viewBox');
+      if (viewBox) {
+        const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+        this.cachedViewBox = { x: vbX, y: vbY, width: vbWidth, height: vbHeight };
+      }
+    }
 
     nodes.forEach((node) => {
       // Try to find the actual marker element in the SVG
@@ -1734,61 +1880,50 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
       if (svg) {
         // Look for marker circles or elements with the node's coordinates
         const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], .jvm-marker');
-        markers.forEach((marker: any, index: number) => {
-          if (index < nodes.length && nodes[index].id === node.id) {
-            const cx = parseFloat(marker.getAttribute('cx') || '0');
-            const cy = parseFloat(marker.getAttribute('cy') || '0');
+        // Find marker by index matching node index - robust assumption for synchronous render
+        const index = this.getNodeIndex(node);
+        if (index >= 0 && index < markers.length) {
+          const marker = markers[index];
+          const cx = parseFloat(marker.getAttribute('cx') || '0');
+          const cy = parseFloat(marker.getAttribute('cy') || '0');
 
-            // Get SVG transform to account for zoom/pan
-            const svgRect = svg.getBoundingClientRect();
-            const viewBox = svg.getAttribute('viewBox');
-
-            if (viewBox) {
-              const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(' ').map(Number);
-              const scaleX = svgRect.width / vbWidth;
-              const scaleY = svgRect.height / vbHeight;
-
-              // Convert SVG coordinates to container coordinates
-              pixelPos = {
-                x: (cx - vbX) * scaleX,
-                y: (cy - vbY) * scaleY
-              };
-            } else {
-              // No viewBox, use direct coordinates
-              pixelPos = { x: cx, y: cy };
-            }
-          }
-        });
+          // If we are inside the same SVG coordinate system (transit overlay shares viewBox),
+          // then we can use cx/cy directly!
+          pixelPos = { x: cx, y: cy };
+        }
       }
 
       // Fallback to coordinate conversion if marker not found
-      if (!pixelPos) {
+      if (!pixelPos && this.isValidCoordinates(node.coordinates)) {
         pixelPos = this.latLngToPixel(
           node.coordinates.latitude,
           node.coordinates.longitude,
-          rect.width,
-          rect.height
+          width,
+          height
         );
       }
 
-      this.labelPositions.set(node.id, pixelPos);
+      if (pixelPos) {
+        this.labelPositions.set(node.id, pixelPos);
+      }
     });
 
     // Extract SVG coordinates for perfect route alignment
-    if (svg) {
-      const newMarkerCoords = new Map<string, { x: number; y: number }>();
-      const markerEls = svg.querySelectorAll('circle.jvm-marker, circle[data-index]');
-      markerEls.forEach((marker: any, index: number) => {
-        if (index < nodes.length) {
-          const cx = parseFloat(marker.getAttribute('cx') || '0');
-          const cy = parseFloat(marker.getAttribute('cy') || '0');
-          newMarkerCoords.set(nodes[index].id, { x: cx, y: cy });
-        }
-      });
-      // Only update signal if coordinates actually changed to avoid unnecessary re-computes
-      if (newMarkerCoords.size > 0) {
-        this.markerCoordinates.set(newMarkerCoords);
-      }
+    // This is the primary driver for projectedRoutes
+    const newMarkerCoords = new Map<string, { x: number; y: number }>();
+
+    // Fill from labelPositions which now contains the best available coordinates
+    this.labelPositions.forEach((pos, id) => {
+      newMarkerCoords.set(id, pos);
+    });
+
+    // Only update signal if we actually have coordinates
+    // Important: Don't set empty map if we just failed to find DOM elements temporarily
+    if (newMarkerCoords.size > 0) {
+      this.markerCoordinates.set(newMarkerCoords);
+    } else if (nodes.length === 0) {
+      // Valid empty state
+      this.markerCoordinates.set(new Map());
     }
   }
 
@@ -1883,6 +2018,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
         const id = node.id ?? node.companyId ?? node.name ?? '';
         const lat = Number.isFinite(node.coordinates.latitude) ? node.coordinates.latitude.toFixed(4) : '0';
         const lng = Number.isFinite(node.coordinates.longitude) ? node.coordinates.longitude.toFixed(4) : '0';
+        // Include status to trigger updates on status changes if needed, though status doesn't change position
         return `${id}:${lat},${lng}`;
       })
       .join('|');
@@ -1892,16 +2028,25 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
    * Update map markers when nodes change dynamically
    */
   private updateMapMarkers(): void {
-    if (this.destroyed || !this.mapInstance) return;
+    if (this.destroyed) return;
+
+    // No map instance? try to init
+    if (!this.mapInstance) {
+      this.initializeMap();
+      return;
+    }
+
     const container = document.getElementById('war-room-map');
     if (!container) return;
+
     const nodes = this.nodes();
     const nextSignature = this.getNodesSignature(nodes);
     const signatureChanged = nextSignature !== this.lastNodesSignature;
 
     const svg = container.querySelector('svg');
     if (!svg) {
-      console.warn('SVG not found for marker update');
+      console.warn('SVG not found for marker update, re-initializing');
+      this.initializeMap();
       return;
     }
 
@@ -1910,20 +2055,27 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     const existingMarkerCount = existingMarkers.length;
     console.log(`Existing markers: ${existingMarkerCount}, New nodes: ${nodes.length}`);
 
+    // If nodes changed significantly, we usually have to re-init to let jsVectorMap handle the complex ADD/REMOVE logic
+    // However, if we preserve the markerCoordinates signal, the lines won't flash as badly.
+    // The issue was likely that re-init caused a gap where markerCoordinates was empty or invalid.
+
     if (signatureChanged || nodes.length !== existingMarkerCount || nodes.length > existingMarkerCount) {
       const sel = this.selectedEntity();
       if (sel?.id) {
         this.pendingZoomCompanyId = sel.id;
       }
       this.lastNodesSignature = nextSignature;
+
+      console.log('Nodes changed, re-initializing map...');
+      // Note: We do NOT clear markerCoordinates here. We let the old ones persist until new ones overwrite them.
+      // This prevents the "disappear" frame.
       this.initializeMap();
     } else {
-      // Just update label positions if markers are already correct
-      console.log('Node count unchanged, updating label positions only');
+      // Just update label positions if markers are already consistent
+      console.log('Node count/signature unchanged, updating label positions only');
       this.updateLabelPositions();
       this.attachMarkerClickHandlers();
-      this.attachMarkerHoverHandlers(); // Ensure hover handlers are attached when nodes update but map doesn't re-init
-      // Re-add logos and labels in case markers were repositioned
+      this.attachMarkerHoverHandlers();
       setTimeout(() => {
         this.addCompanyLogosAndLabels();
         this.updateCompanyLogosAndLabelsPositions();
@@ -1937,28 +2089,18 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
    */
   private attachMarkerClickHandlers(): void {
     const container = document.getElementById('war-room-map');
-    if (!container) {
-      console.warn('Container not found for attaching marker click handlers');
-      return;
-    }
+    if (!container) return;
 
     const nodes = this.nodes();
-    if (nodes.length === 0) {
-      console.warn('No nodes available for marker click handlers');
-      return;
-    }
+    if (nodes.length === 0) return;
 
     // Wait a bit for markers to be fully rendered
     setTimeout(() => {
       const svg = container.querySelector('svg');
-      if (!svg) {
-        console.warn('SVG not found for attaching marker click handlers');
-        return;
-      }
+      if (!svg) return;
 
       // Find all marker circles in the SVG
       const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], circle[class*="jvm-marker"]');
-      console.log(`Found ${markers.length} markers to attach click handlers to`);
 
       markers.forEach((marker: any, index: number) => {
         if (index < nodes.length && !marker.hasAttribute('data-click-handler')) {
@@ -1985,18 +2127,21 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
           marker.addEventListener('mousedown', (event: MouseEvent) => {
             event.stopPropagation();
           }, true);
-
-          console.log(`Attached click handler to marker ${index} for node:`, node.city);
         }
       });
 
       // Also listen for new markers that might be added dynamically
+      // CRITICAL: Always recreate observer to ensure it's watching the CURRENT SVG
+      // When map re-initializes (e.g., after filtering), the old SVG is destroyed
+      if (this.nodeObserver) {
+        this.nodeObserver.disconnect();
+      }
+
       this.nodeObserver = new MutationObserver(() => {
         if (!this.destroyed) {
           // Re-attach handlers if new markers are added
           const newMarkers = svg.querySelectorAll('circle.jvm-marker:not([data-click-handler]), circle[data-index]:not([data-click-handler])');
           if (newMarkers.length > 0) {
-            console.log(`Found ${newMarkers.length} new markers, attaching handlers`);
             this.attachMarkerClickHandlers();
           }
         }
@@ -2056,9 +2201,19 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
 
             const mouseEvent = event as MouseEvent;
             this.showCompanyTooltipAtElement(node, mouseEvent.currentTarget as Element, logoSource);
+
+            // NEW: Update service hover state for cross-component synchronization
+            const selection: FleetSelection = {
+              level: node.level ?? 'factory',
+              id: node.companyId,
+              parentGroupId: node.parentGroupId,
+              subsidiaryId: node.subsidiaryId,
+              factoryId: node.factoryId,
+            };
+            this.warRoomService.setHoveredEntity(selection);
           };
 
-          const handleMouseLeave: EventListener = () => {
+          const handleMouseLeave: EventListener = (event) => {
             if (this.destroyed) return;
 
             if (this.tooltipTimeoutId) {
@@ -2067,6 +2222,9 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
             }
 
             this.clearCompanyTooltip();
+
+            // NEW: Clear service hover state
+            this.warRoomService.setHoveredEntity(null);
           };
 
           const handleMouseMove: EventListener = (event) => {
@@ -2075,9 +2233,36 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
             this.showCompanyTooltipAtElement(node, mouseEvent.currentTarget as Element, logoSource);
           };
 
+          // Mouse events
           marker.addEventListener('mouseenter', handleMouseEnter, true);
           marker.addEventListener('mouseleave', handleMouseLeave, true);
           marker.addEventListener('mousemove', handleMouseMove, true);
+
+          // NEW: Keyboard accessibility - add tabindex and ARIA attributes
+          marker.setAttribute('tabindex', '0');
+          marker.setAttribute('role', 'button');
+          marker.setAttribute('aria-label', `View details for ${node.company || node.name}`);
+
+          // Keyboard event handlers
+          const handleFocus: EventListener = (event) => {
+            handleMouseEnter(event);
+          };
+
+          const handleBlur: EventListener = (_event) => {
+            handleMouseLeave(_event);
+          };
+
+          const handleKeyDown: EventListener = (event) => {
+            const keyEvent = event as KeyboardEvent;
+            if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+              keyEvent.preventDefault();
+              this.nodeSelected.emit(node);
+            }
+          };
+
+          marker.addEventListener('focus', handleFocus, true);
+          marker.addEventListener('blur', handleBlur, true);
+          marker.addEventListener('keydown', handleKeyDown, true);
 
           console.log(`Attached hover handler to marker ${index} for node:`, node.company);
         }
@@ -2406,6 +2591,39 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
+   * Update marker styles to show temporary hover highlighting (cross-component sync)
+   */
+  private updateHoveredMarkerStyles(hovered: FleetSelection | null): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Remove previous hover highlights
+    svg.querySelectorAll('.marker-temp-hover').forEach((el) => {
+      el.classList.remove('marker-temp-hover');
+    });
+
+    if (!hovered) return;
+
+    // Find and highlight hovered marker by searching all nodes
+    const nodes = this.nodes();
+    const hoveredIndex = nodes.findIndex((n) => n.id === hovered.id);
+    if (hoveredIndex >= 0) {
+      const markerCircle = svg.querySelector(`circle[data-index="${hoveredIndex}"]`);
+      const logoImage = svg.querySelector(`#company-logo-image-${hoveredIndex}`);
+
+      if (markerCircle) {
+        markerCircle.classList.add('marker-temp-hover');
+      }
+      if (logoImage) {
+        logoImage.classList.add('marker-temp-hover');
+      }
+    }
+  }
+
+  /**
    * Highlight a marker by node ID
    * @param nodeId - The node ID to highlight
    */
@@ -2716,6 +2934,9 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
 
       // Set new viewBox
       svg.setAttribute('viewBox', `${clampedX} ${clampedY} ${newWidth} ${newHeight}`);
+
+      // Sync the signal to update transit lines overlay
+      this.syncViewBoxFromMap();
     }
 
     // Mark labels as dirty to trigger RAF update
@@ -2989,7 +3210,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
               if (imagePaths.length <= 1) {
                 if (!triedDefaultFallback) {
                   triedDefaultFallback = true;
-                  const fallbackPath = '/assets/images/default-logo.png';
+                  const fallbackPath = '/assets/images/svgs/user.svg';
                   console.warn(`[${node.company}] Falling back to default logo: ${fallbackPath}`);
                   logoImage.setAttribute('href', fallbackPath);
                   logoImage.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', fallbackPath);
@@ -3107,7 +3328,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
                 badgeLogo.setAttribute('href', nextPath);
                 badgeLogo.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', nextPath);
               } else {
-                const fallbackPath = '/assets/images/default-logo.png';
+                const fallbackPath = '/assets/images/svgs/user.svg';
                 badgeLogo.setAttribute('href', fallbackPath);
                 badgeLogo.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', fallbackPath);
               }
@@ -3602,6 +3823,9 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     // Force reset to full world view (only on initial load)
     console.log('Forcing reset to full world view');
     this.resetMapToFullWorldView();
+
+    // Ensure signal is also updated
+    this.syncViewBoxFromMap();
 
     // Force viewBox multiple times to ensure it sticks (map library might override it)
     // Only if user hasn't manually zoomed

@@ -1,13 +1,15 @@
 @if (isVisible()) {
-<div class="modal-overlay" (click)="onBackdropClick($event)">
-  <div class="modal-container" (click)="stopPropagation($event)">
+<div class="modal-overlay" (click)="onBackdropClick($event)" role="dialog" aria-modal="true"
+  aria-labelledby="modal-title">
+  <div class="modal-container" (click)="stopPropagation($event)" [attr.aria-busy]="isSubmitting()">
     <!-- Modal Header -->
     <div class="modal-header">
       <div class="modal-title-section">
-        <h1 class="modal-title">ADD SUBSIDIARY + FACTORY</h1>
+        <h1 class="modal-title" id="modal-title">ADD SUBSIDIARY + FACTORY</h1>
         <p class="modal-subtitle">FLEET REGISTRATION MODULE // SUBSIDIARY BOOTSTRAP</p>
       </div>
-      <button class="modal-close-btn" type="button" (click)="onClose()" aria-label="Close">
+      <button class="modal-close-btn" type="button" (click)="onClose()" aria-label="Close modal"
+        [disabled]="isSubmitting()">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
@@ -21,8 +23,7 @@
         </div>
         <h2 class="success-title">SYSTEM SYNC COMPLETE</h2>
         <p class="success-description">
-          {{ companyName() }} has been registered and synced to the tactical map.
-          Initial connectivity established with primary hubs.
+          {{ successMessage() || (companyName() + ' has been registered and synced to the tactical map. Initial connectivity established with primary hubs.') }}
         </p>
         <div class="success-details">
           <div class="detail-row">
@@ -44,55 +45,58 @@
       </div>
       }
 
-      <!-- Company to Connect Section -->
-      <div class="connection-section" [class.disabled]="isSubmitting()">
-        <div class="section-header">
-          <span class="section-title">COMPANY TO CONNECT</span>
+      <!-- Connection Grid: Desktop 2-column / Mobile stacked -->
+      <div class="connection-grid">
+        <!-- Company to Connect Section -->
+        <div class="connection-section" [class.disabled]="isSubmitting()">
+          <div class="section-header">
+            <span class="section-title">COMPANY TO CONNECT</span>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="target-company-name">
+              COMPANY TO CONNECT
+            </label>
+            <input type="text" id="target-company-name" class="form-input" placeholder="ENTER TARGET COMPANY NAME..."
+              [value]="companyName()" (input)="companyName.set($any($event.target).value)"
+              [disabled]="isSubmitting()" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="target-location">
+              PRIMARY LOCATION
+            </label>
+            <input type="text" id="target-location" class="form-input" placeholder="City, Province or Coordinates"
+              [value]="location()" (input)="location.set($any($event.target).value)" [disabled]="isSubmitting()" />
+          </div>
         </div>
 
-        <div class="form-field">
-          <label class="form-label" for="target-company-name">
-            COMPANY TO CONNECT
-          </label>
-          <input type="text" id="target-company-name" class="form-input" placeholder="ENTER TARGET COMPANY NAME..."
-            [value]="companyName()" (input)="companyName.set($any($event.target).value)" [disabled]="isSubmitting()" />
-        </div>
+        <!-- Your Company Section -->
+        <div class="connection-section your-company-section" [class.disabled]="isSubmitting()">
+          <div class="section-header">
+            <span class="section-title">YOUR COMPANY (CONNECTION SOURCE)</span>
+          </div>
+          <p class="section-helper">
+            Provide your company name and location so we can connect it to the target company.
+          </p>
 
-        <div class="form-field">
-          <label class="form-label" for="target-location">
-            PRIMARY LOCATION
-          </label>
-          <input type="text" id="target-location" class="form-input" placeholder="City, Province or Coordinates"
-            [value]="location()" (input)="location.set($any($event.target).value)" [disabled]="isSubmitting()" />
-        </div>
+          <div class="form-field">
+            <label class="form-label" for="source-company-name">
+              YOUR COMPANY
+            </label>
+            <input type="text" id="source-company-name" class="form-input" placeholder="ENTER YOUR COMPANY NAME..."
+              [value]="sourceCompanyName()" (input)="sourceCompanyName.set($any($event.target).value)"
+              [disabled]="isSubmitting()" />
+          </div>
 
-      </div>
-
-      <!-- Your Company Section -->
-      <div class="connection-section your-company-section" [class.disabled]="isSubmitting()">
-        <div class="section-header">
-          <span class="section-title">YOUR COMPANY (CONNECTION SOURCE)</span>
-        </div>
-        <p class="section-helper">
-          Provide your company name and location so we can connect it to the target company.
-        </p>
-
-        <div class="form-field">
-          <label class="form-label" for="source-company-name">
-            YOUR COMPANY
-          </label>
-          <input type="text" id="source-company-name" class="form-input" placeholder="ENTER YOUR COMPANY NAME..."
-            [value]="sourceCompanyName()" (input)="sourceCompanyName.set($any($event.target).value)"
-            [disabled]="isSubmitting()" />
-        </div>
-
-        <div class="form-field">
-          <label class="form-label" for="source-location">
-            YOUR COMPANY LOCATION
-          </label>
-          <input type="text" id="source-location" class="form-input" placeholder="City, Province or Coordinates"
-            [value]="sourceLocation()" (input)="sourceLocation.set($any($event.target).value)"
-            [disabled]="isSubmitting()" />
+          <div class="form-field">
+            <label class="form-label" for="source-location">
+              YOUR COMPANY LOCATION
+            </label>
+            <input type="text" id="source-location" class="form-input" placeholder="City, Province or Coordinates"
+              [value]="sourceLocation()" (input)="sourceLocation.set($any($event.target).value)"
+              [disabled]="isSubmitting()" />
+          </div>
         </div>
       </div>
 
@@ -209,7 +213,7 @@
       <button type="button" class="btn-execute" (click)="onSubmit()" [disabled]="isSubmitting()">
         @if (isSubmitting()) {
         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-        EXECUTING SYNC...
+        Saving...
         } @else {
         EXECUTE SYNC
         }

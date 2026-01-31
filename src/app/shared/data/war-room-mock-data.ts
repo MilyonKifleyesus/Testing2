@@ -67,6 +67,7 @@ const COMPANY_LOGOS: Record<string, string> = {
   ARBOC: '/assets/images/ARBOC.jpg',
   TAM: '/assets/images/tam-logo.png',
   KARSAN: '/assets/images/KARSAN.jpg',
+  FLEETZERO: '/assets/images/FleetZero.png',
 };
 
 const slugify = (value: string): string =>
@@ -78,9 +79,9 @@ const slugify = (value: string): string =>
 const computeMetricsFromFactories = (factories: FactoryLocation[]): FleetMetrics => {
   const assetCount = factories.reduce((sum, factory) => sum + factory.assets, 0);
   const incidentCount = factories.reduce((sum, factory) => sum + factory.incidents, 0);
-  const weightTotal = factories.reduce((sum, factory) => sum + (factory.assets || 1), 0);
+  const weightTotal = factories.reduce((sum, factory) => sum + (factory.assets ?? 1), 0);
   const weightedSync = factories.reduce(
-    (sum, factory) => sum + factory.syncStability * (factory.assets || 1),
+    (sum, factory) => sum + factory.syncStability * (factory.assets ?? 1),
     0
   );
   const syncStability = weightTotal > 0 ? Math.round((weightedSync / weightTotal) * 10) / 10 : 0;
@@ -91,9 +92,9 @@ const computeMetricsFromFactories = (factories: FactoryLocation[]): FleetMetrics
 const computeMetricsFromSubsidiaries = (subsidiaries: SubsidiaryCompany[]): FleetMetrics => {
   const assetCount = subsidiaries.reduce((sum, sub) => sum + sub.metrics.assetCount, 0);
   const incidentCount = subsidiaries.reduce((sum, sub) => sum + sub.metrics.incidentCount, 0);
-  const weightTotal = subsidiaries.reduce((sum, sub) => sum + (sub.metrics.assetCount || 1), 0);
+  const weightTotal = subsidiaries.reduce((sum, sub) => sum + (sub.metrics.assetCount ?? 1), 0);
   const weightedSync = subsidiaries.reduce(
-    (sum, sub) => sum + sub.metrics.syncStability * (sub.metrics.assetCount || 1),
+    (sum, sub) => sum + sub.metrics.syncStability * (sub.metrics.assetCount ?? 1),
     0
   );
   const syncStability = weightTotal > 0 ? Math.round((weightedSync / weightTotal) * 10) / 10 : 0;

@@ -169,7 +169,7 @@
       "subsidiaryId": "yutong",
       "factoryId": "yutong-zhengzhou",
       "location": "Zhengzhou, China",
-      "logo": "/assets/images/yrt40.jpeg"
+      "logo": "/assets/images/svgs/user.svg"
     },
     {
       "id": "log-007",
@@ -566,7 +566,7 @@
           },
           "description": "Asia Pacific high-volume electric bus production.",
           "location": "Zhengzhou, China",
-          "logo": "/assets/images/yrt40.jpeg",
+          "logo": "/assets/images/svgs/user.svg",
           "quantumChart": {
             "dataPoints": [
               60,
@@ -608,7 +608,7 @@
               "assets": 210,
               "incidents": 3,
               "description": "Asia Pacific production and export center.",
-              "logo": "/assets/images/yrt40.jpeg"
+              "logo": "/assets/images/svgs/user.svg"
             }
           ]
         },

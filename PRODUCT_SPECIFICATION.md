@@ -1,7 +1,7 @@
-# BusPulse War Room Product Specification
+# FleetPulse War Room Product Specification
 
 ## Purpose
-The War Room is a live operations dashboard for FleetZero/BusPulse leadership to monitor fleet health, subsidiary activity, and critical events across the network. It provides a geographic view of subsidiaries and factories, real-time activity logging, and controlled onboarding of new companies with automated link visualization.
+The War Room is a live operations dashboard for FleetPulse leadership to monitor fleet health, subsidiary activity, and critical events across the network. It provides a geographic view of subsidiaries and factories, real-time activity logging, and controlled onboarding of new companies with automated link visualization.
 
 ## Goals
 - Provide a clear, map-first view of subsidiaries and factories worldwide.
@@ -16,7 +16,7 @@ The War Room is a live operations dashboard for FleetZero/BusPulse leadership to
 - User authentication and account management beyond existing app flow.
 
 ## Users
-- FleetZero Operations Admins
+- FleetPulse Operations Admins
 - Supervisors monitoring live activity
 - Analysts validating subsidiary connections
 
@@ -34,19 +34,20 @@ The War Room is a live operations dashboard for FleetZero/BusPulse leadership to
 From the War Room page, users can add a subsidiary and optionally connect it to another company.
 
 #### Input Fields
-- Target Company Name (company to connect)
-- Target Location
-- Subsidiary Description
-- Your Company (connection source)
-- Your Company Location
+- **Target Company Name** (required): Name of the company being connected to the network.
+- **Target Location** (required): City, State/Province, or coordinates (latitude, longitude).
+- **Subsidiary Description** (optional): Brief description of the company's operations.
+- **Your Company** (required): Name of the source company initiating the connection.
+- **Your Company Location** (required): Location of the source company (city, state, or coordinates).
+- **Logo Upload** (optional): Custom logo for the subsidiary.
 
 #### Behavior
 - On submit, the new company is added to the map immediately.
-- Filters are cleared/reset so the new company is visible by default.
+- The new company is **auto-included** in active filters to ensure visibility without clearing user's current view.
 - The activity log opens automatically.
 - Link lines appear:
-  - Blue line: target company to FleetZero HQ (Toronto)
-  - Green line: “Your Company” to the new target location
+  - Blue line: target company to FleetPulse HQ (Toronto)
+  - Green line: "Your Company" to the new target location
 
 ### 3) Activity Log
 - Side panel that auto-expands on new registration.
@@ -55,9 +56,7 @@ From the War Room page, users can add a subsidiary and optionally connect it to 
 
 ### 4) Filter Resilience
 - Filters should never block visibility of newly created entries.
-- When a new company is registered:
-  - Active filters are cleared, or
-  - The new company is auto-included.
+- When a new company is registered, the new company is **automatically included** in active filters to preserve the user's current filtered view while ensuring the new entry is visible.
 
 ## Data Sources
 - War Room data is loaded from local static sources and services.
@@ -93,11 +92,11 @@ From the War Room page, users can add a subsidiary and optionally connect it to 
 4. Click `EXECUTE SYNC`.
 5. Validate:
    - Map zooms to Chicago.
-   - Blue line to FleetZero HQ appears.
+   - Blue line to FleetPulse HQ appears.
    - Green line from Seattle to Chicago appears.
    - Activity log opens and lists Hyperloop One.
 
-## Open Questions
-- Should the Target Location support coordinates as well as city/state?
-- Should the user be prompted for confirmation before filters reset?
-- Should activity log auto-open be configurable per user?
+## Resolved Design Decisions
+- **Coordinate Support**: Target Location supports both city/state format and coordinate pairs (latitude, longitude).
+- **Filter Behavior**: New companies are auto-included in active filters (no user confirmation required).
+- **Activity Log**: Auto-opens on new company registration (not user-configurable at this time).

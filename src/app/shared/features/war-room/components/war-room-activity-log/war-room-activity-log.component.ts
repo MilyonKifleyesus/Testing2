@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, computed, effect, input, output, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild, computed, effect, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ActivityLog,
@@ -10,6 +10,7 @@ import {
   OperationalStatus,
   NodeStatus,
 } from '../../../../../shared/models/war-room.interface';
+import { WarRoomService } from '../../../../../shared/services/war-room.service';
 
 @Component({
   selector: 'app-war-room-activity-log',
@@ -17,12 +18,13 @@ import {
   templateUrl: './war-room-activity-log.component.html',
   styleUrl: './war-room-activity-log.component.scss',
 })
-export class WarRoomActivityLogComponent implements AfterViewInit {
+export class WarRoomActivityLogComponent implements AfterViewInit, OnDestroy {
   parentGroups = input.required<ParentGroup[]>();
   activityLogs = input.required<ActivityLog[]>();
   selectedEntity = input<FleetSelection | null>(null);
   editMode = input<boolean>(false);
   mapViewMode = input<MapViewMode>('parent');
+  isBusy = input<boolean>(false);
 
   selectionChange = output<FleetSelection>();
   editModeChange = output<boolean>();
@@ -43,9 +45,13 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
 
   @ViewChild('logList', { static: false }) logList?: ElementRef<HTMLElement>;
   private viewReady = false;
+  private refreshTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   readonly expandedParents = signal<string[]>([]);
   readonly expandedSubsidiaries = signal<string[]>([]);
+  readonly refreshing = signal<boolean>(false);
+  readonly factoryListExpanded = signal<Record<string, boolean>>({});
+  private readonly factoryCollapseThreshold = 3;
 
   // Multi-item draft storage
   readonly factoryDrafts = signal<Map<string, { name: string; location: string; description: string; status: NodeStatus }>>(new Map());
@@ -88,6 +94,13 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
       this.ensureExpandedForSelection(selection);
       this.scrollToSelection(selection);
     });
+
+    effect(() => {
+      this.parentGroups();
+      this.activityLogs();
+      this.mapViewMode();
+      this.softRefresh();
+    });
   }
 
   ngAfterViewInit(): void {
@@ -95,6 +108,14 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
     const selection = this.selectedEntity();
     if (selection) {
       this.scrollToSelection(selection);
+    }
+    this.softRefresh();
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshTimeoutId) {
+      clearTimeout(this.refreshTimeoutId);
+      this.refreshTimeoutId = null;
     }
   }
 
@@ -109,6 +130,10 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
     return `${hours}:${minutes}:${seconds}`;
   }
 
+  refreshLayout(): void {
+    this.queueRefresh(true);
+  }
+
   isSelected(level: FleetSelection['level'], id: string): boolean {
     const selection = this.selectedEntity();
     return !!selection && selection.level === level && selection.id === id;
@@ -120,6 +145,17 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
 
   isSubsidiaryExpanded(subsidiaryId: string): boolean {
     return this.expandedSubsidiaries().includes(subsidiaryId);
+  }
+
+  isFactoryListExpanded(subsidiaryId: string): boolean {
+    return this.factoryListExpanded()[subsidiaryId] ?? false;
+  }
+
+  toggleFactoryList(subsidiaryId: string): void {
+    this.factoryListExpanded.update((current) => ({
+      ...current,
+      [subsidiaryId]: !current[subsidiaryId],
+    }));
   }
 
   toggleParent(parentId: string): void {
@@ -136,30 +172,75 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
     );
   }
 
+  onParentHover(group: ParentGroup, isEntering: boolean): void {
+    if (isEntering) {
+      this.warRoomService.setHoveredEntity({
+        level: 'parent',
+        id: group.id,
+        parentGroupId: group.id
+      });
+    } else {
+      this.warRoomService.setHoveredEntity(null);
+    }
+  }
+
   onParentClick(group: ParentGroup): void {
-    this.selectionChange.emit({ level: 'parent', id: group.id, parentGroupId: group.id });
+    const selection: FleetSelection = { level: 'parent', id: group.id, parentGroupId: group.id };
+    this.selectionChange.emit(selection);
+    this.warRoomService.requestPanToEntity(group.id);
+  }
+
+  onSubsidiaryHover(subsidiary: SubsidiaryCompany, isEntering: boolean): void {
+    if (isEntering) {
+      this.warRoomService.setHoveredEntity({
+        level: 'subsidiary',
+        id: subsidiary.id,
+        parentGroupId: subsidiary.parentGroupId,
+        subsidiaryId: subsidiary.id,
+      });
+    } else {
+      this.warRoomService.setHoveredEntity(null);
+    }
   }
 
   onSubsidiaryClick(subsidiary: SubsidiaryCompany): void {
     if (this.mapViewMode() !== 'subsidiary') {
       return;
     }
-    this.selectionChange.emit({
+    const selection: FleetSelection = {
       level: 'subsidiary',
       id: subsidiary.id,
       parentGroupId: subsidiary.parentGroupId,
       subsidiaryId: subsidiary.id,
-    });
+    };
+    this.selectionChange.emit(selection);
+    this.warRoomService.requestPanToEntity(subsidiary.id);
+  }
+
+  onFactoryHover(factory: FactoryLocation, isEntering: boolean): void {
+    if (isEntering) {
+      this.warRoomService.setHoveredEntity({
+        level: 'factory',
+        id: factory.id,
+        parentGroupId: factory.parentGroupId,
+        subsidiaryId: factory.subsidiaryId,
+        factoryId: factory.id,
+      });
+    } else {
+      this.warRoomService.setHoveredEntity(null);
+    }
   }
 
   onFactoryClick(factory: FactoryLocation): void {
-    this.selectionChange.emit({
+    const selection: FleetSelection = {
       level: 'factory',
       id: factory.id,
       parentGroupId: factory.parentGroupId,
       subsidiaryId: factory.subsidiaryId,
       factoryId: factory.id,
-    });
+    };
+    this.selectionChange.emit(selection);
+    this.warRoomService.requestPanToEntity(factory.id);
   }
 
   toggleEditMode(): void {
@@ -378,6 +459,39 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
     return country ? `${city}, ${country}` : city;
   }
 
+  getSubsidiaryDisplayLocation(subsidiary: SubsidiaryCompany): string {
+    return (subsidiary.location || this.getSubsidiaryLocation(subsidiary) || '').trim();
+  }
+
+  shouldShowFactoryLocation(factory: FactoryLocation, parent: SubsidiaryCompany): boolean {
+    const parentLocation = this.normalizeLocation(this.getSubsidiaryDisplayLocation(parent));
+    const factoryLocation = this.normalizeLocation(this.formatLocation(factory.city, factory.country));
+    return !parentLocation || !factoryLocation || parentLocation !== factoryLocation;
+  }
+
+  getFactoryLocationLabel(factory: FactoryLocation, parent: SubsidiaryCompany): string {
+    if (this.shouldShowFactoryLocation(factory, parent)) {
+      return this.formatLocation(factory.city, factory.country);
+    }
+    return 'Same location as parent';
+  }
+
+  shouldCollapseFactories(subsidiary: SubsidiaryCompany): boolean {
+    return subsidiary.factories.length > this.factoryCollapseThreshold;
+  }
+
+  getVisibleFactories(subsidiary: SubsidiaryCompany): FactoryLocation[] {
+    if (!this.shouldCollapseFactories(subsidiary) || this.isFactoryListExpanded(subsidiary.id)) {
+      return subsidiary.factories;
+    }
+    return subsidiary.factories.slice(0, this.factoryCollapseThreshold);
+  }
+
+  getHiddenFactoryCount(subsidiary: SubsidiaryCompany): number {
+    if (!this.shouldCollapseFactories(subsidiary)) return 0;
+    return Math.max(0, subsidiary.factories.length - this.factoryCollapseThreshold);
+  }
+
   getStatusClass(status: string): string {
     const normalized = status.trim().toUpperCase();
     if (normalized === 'ACTIVE' || normalized === 'ONLINE') return 'status-active';
@@ -394,6 +508,23 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
     return 'INACTIVE';
   }
 
+  private normalizeLocation(value: string): string {
+    return value.trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  getStatusIcon(status: string): string {
+    const normalized = status.trim().toUpperCase();
+    if (normalized === 'ACTIVE' || normalized === 'ONLINE' || normalized === 'OPTIMAL') {
+      return 'check_circle';
+    }
+    if (normalized === 'WARNING' || normalized === 'MAINTENANCE') {
+      return 'error';
+    }
+    return 'pause_circle';
+  }
+
+  private warRoomService = inject(WarRoomService);
+  private cdr = inject(ChangeDetectorRef);
   private ensureExpandedForSelection(selection: FleetSelection): void {
     if (selection.parentGroupId) {
       this.expandedParents.update((current) =>
@@ -424,5 +555,38 @@ export class WarRoomActivityLogComponent implements AfterViewInit {
       const targetScrollTop = entryOffsetTop - container.clientHeight / 2 + entry.clientHeight / 2;
       container.scrollTo({ top: Math.max(0, targetScrollTop), behavior: 'smooth' });
     });
+  }
+
+  private softRefresh(): void {
+    if (!this.viewReady) return;
+    requestAnimationFrame(() => {
+      const selection = this.selectedEntity();
+      if (selection) {
+        this.scrollToSelection(selection);
+      }
+    });
+  }
+
+  private queueRefresh(showOverlay: boolean): void {
+    if (!this.viewReady) return;
+    if (this.refreshTimeoutId) {
+      clearTimeout(this.refreshTimeoutId);
+    }
+    if (showOverlay) {
+      this.refreshing.set(true);
+      this.cdr.detectChanges();
+    }
+    requestAnimationFrame(() => {
+      const selection = this.selectedEntity();
+      if (selection) {
+        this.scrollToSelection(selection);
+      }
+    });
+    this.refreshTimeoutId = setTimeout(() => {
+      if (showOverlay) {
+        this.refreshing.set(false);
+      }
+      this.refreshTimeoutId = null;
+    }, 350);
   }
 }

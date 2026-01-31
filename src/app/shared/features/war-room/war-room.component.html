@@ -1,4 +1,5 @@
 <div class="war-room-container">
+  <div class="visually-hidden" aria-live="polite" aria-atomic="true">{{ announcementMessage() }}</div>
   <!-- Main Content -->
   <main class="war-room-main">
     <!-- Map Area -->
@@ -10,39 +11,43 @@
         <span
           class="badge bg-primary-transparent text-primary d-flex align-items-center gap-2 px-3 py-2 rounded-pill border border-primary-transparent">
           {{ filter.label }}
-          <i class="fe fe-x cursor-pointer ms-1 fs-12" (click)="removeFilter(filter)" role="button" tabindex="0"
-            aria-label="Remove filter"></i>
+          <button class="btn-unstyled cursor-pointer ms-1 fs-12" (click)="removeFilter(filter)"
+            [attr.aria-label]="'Remove ' + filter.label + ' filter'">
+            <i class="fe fe-x" aria-hidden="true"></i>
+          </button>
         </span>
         }
         <button class="btn btn-link btn-sm text-danger text-uppercase fs-11 fw-bold p-0 ms-2"
-          (click)="clearAllFilters()">
+          (click)="clearAllFilters()" aria-label="Clear all active filters">
           Clear All
         </button>
       </div>
       }
 
       <div class="map-view-toggle card custom-card d-flex align-items-center gap-2 p-2">
-        <div class="btn-group btn-group-sm" role="group" aria-label="Map view toggle">
+        <div class="btn-group btn-group-sm" role="radiogroup" aria-label="Map view mode selection">
           <button type="button" class="btn map-view-btn" [class.btn-primary]="mapViewMode() === 'subsidiary'"
-            [class.btn-outline-primary]="mapViewMode() !== 'subsidiary'" (click)="setMapViewMode('subsidiary')">
+            [class.btn-outline-primary]="mapViewMode() !== 'subsidiary'" (click)="setMapViewMode('subsidiary')"
+            role="radio" [attr.aria-checked]="mapViewMode() === 'subsidiary'" aria-label="Switch to subsidiary view">
             Subsidiary View
           </button>
           <button type="button" class="btn map-view-btn" [class.btn-primary]="mapViewMode() === 'factory'"
-            [class.btn-outline-primary]="mapViewMode() !== 'factory'" (click)="setMapViewMode('factory')">
+            [class.btn-outline-primary]="mapViewMode() !== 'factory'" (click)="setMapViewMode('factory')" role="radio"
+            [attr.aria-checked]="mapViewMode() === 'factory'" aria-label="Switch to factory view">
             Factory View
           </button>
         </div>
         <button type="button" class="btn btn-white btn-icon-text btn-sm map-filter-btn" (click)="toggleFiltersPanel()"
           [class.btn-primary-transparent]="filtersPanelVisible()"
-          [attr.aria-label]="filtersPanelVisible() ? 'Close filters' : 'Open filters'"
+          [attr.aria-label]="(filtersPanelVisible() ? 'Close' : 'Open') + ' filters' + (activeFilterCount() > 0 ? ' (' + activeFilterCount() + ' active)' : '')"
           [attr.aria-expanded]="filtersPanelVisible()">
-          <i class="fe fe-filter me-2 fs-14"></i> Filter
+          <i class="fe fe-filter me-2 fs-14" aria-hidden="true"></i> Filter
           @if (activeFilterCount() > 0) {
-          <span class="badge bg-primary-transparent ms-1">{{ activeFilterCount() }}</span>
+          <span class="badge bg-primary-transparent ms-1" aria-hidden="true">{{ activeFilterCount() }}</span>
           }
         </button>
       </div>
-      <div class="war-room-filters card custom-card" [class.open]="filtersPanelVisible()">
+      <div id="war-room-filters-panel" class="war-room-filters card custom-card" [class.open]="filtersPanelVisible()">
         <div class="card-header d-flex align-items-center justify-content-between">
           <h6 class="main-content-label mb-0">Open Filters</h6>
           <div class="d-flex align-items-center gap-2">
@@ -72,20 +77,23 @@
             </div>
           </div>
           <div class="filters-section">
-            <label class="form-label">Status</label>
-            <div class="filters-pill-group">
+            <label class="form-label" id="status-filter-label">Status</label>
+            <div class="filters-pill-group" role="radiogroup" aria-labelledby="status-filter-label">
               <button type="button" class="btn btn-sm" [class.btn-primary]="filterDraft().status === 'all'"
-                [class.btn-outline-primary]="filterDraft().status !== 'all'" (click)="setStatusFilter('all')">
+                [class.btn-outline-light]="filterDraft().status !== 'all'" (click)="setStatusFilter('all')"
+                [attr.aria-pressed]="filterDraft().status === 'all'">
                 All
-                <span class="badge bg-primary-transparent ms-2">{{ statusCounts().total }}</span>
+                <span class="badge bg-white text-primary ms-2">{{ statusCounts().total }}</span>
               </button>
-              <button type="button" class="btn btn-sm" [class.btn-primary]="filterDraft().status === 'active'"
-                [class.btn-outline-primary]="filterDraft().status !== 'active'" (click)="setStatusFilter('active')">
+              <button type="button" class="btn btn-sm" [class.btn-success]="filterDraft().status === 'active'"
+                [class.btn-outline-light]="filterDraft().status !== 'active'" (click)="setStatusFilter('active')"
+                [attr.aria-pressed]="filterDraft().status === 'active'">
                 Active
                 <span class="badge bg-success-transparent ms-2">{{ statusCounts().active }}</span>
               </button>
-              <button type="button" class="btn btn-sm" [class.btn-primary]="filterDraft().status === 'inactive'"
-                [class.btn-outline-primary]="filterDraft().status !== 'inactive'" (click)="setStatusFilter('inactive')">
+              <button type="button" class="btn btn-sm" [class.btn-danger]="filterDraft().status === 'inactive'"
+                [class.btn-outline-light]="filterDraft().status !== 'inactive'" (click)="setStatusFilter('inactive')"
+                [attr.aria-pressed]="filterDraft().status === 'inactive'">
                 Inactive
                 <span class="badge bg-secondary-transparent ms-2">{{ statusCounts().inactive }}</span>
               </button>
@@ -138,7 +146,15 @@
     </div>
 
     <!-- Sidebar -->
-    <aside class="war-room-sidebar" [class.expanded]="activityLogVisible() || hubStatusVisible()">
+    <aside class="war-room-sidebar" [class.expanded]="activityLogVisible() || hubStatusVisible()"
+      [class.collapsed]="sidebarCollapsed()">
+      <button class="sidebar-collapse-btn" type="button" (click)="toggleSidebarCollapsed()"
+        [attr.aria-label]="sidebarCollapsed() ? 'Expand war room sidebar' : 'Collapse war room sidebar'"
+        [attr.aria-expanded]="!sidebarCollapsed()">
+        <i class="fe" [class.fe-chevrons-right]="sidebarCollapsed()" [class.fe-chevrons-left]="!sidebarCollapsed()"
+          aria-hidden="true"></i>
+        <span class="collapse-text">{{ sidebarCollapsed() ? 'EXPAND' : 'COLLAPSE' }}</span>
+      </button>
       <!-- Activity Log Toggle Button -->
       <button class="sidebar-toggle-btn activity-log-toggle bio-cell-toggle" [class.active]="activityLogVisible()"
         (click)="toggleActivityLog()"
@@ -174,6 +190,7 @@
       <div class="sidebar-section" [class.hidden]="!activityLogVisible()">
         <app-war-room-activity-log [parentGroups]="filteredParentGroups()" [activityLogs]="filteredActivityLogs()"
           [selectedEntity]="selectedEntity()" [editMode]="activityLogEditMode()" [mapViewMode]="mapViewMode()"
+          [isBusy]="activityLogBusy()"
           (selectionChange)="onEntitySelected($event)" (editModeChange)="activityLogEditMode.set($event)"
           (factoryDetailsUpdated)="onFactoryDetailsUpdated($event)"
           (subsidiaryDetailsUpdated)="onSubsidiaryDetailsUpdated($event)"

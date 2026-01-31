@@ -21,7 +21,8 @@
   </div>
 
   <!-- Transit Routes Overlay -->
-  <svg class="transit-routes-overlay" [attr.viewBox]="svgViewBox()" preserveAspectRatio="xMidYMid meet">
+  <svg class="transit-routes-overlay" [attr.viewBox]="svgViewBox()" preserveAspectRatio="xMidYMid meet"
+    aria-hidden="true">
     <defs>
       <!-- React-inspired 'glow' filter - Dilate strategy -->
       <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
@@ -47,64 +48,70 @@
       </linearGradient>
     </defs>
 
-    @for (route of projectedRoutes(); track route.id) {
-    <g class="transit-route-group" [style.--route-index]="route.index">
-      <!-- Animated Connection Path -->
-      <path [attr.d]="route.path" class="route-path" [class.highlighted]="route.highlighted" fill="none"
-        stroke="url(#path-gradient)" stroke-width="1.2" [attr.stroke-dasharray]="route.dashArray || '1000'"
-        stroke-dashoffset="1000" pathLength="1000">
-        <animate attributeName="stroke-dashoffset" values="1000;1000;0;0;1000;1000" keyTimes="0;0.1;0.45;0.65;0.95;1"
-          dur="6s" [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.05;0.15;0.85;0.95;1" dur="6s"
-          [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-      </path>
+    <!-- Transit routes layer - synchronized with map transforms -->
+    <g id="transit-routes-layer" [attr.transform]="mapTransform()">
+      @for (route of projectedRoutes(); track route.id) {
+      <g class="transit-route-group" [style.--route-index]="route.index">
+        <!-- Animated Connection Path -->
+        <path [attr.d]="route.path" class="route-path" [class.highlighted]="route.highlighted" fill="none"
+          stroke="url(#path-gradient)" stroke-width="1.2" [attr.stroke-dasharray]="route.dashArray || '1000'"
+          stroke-dashoffset="1000" pathLength="1000">
+          <animate attributeName="stroke-dashoffset" values="1000;1000;0;0;1000;1000" keyTimes="0;0.1;0.45;0.65;0.95;1"
+            dur="6s" [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.05;0.15;0.85;0.95;1" dur="6s"
+            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
+        </path>
 
-      <!-- Traveling dot following the path -->
-      <circle r="3.5" class="route-dot" fill="#0ea5e9" filter="url(#glow)" opacity="0">
-        <animateMotion [attr.path]="route.path" dur="6s" rotate="auto" calcMode="linear" keyPoints="0;0;1;1;1;0"
-          keyTimes="0;0.1;0.45;0.65;0.95;1" [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-        <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.1;0.15;0.6;0.7;1" dur="6s"
-          [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-        <animate attributeName="r" values="0;3.5;3.5;0" keyTimes="0;0.15;0.65;0.75" dur="6s"
-          [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-      </circle>
-
-      <!-- Source Point -->
-      <g class="point-group source" [style.opacity]="0">
-        <circle [attr.cx]="route.start.x" [attr.cy]="route.start.y" r="2.5" fill="#0ea5e9" filter="url(#glow)" />
-        <circle [attr.cx]="route.start.x" [attr.cy]="route.start.y" r="2.5" fill="#0ea5e9" opacity="0.5">
-          <animate attributeName="r" from="2.5" to="10" dur="2s" repeatCount="indefinite" />
-          <animate attributeName="opacity" from="0.5" to="0" dur="2s" repeatCount="indefinite" />
+        <!-- Traveling dot following the path -->
+        <circle r="3.5" class="route-dot" fill="#0ea5e9" filter="url(#glow)" opacity="0">
+          <animateMotion [attr.path]="route.path" dur="6s" rotate="auto" calcMode="linear" keyPoints="0;0;1;1;1;0"
+            keyTimes="0;0.1;0.45;0.65;0.95;1" [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.1;0.15;0.6;0.7;1" dur="6s"
+            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
+          <animate attributeName="r" values="0;3.5;3.5;0" keyTimes="0;0.15;0.65;0.75" dur="6s"
+            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
         </circle>
 
-        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="6s"
-          [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-      </g>
+        <!-- Source Point -->
+        <g class="point-group source" [style.opacity]="0">
+          <circle [attr.cx]="route.start.x" [attr.cy]="route.start.y" r="2.5" fill="#0ea5e9" filter="url(#glow)" />
+          <circle [attr.cx]="route.start.x" [attr.cy]="route.start.y" r="2.5" fill="#0ea5e9" opacity="0.5">
+            <animate attributeName="r" from="2.5" to="10" dur="2s" repeatCount="indefinite" />
+            <animate attributeName="opacity" from="0.5" to="0" dur="2s" repeatCount="indefinite" />
+          </circle>
 
-      <!-- Target Point -->
-      <g class="point-group target" [style.opacity]="0">
-        <circle [attr.cx]="route.end.x" [attr.cy]="route.end.y" r="2.5" fill="#0ea5e9" filter="url(#glow)" />
-        <circle [attr.cx]="route.end.x" [attr.cy]="route.end.y" r="2.5" fill="#0ea5e9" opacity="0.5">
-          <animate attributeName="r" from="2.5" to="10" dur="2s" begin="0.5s" repeatCount="indefinite" />
-          <animate attributeName="opacity" from="0.5" to="0" dur="2s" begin="0.5s" repeatCount="indefinite" />
-        </circle>
+          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="6s"
+            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
+        </g>
 
-        <animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.4;0.5;0.9;1" dur="6s"
-          [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
+        <!-- Destination Point -->
+        <g class="point-group destination" [style.opacity]="0">
+          <circle [attr.cx]="route.end.x" [attr.cy]="route.end.y" r="2.5" fill="#0ea5e9" filter="url(#glow)" />
+          <circle [attr.cx]="route.end.x" [attr.cy]="route.end.y" r="2.5" fill="#0ea5e9" opacity="0.5">
+            <animate attributeName="r" from="2.5" to="10" dur="2s" [attr.begin]="(route.index * 0.4) + 's'"
+              repeatCount="indefinite" />
+            <animate attributeName="opacity" from="0.5" to="0" dur="2s" [attr.begin]="(route.index * 0.4) + 's'"
+              repeatCount="indefinite" />
+          </circle>
+
+          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="6s"
+            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
+        </g>
       </g>
+      }
     </g>
-    }
   </svg>
 
   <!-- Node Markers Overlay -->
   <div class="node-markers-overlay">
     @for (node of nodes(); track node.id) {
     @if (!node.logo) {
-    <div class="node-marker-wrapper" [style.top.px]="getNodePosition(node).top"
+    <button type="button" class="node-marker-wrapper btn-reset" [style.top.px]="getNodePosition(node).top"
       [style.left.px]="getNodePosition(node).left" [class.selected]="isNodeSelected(node)" [class.hub]="isHub(node)"
-      (click)="nodeSelected.emit(node)">
+      (click)="nodeSelected.emit(node)" [attr.aria-label]="getMarkerAriaLabel(node)"
+      [attr.aria-pressed]="isNodeSelected(node)">
       <div class="node-marker" [class.hub-marker]="isHub(node)"></div>
-    </div>
+    </button>
     }
     }
   </div>

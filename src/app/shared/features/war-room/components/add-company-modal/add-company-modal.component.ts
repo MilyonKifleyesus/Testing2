@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WarRoomService } from '../../../../../shared/services/war-room.service';
 
+import { A11yModule } from '@angular/cdk/a11y';
+
 export interface CompanyFormData {
   companyName: string;
   location: string;
@@ -22,7 +24,7 @@ export interface SubLocationFormData {
 
 @Component({
   selector: 'app-add-company-modal',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, A11yModule],
   templateUrl: './add-company-modal.component.html',
   styleUrl: './add-company-modal.component.scss',
 })
@@ -60,9 +62,12 @@ export class AddCompanyModalComponent implements OnDestroy {
   });
 
   // Form state
-  submissionState = signal<'IDLE' | 'SUBMITTING' | 'SUCCESS' | 'ERROR'>('IDLE');
-  isSubmitting = computed(() => this.submissionState() === 'SUBMITTING');
+  // Async UI state required by UX spec (kept local to the modal).
+  loading = signal<boolean>(false);
   errorMessage = signal<string | null>(null);
+  successMessage = signal<string | null>(null);
+  submissionState = signal<'IDLE' | 'SUBMITTING' | 'SUCCESS' | 'ERROR'>('IDLE');
+  isSubmitting = computed(() => this.loading());
 
   @HostBinding('class.map-positioned') get isMapPositioned(): boolean {
     return this.useMapPositioning();
@@ -75,6 +80,11 @@ export class AddCompanyModalComponent implements OnDestroy {
       const mapPos = this.useMapPositioning();
       if (visible && !mapPos) {
         setTimeout(() => this.moveToBody(), 0);
+      }
+
+      // Accessibility: Focus first input when modal opens
+      if (visible) {
+        setTimeout(() => this.focusFirstInput(), 100);
       }
     });
   }
@@ -98,7 +108,7 @@ export class AddCompanyModalComponent implements OnDestroy {
    */
   @HostListener('document:keydown.escape')
   onEscapeKey(): void {
-    if (this.isVisible()) {
+    if (this.isVisible() && !this.isSubmitting()) {
       this.onClose();
     }
   }
@@ -244,8 +254,14 @@ export class AddCompanyModalComponent implements OnDestroy {
    * Handle form submission
    */
   async onSubmit(): Promise<void> {
+    // Guard against duplicate submissions while an async request is in-flight.
+    if (this.isSubmitting()) {
+      return;
+    }
+
     // Clear previous errors
     this.errorMessage.set(null);
+    this.successMessage.set(null);
 
     // Validate form
     if (!this.validateForm()) {
@@ -253,6 +269,8 @@ export class AddCompanyModalComponent implements OnDestroy {
       return;
     }
 
+    // Keep modal open while loading to avoid user confusion.
+    this.loading.set(true);
     this.submissionState.set('SUBMITTING');
 
     try {
@@ -283,15 +301,9 @@ export class AddCompanyModalComponent implements OnDestroy {
     } catch (error) {
       console.error('Error in onSubmit:', error);
       const errorMsg = error instanceof Error ? error.message : 'An error occurred while processing the form';
-      this.errorMessage.set(errorMsg);
+      this.handleError(errorMsg);
       console.error('Error message set:', errorMsg);
       // Don't auto-hide error - let user see it and fix the issue
-    } finally {
-      // Note: We don't automatically set back to IDLE here if successful.
-      // The parent will call handleSuccess() or handleErrorMessage().
-      if (this.submissionState() === 'SUBMITTING' && this.errorMessage()) {
-        this.submissionState.set('ERROR');
-      }
     }
   }
 
@@ -309,6 +321,8 @@ export class AddCompanyModalComponent implements OnDestroy {
     this.subLocations.set([]);
     this.resetSubLocationForm();
     this.errorMessage.set(null);
+    this.successMessage.set(null);
+    this.loading.set(false);
     this.submissionState.set('IDLE');
   }
 
@@ -316,14 +330,34 @@ export class AddCompanyModalComponent implements OnDestroy {
    * Handle close button click
    */
   onClose(): void {
+    if (this.isSubmitting()) {
+      return;
+    }
     this.resetForm();
     this.close.emit();
   }
 
   /**
+   * Focus first input for accessibility
+   * @private
+   */
+  private focusFirstInput(): void {
+    const firstInput = this.elementRef.nativeElement.querySelector('#target-company-name');
+    if (firstInput) {
+      firstInput.focus();
+    }
+  }
+
+  /**
    * Handle successful submission
    */
-  handleSuccess(): void {
+  handleSuccess(message?: string): void {
+    // Success is the ONLY time we close the modal automatically.
+    this.loading.set(false);
+    this.errorMessage.set(null);
+    this.successMessage.set(
+      message || `${this.companyName().trim() || 'Company'} registered. Sync complete.`
+    );
     this.submissionState.set('SUCCESS');
   }
 
@@ -331,7 +365,10 @@ export class AddCompanyModalComponent implements OnDestroy {
    * Handle submission error
    */
   handleError(message: string): void {
-    this.errorMessage.set(message);
+    const fallback = 'Failed to add subsidiary. Please try again.';
+    this.errorMessage.set(message?.trim() ? message : fallback);
+    this.successMessage.set(null);
+    this.loading.set(false);
     this.submissionState.set('ERROR');
   }
 
@@ -349,6 +386,9 @@ export class AddCompanyModalComponent implements OnDestroy {
    * Handle backdrop click
    */
   onBackdropClick(event: MouseEvent): void {
+    if (this.isSubmitting()) {
+      return;
+    }
     // Only close if clicking the backdrop itself, not the modal content
     if ((event.target as HTMLElement).classList.contains('modal-overlay')) {
       this.onClose();

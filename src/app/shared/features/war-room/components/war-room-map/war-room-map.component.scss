@@ -635,6 +635,15 @@
     z-index: 50 !important;
   }
 
+  // NEW: Temporary hover highlighting (cross-component sync)
+  ::ng-deep circle.jvm-marker.marker-temp-hover,
+  ::ng-deep circle[data-index].marker-temp-hover,
+  ::ng-deep circle[class*="jvm-marker"].marker-temp-hover,
+  ::ng-deep image.company-logo-image.marker-temp-hover {
+    filter: brightness(1.3) !important;
+    transition: filter 0.15s ease !important;
+  }
+
   // Hide legacy labels; use badge container instead.
   ::ng-deep .company-label,
   ::ng-deep #jvm-labels-group text,
@@ -668,7 +677,7 @@
   ::ng-deep .company-badge-text {
     fill: #00FF41;
     font-weight: 700;
-    font-size: 10px;
+    font-size: 0.75rem;
     font-family: Arial, sans-serif;
     paint-order: stroke;
     stroke: rgba(0, 0, 0, 0.6);
@@ -709,8 +718,8 @@
     background-color: rgba(255, 255, 255, 0.9) !important;
     border: 1px solid #e5e5e5 !important;
     color: #000000 !important;
-    width: 28px !important;
-    height: 28px !important;
+    min-width: 2rem !important;
+    min-height: 2.75rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -748,8 +757,8 @@
 }
 
 .map-control-btn {
-  width: 28px;
-  height: 28px;
+  min-width: 2rem;
+  min-height: 2.75rem;
   background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid #e5e5e5;
   color: #000000;

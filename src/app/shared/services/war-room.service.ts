@@ -31,7 +31,9 @@ export class WarRoomService {
   private _satelliteStatuses = signal<SatelliteStatus[]>([]);
   private _mapViewMode = signal<MapViewMode>('parent');
   private _selectedEntity = signal<FleetSelection | null>(null);
+  private _hoveredEntity = signal<FleetSelection | null>(null);
   private _factoryFilterSubsidiaryId = signal<string | null>(null);
+  private _panToEntity = signal<{ id: string; timestamp: number } | null>(null);
 
   // Public readonly signals
   readonly parentGroups = this._parentGroups.asReadonly();
@@ -43,6 +45,8 @@ export class WarRoomService {
   readonly satelliteStatuses = this._satelliteStatuses.asReadonly();
   readonly mapViewMode = this._mapViewMode.asReadonly();
   readonly selectedEntity = this._selectedEntity.asReadonly();
+  readonly hoveredEntity = this._hoveredEntity.asReadonly();
+  readonly panToEntity = this._panToEntity.asReadonly();
 
   // Computed signals
   readonly subsidiaries = computed(() =>
@@ -329,17 +333,25 @@ export class WarRoomService {
     };
   }
 
+  private isValidCoordinates(coords?: { latitude: number; longitude: number } | null): boolean {
+    if (!coords) return false;
+    if (!Number.isFinite(coords.latitude) || !Number.isFinite(coords.longitude)) return false;
+    if (coords.latitude === 0 && coords.longitude === 0) return false;
+    return true;
+  }
+
   private computeCenterOfGravity(factories: FactoryLocation[]): { latitude: number; longitude: number } {
-    if (factories.length === 0) {
-      return { latitude: 0, longitude: 0 };
+    const validFactories = factories.filter((factory) => this.isValidCoordinates(factory.coordinates));
+    if (validFactories.length === 0) {
+      return { latitude: NaN, longitude: NaN };
     }
 
-    const totalWeight = factories.reduce((sum, factory) => sum + (factory.assets || 1), 0);
-    const weightedLat = factories.reduce(
+    const totalWeight = validFactories.reduce((sum, factory) => sum + (factory.assets || 1), 0);
+    const weightedLat = validFactories.reduce(
       (sum, factory) => sum + factory.coordinates.latitude * (factory.assets || 1),
       0
     );
-    const weightedLng = factories.reduce(
+    const weightedLng = validFactories.reduce(
       (sum, factory) => sum + factory.coordinates.longitude * (factory.assets || 1),
       0
     );
@@ -568,6 +580,20 @@ export class WarRoomService {
         this._mapViewMode.set(normalized.level);
       }
     }
+  }
+
+  /**
+   * Set hovered entity for cross-component highlighting
+   */
+  setHoveredEntity(selection: FleetSelection | null): void {
+    this._hoveredEntity.set(selection);
+  }
+
+  /**
+   * Request map to pan/zoom to a specific entity
+   */
+  requestPanToEntity(entityId: string): void {
+    this._panToEntity.set({ id: entityId, timestamp: Date.now() });
   }
 
   setFactoryFilterSubsidiaryId(subsidiaryId: string | null): void {
