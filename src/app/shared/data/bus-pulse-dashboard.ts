@@ -1,5 +1,19 @@
 // BusPulse Dashboard Data - Fleet Management System
 
+// Text color constant for data labels - dark for readability on light backgrounds
+const DATA_LABEL_COLOR = '#212529'; // Using Bootstrap's dark gray color for consistency
+
+// Color palette constants for consistent theming across all charts
+const PRIMARY_GREEN_COLORS_2 = ['#7cba7f', '#a9d5ab'];
+const PRIMARY_GREEN_COLORS_4 = ['#609764', '#589a5c', '#7cba7f', '#a9d5ab'];
+const PRIMARY_GREEN_COLORS_3 = ['#589a5c', '#7cba7f', '#a9d5ab'];
+const PRIMARY_GREEN_COLORS_6 = ['#1b5e20', '#2e7d32', '#388e3c', '#4caf50', '#66bb6a', '#81c784'];
+const PRIMARY_GREEN_COLORS_3_ALT = ['#1b5e20', '#2e7d32', '#4caf50'];
+const BLUE_ACCENT_COLORS = ['#4099ff', '#00d4ff', '#50c878'];
+const SINGLE_GREEN_DARK = ['#2e7d32'];
+const SINGLE_GREEN_LIGHT = ['#66bb6a'];
+const SINGLE_GREEN_MEDIUM = ['#388e3c'];
+
 /**
  * 1. Open and Closed Projects (Donut Chart)
  */
@@ -12,14 +26,14 @@ export const openClosedProjectsChart = {
     sparkline: { enabled: false },
     dropShadow: { enabled: true, enabledOnSeries: undefined, top: 3, left: 0, blur: 3, color: '#000', opacity: 0.1 }
   },
-  dataLabels: { enabled: true },
+  dataLabels: { enabled: true, style: { colors: [DATA_LABEL_COLOR], fontSize: '13px', fontWeight: 600 } },
   legend: { position: 'bottom', fontSize: '13px', fontFamily: 'Poppins, sans-serif', fontWeight: 500 },
   stroke: { show: true, curve: 'smooth', lineCap: 'round', colors: ['#fff'], width: 2, dashArray: 0 },
   plotOptions: {
     pie: {
       expandOnClick: false,
       donut: {
-        size: '75%',
+        size: '55%',
         background: 'transparent',
         labels: {
           show: true,
@@ -30,7 +44,7 @@ export const openClosedProjectsChart = {
       }
     }
   },
-  colors: ['#2e7d32', '#81c784']
+  colors: PRIMARY_GREEN_COLORS_2
 };
 
 /**
@@ -45,16 +59,16 @@ export const vehiclesByMakeModelChart = {
     sparkline: { enabled: false },
     dropShadow: { enabled: true, enabledOnSeries: undefined, top: 3, left: 0, blur: 3, color: '#000', opacity: 0.1 }
   },
-  dataLabels: { enabled: true },
+  dataLabels: { enabled: true, style: { colors: [DATA_LABEL_COLOR], fontSize: '13px', fontWeight: 600 } },
   legend: { position: 'bottom', fontSize: '13px', fontFamily: 'Poppins, sans-serif', fontWeight: 500 },
   stroke: { show: true, curve: 'smooth', lineCap: 'round', colors: ['#fff'], width: 2, dashArray: 0 },
   plotOptions: {
     pie: {
       expandOnClick: false,
-      donut: { size: '75%', background: 'transparent' }
+      donut: { size: '55%', background: 'transparent' }
     }
   },
-  colors: ['#1b5e20', '#2e7d32', '#388e3c', '#4caf50']
+  colors: PRIMARY_GREEN_COLORS_4
 };
 
 /**
@@ -69,16 +83,16 @@ export const vehiclesByPropulsionChart = {
     sparkline: { enabled: false },
     dropShadow: { enabled: true, enabledOnSeries: undefined, top: 3, left: 0, blur: 3, color: '#000', opacity: 0.1 }
   },
-  dataLabels: { enabled: true },
+  dataLabels: { enabled: true, style: { colors: [DATA_LABEL_COLOR], fontSize: '13px', fontWeight: 600 } },
   legend: { position: 'bottom', fontSize: '13px', fontFamily: 'Poppins, sans-serif', fontWeight: 500 },
   stroke: { show: true, curve: 'smooth', lineCap: 'round', colors: ['#fff'], width: 2, dashArray: 0 },
   plotOptions: {
     pie: {
       expandOnClick: false,
-      donut: { size: '75%', background: 'transparent' }
+      donut: { size: '55%', background: 'transparent' }
     }
   },
-  colors: ['#2e7d32', '#66bb6a', '#81c784']
+  colors: PRIMARY_GREEN_COLORS_3
 };
 
 /**
@@ -113,7 +127,7 @@ export const defectsByAreaTreemap = {
       colorScale: { ranges: [] }
     }
   },
-  colors: ['#1b5e20', '#2e7d32', '#388e3c', '#4caf50', '#66bb6a', '#81c784']
+  colors: PRIMARY_GREEN_COLORS_6
 };
 
 /**
@@ -147,7 +161,7 @@ export const defectsByStationChart = {
   },
   yaxis: { title: { text: 'Avg Defects', style: { fontSize: '13px', fontFamily: 'Poppins, sans-serif' } } },
   fill: { opacity: 1 },
-  colors: ['#2e7d32'],
+  colors: SINGLE_GREEN_DARK,
   legend: { position: 'top', fontSize: '13px', fontFamily: 'Poppins, sans-serif' }
 };
 
@@ -161,14 +175,14 @@ export const repeatedDefectsGauge = {
     radialBar: {
       startAngle: -90,
       endAngle: 90,
-      hollow: { size: '70%' },
+      hollow: { size: '35%' },
       dataLabels: {
         name: { show: true, offsetY: 10, color: '#495057', fontSize: '13px', fontFamily: 'Poppins' },
         value: { show: true, color: '#212529', fontSize: '28px', fontWeight: 'bold', offsetY: -20, fontFamily: 'Poppins' }
       }
     }
   },
-  colors: ['#66bb6a'],
+  colors: SINGLE_GREEN_LIGHT,
   labels: ['Repeated %']
 };
 
@@ -182,14 +196,14 @@ export const safetyCriticalDefectsGauge = {
     radialBar: {
       startAngle: -90,
       endAngle: 90,
-      hollow: { size: '70%' },
+      hollow: { size: '35%' },
       dataLabels: {
         name: { show: true, offsetY: 10, color: '#495057', fontSize: '13px', fontFamily: 'Poppins' },
         value: { show: true, color: '#212529', fontSize: '28px', fontWeight: 'bold', offsetY: -20, fontFamily: 'Poppins' }
       }
     }
   },
-  colors: ['#388e3c'],
+  colors: SINGLE_GREEN_MEDIUM,
   labels: ['Critical %']
 };
 
@@ -224,7 +238,7 @@ export const repeatedDefectsByAreaTreemap = {
       reverseScale: false
     }
   },
-  colors: ['#1b5e20', '#2e7d32', '#388e3c', '#4caf50', '#66bb6a', '#81c784']
+  colors: PRIMARY_GREEN_COLORS_6
 };
 
 /**
@@ -254,7 +268,7 @@ export const projectsByAreaStackedChart = {
   yaxis: { title: { text: 'Avg Defects', style: { fontSize: '13px', fontFamily: 'Poppins, sans-serif' } } },
   dataLabels: { enabled: false },
   fill: { opacity: 1 },
-  colors: ['#4099ff', '#00d4ff', '#50c878'],
+  colors: BLUE_ACCENT_COLORS,
   legend: { position: 'top', fontSize: '13px', fontFamily: 'Poppins, sans-serif' }
 };
 
@@ -343,7 +357,7 @@ export const stationTimeComparisonChart = {
   },
   dataLabels: { enabled: false },
   fill: { opacity: 1 },
-  colors: ['#1b5e20', '#2e7d32', '#4caf50'],
+  colors: PRIMARY_GREEN_COLORS_3_ALT,
   legend: { position: 'top', fontSize: '13px', fontFamily: 'Poppins, sans-serif' }
 };
 
@@ -445,7 +459,7 @@ export const projectMagnitudeBubble = {
     title: { text: 'Inspection Days', style: { fontSize: '13px', fontFamily: 'Poppins, sans-serif' } },
     labels: { style: { fontSize: '12px', fontFamily: 'Poppins, sans-serif' } }
   },
-  colors: ['#2e7d32'],
+  colors: SINGLE_GREEN_DARK,
   legend: { position: 'bottom', fontSize: '13px', fontFamily: 'Poppins, sans-serif' }
 };
 

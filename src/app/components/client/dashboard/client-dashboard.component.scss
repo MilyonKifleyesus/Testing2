@@ -4,9 +4,22 @@
   display: block;
 }
 
+/* Theme-driven background for the dashboard wrapper */
+:host-context(html[data-theme-mode="light"]) {
+  --dashboard-wrapper-bg: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
+}
+
+:host-context(html[data-theme-mode="dark"]) {
+  --dashboard-wrapper-bg: linear-gradient(
+    135deg,
+    rgb(var(--body-bg-rgb)) 0%,
+    rgb(var(--body-bg-rgb2, var(--body-bg-rgb))) 100%
+  );
+}
+
 .dashboard-wrapper {
   padding: 1.5rem 0;
-  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
+  background: var(--dashboard-wrapper-bg);
   min-height: calc(100vh - 80px);
   width: 100%;
   overflow-x: hidden;
@@ -22,27 +35,27 @@
 
 /* ============ Filter Section ============ */
 .filter-section {
-  background: #ffffff;
+  background: var(--filter-section-bg, #ffffff);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--filter-section-border, #e5e7eb);
   margin-top: 1.5rem;
 
   .form-label {
     font-size: 14px;
-    color: #374151;
+    color: var(--filter-label-color, #374151);
     font-weight: 600;
   }
 
   .form-select {
     border-radius: 8px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--filter-select-border, #d1d5db);
     padding: 0.5rem 0.75rem;
     font-size: 14px;
     transition: all 0.3s ease;
-    background-color: #ffffff;
-    color: #111827;
+    background-color: var(--filter-select-bg, #ffffff);
+    color: var(--filter-select-color, #111827);
 
     &:hover {
       border-color: #10b981;
@@ -56,8 +69,8 @@
     }
 
     option {
-      background-color: #ffffff;
-      color: #111827;
+      background-color: var(--filter-select-bg, #ffffff);
+      color: var(--filter-select-color, #111827);
       padding: 0.5rem;
     }
   }
@@ -248,6 +261,26 @@
   .row {
     margin-bottom: 0;
   }
+
+  &.compact-mode {
+    .row {
+      display: grid;
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-auto-flow: dense;
+      gap: 1.5rem;
+      --bs-gutter-x: 0;
+      --bs-gutter-y: 0;
+    }
+
+    .widget-container {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .compact-widget {
+      width: 100%;
+    }
+  }
 }
 
 /* ============ Widget Container (for Drag & Drop) ============ */
@@ -262,14 +295,14 @@
 
 /* ============ Data Cards / Widget Cards ============ */
 .data-card {
-  background: #ffffff;
+  background: var(--card-bg, #ffffff);
   border-radius: 12px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.02);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1), height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--card-border, #e5e7eb);
   position: relative;
 
   &:hover {
@@ -279,20 +312,20 @@
 
   .card-header {
     padding: 1.25rem 1.25rem 0.75rem;
-    background: #ffffff;
-    border-bottom: 2px solid #f3f4f6;
+    background: var(--card-header-bg, #ffffff);
+    border-bottom: 2px solid var(--card-header-border, #f3f4f6);
 
     .card-title {
       font-size: 15px;
       font-weight: 700;
-      color: #111827;
+      color: var(--default-text-color);
       margin-bottom: 0.15rem;
       letter-spacing: -0.2px;
     }
 
     .card-subtitle {
       font-size: 12px;
-      color: #6b7280;
+      color: var(--text-muted);
       margin: 0;
       font-weight: 500;
     }
@@ -304,7 +337,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    background: #ffffff;
+    background: var(--card-body-bg, #ffffff);
     overflow: auto;
     min-height: 0;
     transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -708,12 +741,12 @@ body.is-resizing {
 
 /* ============ Stat Cards ============ */
 .stat-card {
-  background: white;
+  background: var(--stat-card-bg, #ffffff);
   border-radius: 12px;
   padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--stat-card-border, #e5e7eb);
 
   &:hover {
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
@@ -733,7 +766,7 @@ body.is-resizing {
       .stat-label {
         font-size: 9px;
         font-weight: 700;
-        color: #6b7280;
+        color: var(--default-text-color);
         letter-spacing: 0.4px;
         text-transform: uppercase;
         margin: 0;
@@ -743,7 +776,7 @@ body.is-resizing {
 
       .stat-sublabel {
         font-size: 10px;
-        color: #9ca3af;
+        color: var(--text-muted);
         margin: 0.1rem 0 0 0;
         font-weight: 500;
         text-align: left;
@@ -765,7 +798,7 @@ body.is-resizing {
         .stat-value {
           font-size: 28px;
           font-weight: 900;
-          color: #111827;
+          color: var(--default-text-color);
           margin: 0;
           letter-spacing: -0.5px;
           line-height: 1;
@@ -848,9 +881,9 @@ body.is-resizing {
 /* ============ Summary Stats Section ============ */
 .summary-stats-section {
   padding: 1.25rem;
-  background: #ffffff;
+  background: var(--stat-card-bg, #ffffff);
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--stat-card-border, #e5e7eb);
   margin-bottom: 1.5rem;
 }
 

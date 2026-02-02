@@ -70,64 +70,73 @@ export class LoginComponent {
     return this.loginForm.controls;
   }
 
-  login(): void {
-    this.Submit();
+  Submit(): void {
+    this.login();
   }
 
-  Submit(): void {
-    this.errorMessage = '';
-    this._error.message = '';
+  login() {
+    console.log(this.loginForm)
 
-    if (this.loginForm.invalid) {
-      this.toastr.error('Invalid details', 'BusPulse', {
+    // this.disabled = "btn-loading"
+    this.errorMessage = '';
+    if (this.validateForm(this.email, this.password)) {
+      this.authservice
+        .loginWithEmail(this.email, this.password)
+        .then((user: any) => {
+          console.log('Login user object:', user);
+          // Navigate based on user role
+          if (user?.role === 'superadmin') {
+            console.log('Navigating to admin dashboard');
+            this.router.navigate(['/admin/dashboard']);
+          } else if (user?.role === 'client' || user?.role === 'user') {
+            console.log('Navigating to client dashboard');
+            this.router.navigate(['/client/dashboard']);
+          } else {
+            console.log('Navigating to default dashboard');
+            this.router.navigate(['/dashboard']);
+          }
+          console.clear();
+          this.toastr.success('login successful','spruha', {
+            timeOut: 3000,
+            positionClass: 'toast-top-right',
+          });
+        })
+        .catch((_error: any) => {
+          this._error = _error;
+          this.router.navigate(['/']);
+        });
+     
+    }
+    else {
+      this.toastr.error('Invalid details','spruha', {
         timeOut: 3000,
         positionClass: 'toast-top-right',
       });
-      return;
+    }
+  }
+
+  validateForm(email: string, password: string) {
+    if (email.length === 0) {
+      this.errorMessage = 'please enter email id';
+      return false;
     }
 
-    const username = String(this.email ?? '').trim();
-    const password = String(this.password ?? '');
+    if (password.length === 0) {
+      this.errorMessage = 'please enter password';
+      return false;
+    }
 
-    this.authservice.login({ usernameOrEmail: username, password }).subscribe({
-      next: (user: LoginResponse) => {
-        const role = (user.role ?? '').toLowerCase().trim();
+    if (password.length < 6) {
+      this.errorMessage = 'password should be at least 6 char';
+      return false;
+    }
 
-        if (role === 'admin' || role === 'superadmin') {
-          this.router.navigate(['/admin/dashboard'], { replaceUrl: true });
-          return;
-        }
-
-        if (role === 'client') {
-          this.router.navigate(['/client/dashboard'], { replaceUrl: true });
-          return;
-        }
-
-        if (role === 'inspector') {
-          this.router.navigate(['/dashboard'], { replaceUrl: true });
-          return;
-        }
-
-        // fallback
-        this.router.navigate(['/dashboard'], { replaceUrl: true });
-        this.toastr.success('Login successful', 'BusPulse', {
-          timeOut: 3000,
-          positionClass: 'toast-top-right',
-        });
-      },
-      error: (error: HttpErrorResponse) => {
-        const msg = error.error?.message ?? 'Invalid credentials';
-
-        this._error.message = msg;
-        this.errorMessage = msg;
-
-        this.toastr.error(this.errorMessage, 'BusPulse', {
-          timeOut: 3000,
-          positionClass: 'toast-top-right',
-        });
-      },
-    });
+    this.errorMessage = '';
+    return true;
+    
   }
+
+
 
   public togglePassword(): void {
     this.showPassword = !this.showPassword;

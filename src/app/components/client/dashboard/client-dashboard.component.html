@@ -113,18 +113,19 @@
     </div>
 
     <!-- Main Dashboard Grid: Customizable Widgets with Drag & Drop -->
-    <div class="charts-grid">
+    <div class="charts-grid" [class.compact-mode]="showFilters && selectedProject !== 'all'">
       <div class="row g-4" cdkDropList (cdkDropListDropped)="onWidgetDrop($event)">
         
         <!-- Generic Widget Frame (Reusable Wrapper) -->
-        <div 
-          *ngFor="let widget of widgets" 
-          [class]="'col-12 col-md-6 col-lg-' + widget.width"
-          cdkDrag
-          [cdkDragData]="widget"
-          class="widget-container"
-        >
-          <div class="data-card widget-card" [style.height.px]="widget.height">
+        <ng-container *ngFor="let widget of widgets">
+          <div 
+            [hidden]="!isWidgetVisible(widget)"
+            [ngClass]="(showFilters && selectedProject !== 'all') ? 'widget-container compact-widget' : ('widget-container col-12 col-md-6 col-lg-' + widget.width)"
+            [style.gridColumn]="(showFilters && selectedProject !== 'all') ? ('span ' + widget.width) : null"
+            cdkDrag
+            [cdkDragData]="widget"
+          >
+          <div class="data-card widget-card" [style.height.px]="getCompactWidgetHeight(widget)">
             
             <!-- Drag Handle -->
             <div class="widget-drag-handle" cdkDragHandle>
@@ -238,7 +239,8 @@
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        </ng-container>
 
       </div>
     </div>

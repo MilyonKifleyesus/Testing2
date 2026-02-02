@@ -27,6 +27,23 @@ export interface DashboardWidget {
   order: number;                 // Display order
 }
 
+const DEFAULT_WIDGET_LAYOUT: Array<Pick<DashboardWidget, 'id' | 'width' | 'height' | 'order'>> = [
+  { id: 'widget-1', width: 4, height: 400, order: 1 },
+  { id: 'widget-2', width: 4, height: 400, order: 2 },
+  { id: 'widget-3', width: 4, height: 400, order: 3 },
+  { id: 'widget-4', width: 8, height: 450, order: 4 },
+  { id: 'widget-5', width: 4, height: 450, order: 5 },
+  { id: 'widget-6', width: 8, height: 450, order: 6 },
+  { id: 'widget-7', width: 4, height: 450, order: 7 },
+  { id: 'widget-8', width: 8, height: 450, order: 8 },
+  { id: 'widget-9', width: 4, height: 450, order: 9 },
+  { id: 'widget-10', width: 8, height: 450, order: 10 },
+  { id: 'widget-14', width: 4, height: 450, order: 10.1 },
+  { id: 'widget-11', width: 12, height: 500, order: 11 },
+  { id: 'widget-12', width: 12, height: 450, order: 12 },
+  { id: 'widget-13', width: 12, height: 450, order: 13 }
+];
+
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
@@ -116,6 +133,36 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
 
   selectedProject = 'all';
   selectedVehicle = 'all';
+
+  isWidgetVisible(widget: DashboardWidget): boolean {
+    if (this.showFilters && this.selectedProject !== 'all') {
+      if (
+        widget.id === 'widget-10' ||
+        widget.id === 'widget-2' ||
+        widget.id === 'widget-11' ||
+        widget.id === 'widget-12' ||
+        widget.id === 'widget-13'
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  getCompactWidgetHeight(widget: DashboardWidget): number {
+    if (!(this.showFilters && this.selectedProject !== 'all')) {
+      return widget.height;
+    }
+    
+    // During compact mode, find all visible widgets with the same width (same row group)
+    const sameRowWidgets = this.widgets.filter(
+      w => this.isWidgetVisible(w) && w.width === widget.width
+    );
+    
+    // Return the maximum height in this row group
+    const maxHeight = Math.max(...sameRowWidgets.map(w => w.height), widget.height);
+    return maxHeight;
+  }
 
   // Dynamic stats based on selected project
   currentProjectStats = getProjectStats('all');
@@ -319,6 +366,22 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Failed to save dashboard layout to storage:', error);
     }
+  }
+
+  private applyDefaultWidgetLayout(): void {
+    const defaultLayoutMap = new Map(
+      DEFAULT_WIDGET_LAYOUT.map(item => [item.id, item])
+    );
+
+    this.widgets = this.widgets.map(widget => {
+      const defaults = defaultLayoutMap.get(widget.id);
+      return defaults
+        ? { ...widget, width: defaults.width, height: defaults.height, order: defaults.order }
+        : widget;
+    });
+
+    this.widgets.sort((a, b) => a.order - b.order);
+    this.saveLayoutToStorage();
   }
 
   // ========== User Interactivity: Drag & Drop ==========
@@ -624,6 +687,7 @@ export class ClientDashboardComponent implements OnInit, OnDestroy {
       this.selectedProject = 'all';
       this.selectedVehicle = 'all';
       this.currentProjectStats = getProjectStats('all');
+      this.applyDefaultWidgetLayout();
     }
   }
 

@@ -56,6 +56,25 @@ export class AuthService {
       );
   }
 
+  loginWithRole(username: string, password: string): Observable<CurrentUser> {
+    const req: LoginRequest = { usernameOrEmail: username, password };
+    return this.login(req);
+  }
+
+  loginWithEmail(email: string, password: string): Promise<CurrentUser | null> {
+    const req: LoginRequest = { usernameOrEmail: email, password };
+    return new Promise((resolve, reject) => {
+      this.login(req).subscribe({
+        next: () => {
+          resolve(this.currentUserValue);
+        },
+        error: (err) => {
+          reject(err);
+        },
+      });
+    });
+  }
+
   logout(): void {
     localStorage.removeItem(LS_TOKEN);
     localStorage.removeItem(LS_USER);

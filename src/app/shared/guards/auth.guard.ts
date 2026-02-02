@@ -23,21 +23,13 @@ export const roleGuard: CanActivateFn = (route, state) => {
     });
   }
 
-  const expectedRoles = route.data?.['roles'] as string[] | undefined;
-
-  if (!expectedRoles || expectedRoles.length === 0) return true;
-
-  if (authService.hasRole(expectedRoles)) return true;
-
-  const userRole = authService.userRole;
-
-  if (userRole === 'superadmin' || userRole === 'admin') {
-    return router.parseUrl('/admin/dashboard');
+  const expectedRoles = route.data['roles'] as string[];
+  
+  if (expectedRoles && !authService.hasRole(expectedRoles)) {
+    // Role not authorized, redirect to dashboard
+    router.navigate(['/dashboard']);
+    return false;
   }
 
-  if (userRole === 'client') {
-    return router.parseUrl('/client/dashboard');
-  }
-
-  return router.parseUrl('/dashboard');
+  return true;
 };
