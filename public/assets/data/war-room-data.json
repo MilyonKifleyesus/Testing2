@@ -181,7 +181,7 @@
       "subsidiaryId": "marcopolo",
       "factoryId": "marcopolo-caxias",
       "location": "Caxias do Sul, Brazil",
-      "logo": "/assets/images/creative-carriage-logo.png"
+      "logo": "/assets/images/svgs/user.svg"
     },
     {
       "id": "log-008",
@@ -273,7 +273,7 @@
         "syncStability": 96.4
       },
       "description": "Primary manufacturing and service umbrella for North America.",
-      "logo": "/assets/images/creative-carriage-logo.png",
+      "logo": null,
       "subsidiaries": [
         {
           "id": "new-flyer",
@@ -624,7 +624,7 @@
           },
           "description": "LATAM production line under maintenance.",
           "location": "Caxias do Sul, Brazil",
-          "logo": "/assets/images/creative-carriage-logo.png",
+          "logo": "/assets/images/svgs/user.svg",
           "quantumChart": {
             "dataPoints": [
               48,
@@ -666,7 +666,7 @@
               "assets": 130,
               "incidents": 6,
               "description": "LATAM assembly line under maintenance.",
-              "logo": "/assets/images/creative-carriage-logo.png"
+              "logo": "/assets/images/svgs/user.svg"
             }
           ]
         },

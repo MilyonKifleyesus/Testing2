@@ -442,13 +442,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private resetMapToFullWorldView(): void {
-    this.syncMapViewport(true);
-    this.updateLabelPositions();
-    this.updateCompanyLogosAndLabelsPositions();
-    // Sync the signal to update transit lines overlay
-    this.syncViewBoxFromMap();
-  }
+
 
   private syncMapViewport(force: boolean = false): void {
     if (!force && (this.userHasZoomed || this.pendingZoomCompanyId)) {
@@ -613,7 +607,11 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
   private currentPopup: HTMLElement | null = null;
   private closePopupHandler: ((e: MouseEvent) => void) | null = null;
   private closePopupTimer: any = null;
+  // Map of nodeId -> SVG coordinate (map-space) used for drawing routes and SVG elements
   private labelPositions = new Map<string, { x: number; y: number }>();
+
+  // Map of nodeId -> pixel coordinate in container space used for positioning HTML overlays
+  private labelPixelPositions = new Map<string, { x: number; y: number }>();
   private mapInitAttempts = 0;
   private readonly maxMapInitRetries = 10;
   private labelsUpdateDirty: boolean = false;
@@ -703,7 +701,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
       if (!selected && this.mapInstance && this.scriptsLoaded) {
         // When no company is selected, ensure full world view is visible.
         this.userHasZoomed = false;
-        this.resetToFullWorldView();
+        this.resetMapToFullWorldView();
       }
     });
 
@@ -1499,7 +1497,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
               // Reset to full world view by default (zoom out to show entire map)
               // Only if no pending zoom is queued
               if (!this.pendingZoomCompanyId) {
-                this.resetToFullWorldView();
+                this.resetMapToFullWorldView();
               }
 
               // Setup resize handler to keep SVG responsive
@@ -1847,6 +1845,52 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
+   * Convert an SVG point in map (viewBox) coordinates into container-relative pixels.
+   * Uses SVGPoint + getScreenCTM for accurate handling of transforms and scaling.
+   */
+  private svgPointToContainerPixels(svgEl: SVGSVGElement | null, svgX: number, svgY: number, container: HTMLElement | null): { x: number; y: number } | null {
+    if (!svgEl || !container) return null;
+
+    try {
+      // Prefer the precise SVG -> screen transformation when available
+      const createPoint = (svgEl as any).createSVGPoint;
+      if (typeof createPoint === 'function' && typeof svgEl.getScreenCTM === 'function') {
+        const pt = (svgEl as any).createSVGPoint();
+        pt.x = svgX; pt.y = svgY;
+        const screenPt = pt.matrixTransform(svgEl.getScreenCTM());
+        const containerRect = container.getBoundingClientRect();
+        return { x: screenPt.x - containerRect.left, y: screenPt.y - containerRect.top };
+      }
+    } catch (e) {
+      // Fall back to viewBox proportional math
+      // (fall-through to fallback implementation below)
+      // Intentional silent catch so we don't spam logs in production
+    }
+
+    // Fallback: use viewBox proportional mapping (less accurate when transforms are applied)
+    const vbAttr = svgEl.getAttribute('viewBox');
+    let vbX = 0; let vbY = 0; let vbW = 950; let vbH = 550;
+    if (vbAttr) {
+      const parts = vbAttr.split(' ').map(Number);
+      if (parts.length === 4 && parts.every(Number.isFinite)) {
+        [vbX, vbY, vbW, vbH] = parts;
+      }
+    } else if (this.cachedViewBox) {
+      vbX = this.cachedViewBox.x; vbY = this.cachedViewBox.y; vbW = this.cachedViewBox.width; vbH = this.cachedViewBox.height;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const left = ((svgX - vbX) / vbW) * containerRect.width;
+    const top = ((svgY - vbY) / vbH) * containerRect.height;
+    if (Number.isFinite(left) && Number.isFinite(top)) {
+      return { x: left, y: top };
+    }
+
+    return null;
+  }
+
+
+  /**
    * Update label positions based on current map state
    */
   private updateLabelPositions(): void {
@@ -1873,37 +1917,129 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     }
 
     nodes.forEach((node) => {
-      // Try to find the actual marker element in the SVG
+      // Best-effort: keep both SVG (map-space) and pixel positions for each node
+      let svgPos: { x: number; y: number } | null = null;
       let pixelPos: { x: number; y: number } | null = null;
 
-      if (svg) {
-        // Look for marker circles or elements with the node's coordinates
-        const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], .jvm-marker');
-        // Find marker by index matching node index - robust assumption for synchronous render
-        const index = this.getNodeIndex(node);
-        if (index >= 0 && index < markers.length) {
-          const marker = markers[index];
-          const cx = parseFloat(marker.getAttribute('cx') || '0');
-          const cy = parseFloat(marker.getAttribute('cy') || '0');
+      // 1) Preferred: Use the map instance's coordinate conversion when available.
+      if (this.mapInstance && typeof (this.mapInstance as any).latLngToPoint === 'function' && this.isValidCoordinates(node.coordinates)) {
+        try {
+          const point = (this.mapInstance as any).latLngToPoint([node.coordinates.latitude, node.coordinates.longitude]);
+          if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
+            svgPos = { x: point.x, y: point.y };
 
-          // If we are inside the same SVG coordinate system (transit overlay shares viewBox),
-          // then we can use cx/cy directly!
-          pixelPos = { x: cx, y: cy };
+            // If we have a container and viewBox info, derive pixel position for overlays
+            if (container) {
+              const svgEl = container.querySelector('svg');
+              let vbX = 0; let vbY = 0; let vbW = 950; let vbH = 550;
+              const vbAttr = svgEl?.getAttribute('viewBox');
+              if (vbAttr) {
+                const parts = vbAttr.split(' ').map(Number);
+                if (parts.length === 4 && parts.every(Number.isFinite)) {
+                  [vbX, vbY, vbW, vbH] = parts;
+                }
+              } else if (this.cachedViewBox) {
+                vbX = this.cachedViewBox.x; vbY = this.cachedViewBox.y; vbW = this.cachedViewBox.width; vbH = this.cachedViewBox.height;
+              }
+
+              const pixels = this.svgPointToContainerPixels(svgEl as SVGSVGElement, svgPos.x, svgPos.y, container);
+              if (pixels) {
+                pixelPos = { x: pixels.x, y: pixels.y };
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('mapInstance.latLngToPoint failed, falling back to DOM-based calculation', e);
         }
       }
 
-      // Fallback to coordinate conversion if marker not found
-      if (!pixelPos && this.isValidCoordinates(node.coordinates)) {
-        pixelPos = this.latLngToPixel(
+      // 2) Fallback: derive from DOM marker position if present
+      if (!svgPos && svg) {
+        const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], .jvm-marker');
+        const index = this.getNodeIndex(node);
+        if (index >= 0 && index < markers.length) {
+          const marker = markers[index] as Element;
+          try {
+            const markerRect = (marker as any).getBoundingClientRect();
+            if (container) {
+              const containerRect = container.getBoundingClientRect();
+              const centerPxX = markerRect.left - containerRect.left + markerRect.width / 2;
+              const centerPxY = markerRect.top - containerRect.top + markerRect.height / 2;
+
+              // Determine viewBox (prefer live attribute, fallback to cachedViewBox)
+              let vbX = 0; let vbY = 0; let vbW = 950; let vbH = 550;
+              const vbAttr = svg?.getAttribute('viewBox');
+              if (vbAttr) {
+                const parts = vbAttr.split(' ').map(Number);
+                if (parts.length === 4 && parts.every(Number.isFinite)) {
+                  [vbX, vbY, vbW, vbH] = parts;
+                }
+              } else if (this.cachedViewBox) {
+                vbX = this.cachedViewBox.x; vbY = this.cachedViewBox.y; vbW = this.cachedViewBox.width; vbH = this.cachedViewBox.height;
+              }
+
+              // Convert pixel center -> SVG coords
+              const svgX = vbX + (centerPxX / width) * vbW;
+              const svgY = vbY + (centerPxY / height) * vbH;
+
+              if (Number.isFinite(svgX) && Number.isFinite(svgY)) {
+                svgPos = { x: svgX, y: svgY };
+                pixelPos = { x: centerPxX, y: centerPxY };
+              }
+            } else {
+              const cx = parseFloat(markers[index].getAttribute('cx') || '0');
+              const cy = parseFloat(markers[index].getAttribute('cy') || '0');
+              svgPos = { x: cx, y: cy };
+            }
+          } catch (e) {
+            const cx = parseFloat(markers[index].getAttribute('cx') || '0');
+            const cy = parseFloat(markers[index].getAttribute('cy') || '0');
+            svgPos = { x: cx, y: cy };
+          }
+        }
+      }
+
+      // 3) Fallback: compute from lat/lng using our projection
+      if (!svgPos && this.isValidCoordinates(node.coordinates)) {
+        svgPos = this.latLngToPixel(
           node.coordinates.latitude,
           node.coordinates.longitude,
           width,
           height
         );
+
+        // Derive pixel position from svgPos if possible
+        if (container && svgPos) {
+          const svgEl = container.querySelector('svg');
+          let vbX = 0; let vbY = 0; let vbW = 950; let vbH = 550;
+          const vbAttr = svgEl?.getAttribute('viewBox');
+          if (vbAttr) {
+            const parts = vbAttr.split(' ').map(Number);
+            if (parts.length === 4 && parts.every(Number.isFinite)) {
+              [vbX, vbY, vbW, vbH] = parts;
+            }
+          } else if (this.cachedViewBox) {
+            vbX = this.cachedViewBox.x; vbY = this.cachedViewBox.y; vbW = this.cachedViewBox.width; vbH = this.cachedViewBox.height;
+          }
+
+          const pixels = this.svgPointToContainerPixels(svgEl as SVGSVGElement, svgPos.x, svgPos.y, container);
+          if (pixels) {
+            pixelPos = { x: pixels.x, y: pixels.y };
+          }
+        }
+      }
+
+      // Persist best-effort coordinates
+      if (svgPos) {
+        this.labelPositions.set(node.id, svgPos);
+      } else {
+        this.labelPositions.delete(node.id);
       }
 
       if (pixelPos) {
-        this.labelPositions.set(node.id, pixelPos);
+        this.labelPixelPositions.set(node.id, { x: pixelPos.x, y: pixelPos.y });
+      } else {
+        this.labelPixelPositions.delete(node.id);
       }
     });
 
@@ -1911,7 +2047,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     // This is the primary driver for projectedRoutes
     const newMarkerCoords = new Map<string, { x: number; y: number }>();
 
-    // Fill from labelPositions which now contains the best available coordinates
+    // Fill from labelPositions which now contains the best available coordinates (SVG coords)
     this.labelPositions.forEach((pos, id) => {
       newMarkerCoords.set(id, pos);
     });
@@ -2271,10 +2407,57 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
 
   /**
    * Get node position in pixels for absolute positioning on the map
+   *
+   * Notes:
+   * - The map itself renders in an SVG with a viewBox. The marker circle cx/cy values
+   *   are in SVG (viewBox) coordinate space. Our node overlay is HTML positioned in
+   *   CSS pixels. We must convert viewBox coordinates -> container pixels here so the
+   *   HTML diamond/marker lines up exactly with SVG routes and animated dots.
    */
   getNodePosition(node: WarRoomNode): { top: number; left: number } {
+    // Prefer pixel cache when available (faster and avoids repeated viewBox -> pixel conversions)
+    const cachedPx = this.labelPixelPositions.get(node.id);
+    if (cachedPx) {
+      const container = document.getElementById('war-room-map');
+      if (container) {
+        return { top: cachedPx.y, left: cachedPx.x };
+      }
+    }
+
     const position = this.labelPositions.get(node.id);
     if (position) {
+      // Try to map from SVG viewBox coordinates to container pixel space
+      const container = document.getElementById('war-room-map');
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        const svg = container.querySelector('svg');
+
+        // Prefer explicit viewBox on the SVG when available
+        const viewBoxAttr = svg?.getAttribute('viewBox');
+        if (viewBoxAttr) {
+          const parts = viewBoxAttr.split(' ').map(Number);
+          if (parts.length === 4 && parts.every(Number.isFinite)) {
+            const [vbX, vbY, vbW, vbH] = parts;
+            const left = ((position.x - vbX) / vbW) * rect.width;
+            const top = ((position.y - vbY) / vbH) * rect.height;
+            if (Number.isFinite(left) && Number.isFinite(top)) {
+              return { top, left };
+            }
+          }
+        }
+
+        // Fallback: use cached viewBox (kept up to date in updateLabelPositions)
+        if (this.cachedViewBox) {
+          const vb = this.cachedViewBox;
+          const left = ((position.x - vb.x) / vb.width) * rect.width;
+          const top = ((position.y - vb.y) / vb.height) * rect.height;
+          if (Number.isFinite(left) && Number.isFinite(top)) {
+            return { top, left };
+          }
+        }
+      }
+
+      // If we couldn't convert, treat stored coordinates as pixel values as a last resort
       return { top: position.y, left: position.x };
     }
 
@@ -2562,32 +2745,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
    *                    ZOOM LEVEL ADJUSTMENT: Change default value here to adjust default zoom
    *                    Higher number = more zoom (e.g., 10 = medium, 12 = high, 15 = very high)
    */
-  zoomToEntity(entityId: string, zoomScale: number = 12): void {
-    // Mark that we're programmatically zooming (not user manual zoom)
-    // This allows the zoom to happen without interference
-    const nodes = this.nodes();
 
-    if (nodes.length === 0) {
-      this.pendingZoomCompanyId = entityId;
-      return;
-    }
-
-    if (!this.mapInstance) {
-      this.pendingZoomCompanyId = entityId;
-      return;
-    }
-
-    const node =
-      nodes.find((n) => n.companyId === entityId) ||
-      nodes.find((n) => n.subsidiaryId === entityId) ||
-      nodes.find((n) => n.parentGroupId === entityId);
-    if (node) {
-      this.zoomToLocation(node.coordinates.latitude, node.coordinates.longitude, zoomScale);
-      setTimeout(() => this.highlightMarker(node.id), 600);
-    } else {
-      this.pendingZoomCompanyId = entityId;
-    }
-  }
 
   /**
    * Update marker styles to show temporary hover highlighting (cross-component sync)
@@ -3080,6 +3238,13 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
       labelsGroup.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
     }
 
+    // NEW: Toggle ALL markers visibility based on zoom factor (User Request: hide on full zoom out)
+    // Removed global hide: we now do per-element toggling inside the loop for "Logo Only" mode
+    if (markersGroup) {
+      markersGroup.style.opacity = '1';
+      markersGroup.style.visibility = 'visible';
+    }
+
     nodes.forEach((node) => {
       // Find the correct marker index in the filtered coordinate-valid list
       const markerIndex = this.getNodeIndex(node);
@@ -3296,6 +3461,17 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
             pinGroup.setAttribute('data-marker-index', markerIndex.toString());
             logosGroup.appendChild(pinGroup);
 
+            // 0. Background Marker Circle (for logo-only mode)
+            const bgMarker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            bgMarker.setAttribute('class', 'pin-bg-marker');
+            bgMarker.setAttribute('cx', '0');
+            bgMarker.setAttribute('cy', '0');
+            bgMarker.setAttribute('r', '8');
+            bgMarker.setAttribute('fill', '#00FF41');
+            bgMarker.setAttribute('stroke', '#00FF41');
+            bgMarker.setAttribute('stroke-width', '1');
+            pinGroup.appendChild(bgMarker);
+
             // 1. Halo (Pulsing background)
             const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             halo.setAttribute('class', 'pin-halo');
@@ -3398,14 +3574,72 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
             pinLabel.textContent = displayName;
           }
 
+          // --- LOGO ONLY MODE (Low Zoom) ---
+          const LOGO_ONLY_THRESHOLD = 1.0;
+          const isLogoOnly = zoomFactor < LOGO_ONLY_THRESHOLD;
+
           // Apply transform to center pin on marker
-          pinGroup.setAttribute('transform', `translate(${cx}, ${cy}) scale(${scale})`);
+          // Scale: Override to 1.0 for Logo Only to prevent massive pins at low zoom
+          if (isLogoOnly) {
+            pinGroup.setAttribute('transform', `translate(${cx}, ${cy}) scale(1.0)`);
+          } else {
+            pinGroup.setAttribute('transform', `translate(${cx}, ${cy}) scale(${scale})`);
+          }
+
+          // Toggle Pin Body (Bubble), Halo, Label, Gloss
+          const elementsToToggle = [
+            pinGroup.querySelector('.pin-body'),
+            pinGroup.querySelector('.pin-halo'),
+            pinGroup.querySelector('.pin-label'),
+            pinGroup.querySelector('.pin-gloss')
+          ];
+
+          elementsToToggle.forEach(el => {
+            if (el) {
+              (el as SVGElement).style.display = isLogoOnly ? 'none' : '';
+              // Force opacity 1 for label when visible to ensure text shows immediately
+              if (!isLogoOnly && el.classList.contains('pin-label')) {
+                (el as SVGElement).style.opacity = '1';
+              }
+            }
+          });
+
+          // Toggle background marker circle
+          const bgMarker = pinGroup.querySelector('.pin-bg-marker') as SVGCircleElement;
+          if (bgMarker) {
+            bgMarker.style.display = isLogoOnly ? 'block' : 'none';
+          }
+
+          // Handle Logo Position and Size
+          if (pinLogo) {
+            if (isLogoOnly) {
+              // Logo Only Mode: Center INSIDE the marker
+              const smallSize = 12; // 12px logo inside 16px marker (r=8)
+              pinLogo.setAttribute('x', (-smallSize / 2).toString());
+              pinLogo.setAttribute('y', (-smallSize / 2).toString());
+              pinLogo.setAttribute('width', smallSize.toString());
+              pinLogo.setAttribute('height', smallSize.toString());
+
+              // Ensure it's visible even if LOD rules might hide it
+              pinLogo.style.opacity = '1';
+            } else {
+              // Full Pin Mode: Position relative to bubble
+              const logoSize = 20;
+              pinLogo.setAttribute('x', (-bubbleW / 2 + 8).toString());
+              pinLogo.setAttribute('y', (-bubbleH - 4).toString());
+              pinLogo.setAttribute('width', logoSize.toString());
+              pinLogo.setAttribute('height', logoSize.toString());
+
+              // Reset opacity to be controlled by CSS/LOD
+              pinLogo.style.opacity = '';
+            }
+          }
 
           // Relaxed LOD thresholds
           pinGroup.classList.remove('lod-low', 'lod-medium', 'lod-high');
           if (zoomFactor < 0.8) {
             pinGroup.classList.add('lod-low');
-          } else if (zoomFactor < 2.0) {
+          } else if (zoomFactor < 1.0) {
             pinGroup.classList.add('lod-medium');
           } else {
             pinGroup.classList.add('lod-high');
@@ -3417,9 +3651,28 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
             pinGroup.classList.add('lod-high');
           }
 
+
           // Keep original marker circle visible as a base for the pin
-          marker.setAttribute('fill-opacity', '0.4');
-          marker.setAttribute('stroke-opacity', '0.5');
+          // Update opacity based on mode: solid for logo-only (badge style), semi-transparent for full pin
+          if (isLogoOnly) {
+            marker.setAttribute('fill-opacity', '1');
+            marker.setAttribute('stroke-opacity', '1');
+            marker.setAttribute('r', '8');
+            marker.style.visibility = 'visible';
+            marker.style.display = 'block';
+
+            // In SVG, elements rendered later appear on top
+            // Move marker after pinGroup to ensure it's visible behind the logo
+            if (marker.parentNode && pinGroup.parentNode === marker.parentNode) {
+              marker.parentNode.insertBefore(marker, pinGroup);
+            }
+          } else {
+            marker.setAttribute('fill-opacity', '0.4');
+            marker.setAttribute('stroke-opacity', '0.5');
+            marker.setAttribute('r', '8');
+            marker.style.visibility = 'visible';
+            marker.style.display = 'block';
+          }
 
           // Attach click handlers to pin group for better UX
           if (!pinGroup.hasAttribute('data-click-attached')) {
@@ -3788,6 +4041,10 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
    * Ensure SVG is responsive and shows entire map
    * Only resets to full world view on initial load, not when user has zoomed
    */
+  /**
+   * Ensure SVG is responsive and shows entire map
+   * Only resets to full world view on initial load, not when user has zoomed
+   */
   private ensureSvgResponsive(): void {
     const container = document.getElementById('war-room-map');
     if (!container) return;
@@ -3864,7 +4121,9 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     }
 
     // Keep viewBox/transform in sync while user hasn't manually zoomed.
-    this.syncMapViewport(this.isInitializing);
+    if (typeof this.syncMapViewport === 'function') {
+      this.syncMapViewport(this.isInitializing);
+    }
 
     console.log('SVG made responsive:', {
       viewBox: svg.getAttribute('viewBox'),
@@ -3941,22 +4200,22 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
    * Reset map to full world view (zoom out to show entire map)
    * Only resets if user hasn't manually zoomed
    */
-  private resetToFullWorldView(): void {
+  private resetMapToFullWorldView(): void {
     // Don't reset if user has manually zoomed
     if (this.userHasZoomed) {
-      console.log('Skipping resetToFullWorldView - user has manually zoomed');
+      console.log('Skipping resetMapToFullWorldView - user has manually zoomed');
       return;
     }
 
     const container = document.getElementById('war-room-map');
     if (!container) {
-      console.warn('resetToFullWorldView: Container not found');
+      console.warn('resetMapToFullWorldView: Container not found');
       return;
     }
 
     const svg = container.querySelector('svg');
     if (!svg) {
-      console.warn('resetToFullWorldView: SVG not found');
+      console.warn('resetMapToFullWorldView: SVG not found');
       return;
     }
 
@@ -3965,14 +4224,14 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
     const fullWorldViewBox = this.getResponsiveWorldViewBox(container);
     const currentViewBox = svg.getAttribute('viewBox');
 
-    console.log('resetToFullWorldView: Current viewBox:', currentViewBox, 'Target:', fullWorldViewBox);
+    console.log('resetMapToFullWorldView: Current viewBox:', currentViewBox, 'Target:', fullWorldViewBox);
 
     // Force reset to full world view (only on initial load)
     console.log('Forcing reset to full world view');
-    this.resetMapToFullWorldView();
+    svg.setAttribute('viewBox', fullWorldViewBox);
 
     // Ensure signal is also updated
-    this.syncViewBoxFromMap();
+    this.mapViewBox.set(fullWorldViewBox);
 
     // Force viewBox multiple times to ensure it sticks (map library might override it)
     // Only if user hasn't manually zoomed
@@ -3982,7 +4241,7 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
         const checkViewBox = svg.getAttribute('viewBox');
         if (checkViewBox !== fullWorldViewBox) {
           console.log('ViewBox was changed to:', checkViewBox, '- forcing back to full world view');
-          this.resetMapToFullWorldView();
+          svg.setAttribute('viewBox', fullWorldViewBox);
         }
       }
     };
@@ -3993,6 +4252,30 @@ export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
       setTimeout(forceViewBox, 200);
       setTimeout(forceViewBox, 500);
       setTimeout(forceViewBox, 1000);
+    }
+  }
+
+  /**
+   * Zoom to a specific entity by its ID
+   */
+  public zoomToEntity(entityId: string, scale: number = 2.5): void {
+    const node = this.nodes().find(n => n.id === entityId);
+    if (!node) {
+      console.warn('zoomToEntity: Node not found', entityId);
+      return;
+    }
+
+    // If we have map instance with setFocus support
+    if (this.mapInstance && typeof this.mapInstance.setFocus === 'function' && node.coordinates) {
+      this.mapInstance.setFocus({
+        lat: node.coordinates.latitude,
+        lng: node.coordinates.longitude,
+        scale: scale,
+        animate: true
+      });
+      this.userHasZoomed = true;
+    } else {
+      console.log('zoomToEntity: using fallback or skipping as mapInstance not ready');
     }
   }
 

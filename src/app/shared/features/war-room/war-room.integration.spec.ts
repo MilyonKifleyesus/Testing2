@@ -418,6 +418,194 @@ describe('WarRoomComponent Integration', () => {
             buildActivityLog(factoryB, subsidiaryA),
         ]);
         warRoomService.setMapViewMode('factory');
+    }));
+
+    it('converts SVG viewBox coordinates to container pixel coordinates for overlays', () => {
+        // Ensure getNodePosition actual implementation is used (beforeEach spies it out)
+        (WarRoomMapComponent.prototype as any).getNodePosition.and.callThrough();
+
+        // Create a fake container with a fake SVG and known dimensions
+        const mapDiv = document.createElement('div');
+        mapDiv.id = 'war-room-map';
+        // Mock getBoundingClientRect for container
+        mapDiv.getBoundingClientRect = function () {
+            return { width: 800, height: 400, left: 0, top: 0, right: 800, bottom: 400, x: 0, y: 0, toJSON: () => {} } as DOMRect;
+        };
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 1000 500');
+
+        // Create a marker circle that would be inside the SVG
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('class', 'jvm-marker');
+        circle.setAttribute('data-index', '0');
+        // Stub getBoundingClientRect on the circle to simulate onscreen placement
+        (circle as any).getBoundingClientRect = function () {
+            return { left: 300, top: 150, width: 10, height: 10, right: 310, bottom: 160, x: 300, y: 150, toJSON: () => {} } as DOMRect;
+        };
+
+        svg.appendChild(circle);
+        mapDiv.appendChild(svg);
+        document.body.appendChild(mapDiv);
+
+        // Ensure map service has a node so updateLabelPositions will iterate it
+        const factoryNode = buildFactory({ id: 'dom-node', name: 'DOM Test' });
+        const subsidiary = buildSubsidiary({ id: 'sub-dom', factories: [factoryNode] });
+        const parentGroup = buildParentGroup([subsidiary]);
+        const serviceAny = warRoomService as any;
+        serviceAny._parentGroups.set([parentGroup]);
+        warRoomService.setMapViewMode('factory');
+
+        // Attach a fake mapInstance that will return stable map-space coordinates
+        (component as any).mapInstance = {
+            latLngToPoint: ([lat, lng]: [number, number]) => ({ x: 500, y: 250 })
+        };
+
+        // Run label update that should pick up the mapInstance coordinates and compute SVG coords
+        (component as any).updateLabelPositions();
+
+        // Now getNodePosition should convert SVG coords back to the pixel values based on viewBox
+        const node = factoryNode as any;
+        const pos = (component as any).getNodePosition(node);
+
+        // With our stubbed mapInstance, the map-space coords are (500, 250)
+        // and with viewBox 0 0 1000 500 and container 800x400, expected pixel center is
+        // left = (500/1000)*800 = 400, top = (250/500)*400 = 200
+        expect(Math.round(pos.left)).toBe(400);
+        expect(Math.round(pos.top)).toBe(200);
+
+        // Cleanup
+        document.body.removeChild(mapDiv);
+    });
+
+    it('uses SVGPoint + getScreenCTM when available to compute overlay pixels', () => {
+        (WarRoomMapComponent.prototype as any).getNodePosition.and.callThrough();
+
+        const mapDiv = document.createElement('div');
+        mapDiv.id = 'war-room-map';
+        mapDiv.getBoundingClientRect = function () {
+            return { width: 800, height: 400, left: 10, top: 20, right: 810, bottom: 420, x: 10, y: 20, toJSON: () => {} } as DOMRect;
+        };
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 1000 500');
+
+        // Stub the SVG API: createSVGPoint and matrixTransform should convert (500,250) -> screen (410,220)
+        (svg as any).createSVGPoint = function () {
+            return { x: 0, y: 0, matrixTransform: function (m: any) { return { x: 410, y: 220 }; } };
+        };
+        (svg as any).getScreenCTM = function () { return {}; };
+
+        mapDiv.appendChild(svg);
+        document.body.appendChild(mapDiv);
+
+        const factoryNode = buildFactory({ id: 'svgnode', name: 'SVG Point Test' });
+        const subsidiary = buildSubsidiary({ id: 'sub-sv', factories: [factoryNode] });
+        const parentGroup = buildParentGroup([subsidiary]);
+        const serviceAny = warRoomService as any;
+        serviceAny._parentGroups.set([parentGroup]);
+        warRoomService.setMapViewMode('factory');
+
+        (component as any).mapInstance = {
+            latLngToPoint: ([lat, lng]: [number, number]) => ({ x: 500, y: 250 })
+        };
+
+        (component as any).updateLabelPositions();
+        const pos = (component as any).getNodePosition(factoryNode as any);
+
+        // Our createSVGPoint stub returns screen point (410,220) and container top/left offset is 10/20
+        // so container-relative should be (410-10, 220-20) = (400, 200)
+        expect(Math.round(pos.left)).toBe(400);
+        expect(Math.round(pos.top)).toBe(200);
+
+        document.body.removeChild(mapDiv);
+    });
+
+    it('updates pixel positions when SVG viewBox changes (zoom/pan)', () => {
+        (WarRoomMapComponent.prototype as any).getNodePosition.and.callThrough();
+
+        const mapDiv = document.createElement('div');
+        mapDiv.id = 'war-room-map';
+        mapDiv.getBoundingClientRect = function () {
+            return { width: 800, height: 400, left: 0, top: 0, right: 800, bottom: 400, x: 0, y: 0, toJSON: () => {} } as DOMRect;
+        };
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 1000 500');
+
+        mapDiv.appendChild(svg);
+        document.body.appendChild(mapDiv);
+
+        const factoryNode = buildFactory({ id: 'vb-node', name: 'ViewBox Test' });
+        const subsidiary = buildSubsidiary({ id: 'sub-vb', factories: [factoryNode] });
+        const parentGroup = buildParentGroup([subsidiary]);
+        const serviceAny = warRoomService as any;
+        serviceAny._parentGroups.set([parentGroup]);
+        warRoomService.setMapViewMode('factory');
+
+        (component as any).mapInstance = {
+            latLngToPoint: ([lat, lng]: [number, number]) => ({ x: 500, y: 250 })
+        };
+
+        (component as any).updateLabelPositions();
+        const pos1 = (component as any).getNodePosition(factoryNode as any);
+        expect(Math.round(pos1.left)).toBe(400);
+        expect(Math.round(pos1.top)).toBe(200);
+
+        // Simulate zoom/pan by changing viewBox
+        svg.setAttribute('viewBox', '100 50 500 250');
+        (component as any).updateLabelPositions();
+        const pos2 = (component as any).getNodePosition(factoryNode as any);
+
+        // Now expect the pixel to move to the new view: ((500-100)/500)*800 = 640; ((250-50)/250)*400 = 320
+        expect(Math.round(pos2.left)).toBe(640);
+        expect(Math.round(pos2.top)).toBe(320);
+
+        document.body.removeChild(mapDiv);
+    });
+
+    it('falls back to DOM marker bounding rect when mapInstance is missing', () => {
+        (WarRoomMapComponent.prototype as any).getNodePosition.and.callThrough();
+
+        const mapDiv = document.createElement('div');
+        mapDiv.id = 'war-room-map';
+        mapDiv.getBoundingClientRect = function () {
+            return { width: 800, height: 400, left: 0, top: 0, right: 800, bottom: 400, x: 0, y: 0, toJSON: () => {} } as DOMRect;
+        };
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 1000 500');
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('class', 'jvm-marker');
+        circle.setAttribute('data-index', '0');
+        (circle as any).getBoundingClientRect = function () {
+            return { left: 300, top: 150, width: 10, height: 10, right: 310, bottom: 160, x: 300, y: 150, toJSON: () => {} } as DOMRect;
+        };
+
+        svg.appendChild(circle);
+        mapDiv.appendChild(svg);
+        document.body.appendChild(mapDiv);
+
+        const factoryNode = buildFactory({ id: 'dom-node-2', name: 'DOM Fallback' });
+        const subsidiary = buildSubsidiary({ id: 'sub-dom-2', factories: [factoryNode] });
+        const parentGroup = buildParentGroup([subsidiary]);
+        const serviceAny = warRoomService as any;
+        serviceAny._parentGroups.set([parentGroup]);
+        warRoomService.setMapViewMode('factory');
+
+        // Explicitly remove any map instance
+        (component as any).mapInstance = null;
+
+        // Run label update that should pick up DOM-based marker coords
+        (component as any).updateLabelPositions();
+
+        const pos = (component as any).getNodePosition(factoryNode as any);
+
+        // The marker bounding rect center should be used for pixel overlay
+        expect(Math.round(pos.left)).toBe(305);
+        expect(Math.round(pos.top)).toBe(155);
+
+        document.body.removeChild(mapDiv);
+    });
 
         component.activityLogVisible.set(true);
         fixture.detectChanges();
