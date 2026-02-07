@@ -1,0 +1,52 @@
+.markers-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.pin-marker,
+.node-marker-wrapper {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.pin-marker.marker-temp-hover {
+  filter: brightness(1.15) drop-shadow(0 0 10px rgba(0, 255, 65, 0.6));
+}
+
+.node-marker-wrapper {
+  transform: translate(-50%, -50%);
+
+  &.selected .node-marker {
+    transform: scale(1.5);
+    box-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
+  }
+
+  &.marker-temp-hover .node-marker {
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
+    transform: scale(1.2);
+  }
+
+  &.hub .node-marker {
+    background-color: #3a3a3a;
+    border-color: #00ff41;
+  }
+}
+
+.node-marker {
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: #00ff41;
+  border: 2px solid #3a3a3a;
+  transform: translate(-50%, -50%);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.node-marker.hub-marker {
+  background-color: #3a3a3a;
+  border-color: #00ff41;
+}

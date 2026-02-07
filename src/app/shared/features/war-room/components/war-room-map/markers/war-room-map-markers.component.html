@@ -1,0 +1,34 @@
+<svg class="markers-overlay" [attr.viewBox]="viewBox()" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+  <g [attr.transform]="mapTransform()">
+    @for (marker of markers(); track marker.id) {
+    @if (marker.hasLogo) {
+    <g class="pin-marker" [attr.transform]="marker.pinTransform" [attr.data-selected]="marker.isSelected ? 'true' : null"
+      [attr.data-node-id]="marker.id" [attr.tabindex]="0" role="button" [attr.aria-label]="marker.ariaLabel"
+      (mouseenter)="onMarkerEnter(marker)" (mouseleave)="onMarkerLeave()" (click)="onMarkerClick(marker)"
+      (keydown)="($event.key === 'Enter' || $event.key === ' ') && onMarkerClick(marker)"
+      [ngClass]="[marker.lodClass, marker.isSelected ? 'selected-marker' : '', marker.isHovered ? 'marker-temp-hover' : '']">
+      <circle class="pin-shadow" cx="0" cy="6" r="10"></circle>
+      <circle class="pin-bg-marker" cx="0" cy="0" r="8" [attr.display]="marker.showBgMarker ? 'block' : 'none'"></circle>
+      <circle class="pin-halo" cx="0" cy="0" r="28" [attr.display]="marker.showPinHalo ? '' : 'none'"></circle>
+      <path class="pin-body" [attr.d]="marker.pinBodyPath" [attr.display]="marker.showPinBody ? '' : 'none'"></path>
+      <path class="pin-gloss" [attr.display]="marker.showPinGloss ? '' : 'none'"
+        d="M -30 -50 H 30 Q 35 -50 35 -45 V -30 L -35 -30 V -45 Q -35 -50 -30 -50 Z"></path>
+      <image class="pin-logo" [attr.href]="marker.logoPath" [attr.x]="marker.pinLogoX" [attr.y]="marker.pinLogoY"
+        [attr.width]="marker.pinLogoSize" [attr.height]="marker.pinLogoSize" preserveAspectRatio="xMidYMid meet"
+        (error)="onLogoError(marker)"></image>
+      <text class="pin-label" [attr.x]="marker.pinLabelX" [attr.y]="marker.pinLabelY" dominant-baseline="middle"
+        [attr.display]="marker.showPinLabel ? '' : 'none'">{{ marker.pinLabelText }}</text>
+    </g>
+    } @else {
+    <g class="node-marker-wrapper" [attr.transform]="'translate(' + marker.mapX + ',' + marker.mapY + ')'"
+      [class.selected]="marker.isSelected" [class.hub]="marker.isHub" [class.marker-temp-hover]="marker.isHovered"
+      role="button" tabindex="0"
+      [attr.aria-label]="marker.ariaLabel" (mouseenter)="onMarkerEnter(marker)" (mouseleave)="onMarkerLeave()"
+      (click)="onMarkerClick(marker)" (keydown)="($event.key === 'Enter' || $event.key === ' ') && onMarkerClick(marker)">
+      <polygon class="node-marker" [class.hub-marker]="marker.isHub"
+        points="0,-6 6,0 0,6 -6,0"></polygon>
+    </g>
+    }
+    }
+  </g>
+</svg>

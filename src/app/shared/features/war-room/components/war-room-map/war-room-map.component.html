@@ -6,157 +6,17 @@
   <div class="map-container">
     <div id="war-room-map"></div>
 
-    <!-- Map controls: zoom in, zoom out, fullscreen (grouped top-right) -->
-    <div class="map-controls">
-      <button type="button" class="map-control-btn zoom-in-btn" (click)="zoomIn()" aria-label="Zoom in"
-        title="Zoom in">+</button>
-      <button type="button" class="map-control-btn zoom-out-btn" (click)="zoomOut()" aria-label="Zoom out"
-        title="Zoom out">−</button>
-      <button type="button" class="map-control-btn fullscreen-btn" (click)="toggleFullscreen()"
-        [attr.aria-label]="getFullscreenState() ? 'Exit fullscreen' : 'Enter fullscreen'"
-        [title]="getFullscreenState() ? 'Exit Fullscreen (ESC)' : 'Enter Fullscreen'">
-        <span class="fullscreen-icon">{{ getFullscreenState() ? '⤓' : '⤢' }}</span>
-      </button>
-    </div>
+    <app-war-room-map-controls [fullscreen]="fullscreenState()" (zoomIn)="zoomIn()" (zoomOut)="zoomOut()"
+      (toggleFullscreen)="toggleFullscreen()"></app-war-room-map-controls>
   </div>
 
-  <!-- Transit Routes Overlay -->
-  <svg class="transit-routes-overlay" [attr.viewBox]="svgViewBox()" preserveAspectRatio="xMidYMid meet"
-    aria-hidden="true">
-    <defs>
-      <!-- React-inspired 'glow' filter - Dilate strategy -->
-      <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
-        <feMorphology operator="dilate" radius="0.4" in="SourceGraphic" result="morphed" />
-        <feGaussianBlur stdDeviation="0.8" in="morphed" result="blur" />
-        <feMerge>
-          <feMergeNode in="blur" />
-          <feMergeNode in="SourceGraphic" />
-        </feMerge>
-      </filter>
+  <app-war-room-map-routes [viewBox]="mapViewBox()" [mapTransform]="mapTransform()" [routes]="routesVm()"
+    [routeStroke]="routeStroke()" [routeFill]="routeFill()"></app-war-room-map-routes>
 
-      <!-- Dotted Map Pattern -->
-      <pattern id="dotted-map-pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
-        <circle cx="2" cy="2" r="1.2" fill="currentColor" opacity="0.15" />
-      </pattern>
+  <app-war-room-map-markers [viewBox]="mapViewBox()" [mapTransform]="mapTransform()" [markers]="markersVm()"
+    (markerSelected)="nodeSelected.emit($event)" (markerHovered)="onMarkerHovered($event)"
+    (markerLogoError)="onMarkerLogoError($event)"></app-war-room-map-markers>
 
-      <!-- Connection Path Gradient -->
-      <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0" />
-        <stop offset="5%" stop-color="#0ea5e9" stop-opacity="1" />
-        <stop offset="95%" stop-color="#0ea5e9" stop-opacity="1" />
-        <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0" />
-      </linearGradient>
-    </defs>
-
-    <!-- Transit routes layer - synchronized with map transforms -->
-    <g id="transit-routes-layer" [attr.transform]="mapTransform()">
-      @for (route of projectedRoutes(); track route.id) {
-      <g class="transit-route-group" [style.--route-index]="route.index">
-        <!-- Animated Connection Path -->
-        <path [attr.d]="route.path" class="route-path" [class.highlighted]="route.highlighted" fill="none"
-          [attr.stroke]="routeStroke()" stroke-width="1.2" [attr.stroke-dasharray]="route.dashArray || '1000'"
-          stroke-dashoffset="1000" pathLength="1000">
-          <animate attributeName="stroke-dashoffset" values="1000;1000;0;0;1000;1000" keyTimes="0;0.1;0.45;0.65;0.95;1"
-            dur="6s" [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.05;0.15;0.85;0.95;1" dur="6s"
-            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-        </path>
-
-        <!-- Traveling dot following the path -->
-        <circle r="3.5" class="route-dot" [attr.fill]="routeFill()" filter="url(#glow)" opacity="0">
-          <animateMotion [attr.path]="route.path" dur="6s" rotate="auto" calcMode="linear" keyPoints="0;0;1;1;1;0"
-            keyTimes="0;0.1;0.45;0.65;0.95;1" [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-          <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.1;0.15;0.6;0.7;1" dur="6s"
-            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-          <animate attributeName="r" values="0;3.5;3.5;0" keyTimes="0;0.15;0.65;0.75" dur="6s"
-            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-        </circle>
-
-        <!-- Source Point -->
-        <g class="point-group source" [style.opacity]="0">
-          <circle [attr.cx]="route.start.x" [attr.cy]="route.start.y" r="2.5" [attr.fill]="routeFill()"
-            filter="url(#glow)" />
-          <circle [attr.cx]="route.start.x" [attr.cy]="route.start.y" r="2.5" [attr.fill]="routeFill()" opacity="0.5">
-            <animate attributeName="r" from="2.5" to="10" dur="2s" repeatCount="indefinite" />
-            <animate attributeName="opacity" from="0.5" to="0" dur="2s" repeatCount="indefinite" />
-          </circle>
-
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="6s"
-            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-        </g>
-
-        <!-- Destination Point -->
-        <g class="point-group destination" [style.opacity]="0">
-          <circle [attr.cx]="route.end.x" [attr.cy]="route.end.y" r="2.5" [attr.fill]="routeFill()"
-            filter="url(#glow)" />
-          <circle [attr.cx]="route.end.x" [attr.cy]="route.end.y" r="2.5" [attr.fill]="routeFill()" opacity="0.5">
-            <animate attributeName="r" from="2.5" to="10" dur="2s" [attr.begin]="(route.index * 0.4) + 's'"
-              repeatCount="indefinite" />
-            <animate attributeName="opacity" from="0.5" to="0" dur="2s" [attr.begin]="(route.index * 0.4) + 's'"
-              repeatCount="indefinite" />
-          </circle>
-
-          <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="6s"
-            [attr.begin]="(route.index * 0.4) + 's'" repeatCount="indefinite" />
-        </g>
-      </g>
-      }
-    </g>
-
-    <!-- TEST SPRITE - Center marker for debugging zoom/cropping -->
-    <g id="test-sprite-marker" transform="translate(475, 275)">
-      <circle r="15" fill="rgba(255, 0, 0, 0.5)" stroke="#ff0000" stroke-width="2" />
-      <circle r="5" fill="#ff0000" />
-      <text x="20" y="5" fill="#ff0000" font-size="12" font-weight="bold">TEST CENTER</text>
-    </g>
-  </svg>
-
-  <!-- Node Markers Overlay -->
-  <div class="node-markers-overlay">
-    @for (node of nodes(); track node.id) {
-    @if (!node.logo) {
-    <button type="button" class="node-marker-wrapper btn-reset" [style.top.px]="getNodePosition(node).top"
-      [style.left.px]="getNodePosition(node).left" [class.selected]="isNodeSelected(node)" [class.hub]="isHub(node)"
-      (click)="nodeSelected.emit(node)" [attr.aria-label]="getMarkerAriaLabel(node)"
-      [attr.aria-pressed]="isNodeSelected(node)">
-      <div class="node-marker" [class.hub-marker]="isHub(node)"></div>
-    </button>
-    }
-    }
-  </div>
-
-  <!-- Company Logo Hover Tooltip -->
-  @if (hoveredCompanyTooltip()) {
-  <!-- Milli: Add [class.flipped]="tooltipFlipped()" to the div below -->
-  <div class="company-logo-tooltip" [style.top.px]="hoveredCompanyTooltip()!.position.top"
-    [style.left.px]="hoveredCompanyTooltip()!.position.left">
-    <div class="tooltip-content">
-      <div class="tooltip-header">
-        @if (hoveredCompanyTooltip()!.logoPath) {
-        <img [src]="hoveredCompanyTooltip()!.logoPath" [alt]="hoveredCompanyTooltip()!.displayName + ' logo'"
-          class="tooltip-logo" (error)="onLogoError($event)">
-        }
-        <div class="tooltip-title">{{ hoveredCompanyTooltip()!.displayName }}</div>
-      </div>
-      <div class="tooltip-body">
-        <div class="tooltip-type">
-          <span class="tooltip-label">TYPE:</span>
-          <span class="tooltip-value">{{ getTypeLabel(hoveredCompanyTooltip()!.node) }}</span>
-        </div>
-        <div class="tooltip-description">{{ hoveredCompanyTooltip()!.description }}</div>
-        <div class="tooltip-location">
-          <span class="tooltip-label">LOCATION:</span>
-          <span class="tooltip-value">{{ hoveredCompanyTooltip()!.node.city }}{{ hoveredCompanyTooltip()!.node.country ?
-            ', ' + hoveredCompanyTooltip()!.node.country : '' }}</span>
-        </div>
-        <div class="tooltip-status">
-          <span class="tooltip-label">STATUS:</span>
-          <span class="tooltip-value" [ngClass]="getTooltipStatusClass()">{{ hoveredCompanyTooltip()!.node.status
-            }}</span>
-        </div>
-      </div>
-    </div>
-    <div class="tooltip-arrow"></div>
-  </div>
-  }
+  <app-war-room-map-tooltip [tooltip]="tooltipVm()" (logoError)="onTooltipLogoError($event)">
+  </app-war-room-map-tooltip>
 </div>

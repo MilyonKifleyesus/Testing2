@@ -1,0 +1,30 @@
+@if (tooltip() && tooltip()!.visible) {
+<div class="company-logo-tooltip" [style.top.px]="tooltip()!.top" [style.left.px]="tooltip()!.left"
+  [class.flipped]="tooltip()!.flipped">
+  <div class="tooltip-content">
+    <div class="tooltip-header">
+      @if (tooltip()!.logoPath) {
+      <img [src]="tooltip()!.logoPath" [alt]="tooltip()!.displayName + ' logo'" class="tooltip-logo"
+        (error)="logoError.emit({ nodeId: tooltip()!.nodeId, logoPath: tooltip()!.logoPath })">
+      }
+      <div class="tooltip-title">{{ tooltip()!.displayName }}</div>
+    </div>
+    <div class="tooltip-body">
+      <div class="tooltip-type">
+        <span class="tooltip-label">TYPE:</span>
+        <span class="tooltip-value">{{ tooltip()!.typeLabel }}</span>
+      </div>
+      <div class="tooltip-description">{{ tooltip()!.description }}</div>
+      <div class="tooltip-location">
+        <span class="tooltip-label">LOCATION:</span>
+        <span class="tooltip-value">{{ tooltip()!.locationLabel }}</span>
+      </div>
+      <div class="tooltip-status">
+        <span class="tooltip-label">STATUS:</span>
+        <span class="tooltip-value" [ngClass]="tooltip()!.statusClass">{{ tooltip()!.statusLabel }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="tooltip-arrow"></div>
+</div>
+}

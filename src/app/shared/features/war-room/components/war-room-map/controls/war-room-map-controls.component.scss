@@ -1,0 +1,47 @@
+.map-controls {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 40;
+}
+
+.map-control-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 255, 65, 0.4);
+  background: rgba(10, 20, 15, 0.9);
+  color: #00ff41;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(0, 255, 65, 0.2);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus {
+    outline: 2px solid #00ff41;
+    outline-offset: 2px;
+  }
+}
+
+.zoom-in-btn,
+.zoom-out-btn {
+  font-size: 1rem;
+}
+
+.fullscreen-btn .fullscreen-icon {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  display: inline-block;
+  line-height: 1;
+}

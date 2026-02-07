@@ -9,6 +9,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { By } from '@angular/platform-browser';
 import { ToastrService } from 'ngx-toastr';
 import { AddCompanyModalComponent, CompanyFormData } from './components/add-company-modal/add-company-modal.component';
+import { RouteVm } from './components/war-room-map/routes/war-room-map-routes.component';
 import {
     ActivityLog,
     FactoryLocation,
@@ -441,7 +442,7 @@ describe('WarRoomComponent Integration', () => {
         expect(selectedMarker).toBeTruthy();
 
         const mapComponent = fixture.debugElement.query(By.directive(WarRoomMapComponent)).componentInstance as WarRoomMapComponent;
-        expect(mapComponent.projectedRoutes().some((entry) => entry.highlighted)).toBeTrue();
+        expect(mapComponent.routesVm().some((entry: RouteVm) => entry.highlighted)).toBeTrue();
 
         component.setMapViewMode('subsidiary');
         fixture.detectChanges();

@@ -1,0 +1,11 @@
+<div class="map-controls">
+  <button type="button" class="map-control-btn zoom-in-btn" (click)="zoomIn.emit()" aria-label="Zoom in"
+    title="Zoom in">+</button>
+  <button type="button" class="map-control-btn zoom-out-btn" (click)="zoomOut.emit()" aria-label="Zoom out"
+    title="Zoom out">-</button>
+  <button type="button" class="map-control-btn fullscreen-btn" (click)="toggleFullscreen.emit()"
+    [attr.aria-label]="fullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'"
+    [title]="fullscreen() ? 'Exit Fullscreen (ESC)' : 'Enter Fullscreen'">
+    <span class="fullscreen-icon">{{ fullscreen() ? 'X' : 'FS' }}</span>
+  </button>
+</div>

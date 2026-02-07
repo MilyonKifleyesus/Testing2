@@ -1,0 +1,74 @@
+<svg class="transit-routes-overlay" [attr.viewBox]="viewBox()" preserveAspectRatio="xMidYMid meet"
+  aria-hidden="true">
+  <defs>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feMorphology operator="dilate" radius="0.4" in="SourceGraphic" result="morphed" />
+      <feGaussianBlur stdDeviation="0.8" in="morphed" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <pattern id="dotted-map-pattern" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="currentColor" opacity="0.15" />
+    </pattern>
+
+    <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0" />
+      <stop offset="5%" stop-color="#0ea5e9" stop-opacity="1" />
+      <stop offset="95%" stop-color="#0ea5e9" stop-opacity="1" />
+      <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <g id="transit-routes-layer" [attr.transform]="mapTransform()">
+    @for (route of routes(); track route.id) {
+    <g class="transit-route-group" [style.--route-index]="route.index">
+      <path [attr.d]="route.path" class="route-path" [class.highlighted]="route.highlighted" fill="none"
+        [attr.stroke]="routeStroke()" [attr.stroke-width]="route.strokeWidth"
+        [attr.stroke-dasharray]="route.dashArray || '1000'" stroke-dashoffset="1000" pathLength="1000">
+        <animate attributeName="stroke-dashoffset" values="1000;1000;0;0;1000;1000" keyTimes="0;0.1;0.45;0.65;0.95;1"
+          dur="6s" [attr.begin]="route.beginOffset" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.05;0.15;0.85;0.95;1" dur="6s"
+          [attr.begin]="route.beginOffset" repeatCount="indefinite" />
+      </path>
+
+      <circle r="3.5" class="route-dot" [attr.fill]="routeFill()" filter="url(#glow)" opacity="0">
+        <animateMotion [attr.path]="route.path" dur="6s" rotate="auto" calcMode="linear" keyPoints="0;0;1;1;1;0"
+          keyTimes="0;0.1;0.45;0.65;0.95;1" [attr.begin]="route.beginOffset" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="0;0;1;1;1;0" keyTimes="0;0.1;0.15;0.6;0.7;1" dur="6s"
+          [attr.begin]="route.beginOffset" repeatCount="indefinite" />
+        <animate attributeName="r" values="0;3.5;3.5;0" keyTimes="0;0.15;0.65;0.75" dur="6s"
+          [attr.begin]="route.beginOffset" repeatCount="indefinite" />
+      </circle>
+
+      <g class="point-group source" [style.opacity]="0">
+        <circle [attr.cx]="route.start.x" [attr.cy]="route.start.y" r="2.5" [attr.fill]="routeFill()"
+          filter="url(#glow)" />
+        <circle [attr.cx]="route.start.x" [attr.cy]="route.start.y" r="2.5" [attr.fill]="routeFill()" opacity="0.5">
+          <animate attributeName="r" from="2.5" to="10" dur="2s" repeatCount="indefinite" />
+          <animate attributeName="opacity" from="0.5" to="0" dur="2s" repeatCount="indefinite" />
+        </circle>
+
+        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="6s"
+          [attr.begin]="route.beginOffset" repeatCount="indefinite" />
+      </g>
+
+      <g class="point-group destination" [style.opacity]="0">
+        <circle [attr.cx]="route.end.x" [attr.cy]="route.end.y" r="2.5" [attr.fill]="routeFill()"
+          filter="url(#glow)" />
+        <circle [attr.cx]="route.end.x" [attr.cy]="route.end.y" r="2.5" [attr.fill]="routeFill()" opacity="0.5">
+          <animate attributeName="r" from="2.5" to="10" dur="2s" [attr.begin]="route.beginOffset"
+            repeatCount="indefinite" />
+          <animate attributeName="opacity" from="0.5" to="0" dur="2s" [attr.begin]="route.beginOffset"
+            repeatCount="indefinite" />
+        </circle>
+
+        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.1;0.9;1" dur="6s"
+          [attr.begin]="route.beginOffset" repeatCount="indefinite" />
+      </g>
+    </g>
+    }
+  </g>
+</svg>

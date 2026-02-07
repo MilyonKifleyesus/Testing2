@@ -1,0 +1,23 @@
+.transit-routes-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 15;
+  pointer-events: none;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .route-path {
+    pointer-events: none;
+    opacity: 0.9;
+  }
+
+  .route-dot {
+    pointer-events: none;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+}
