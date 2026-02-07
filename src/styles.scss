@@ -136,6 +136,7 @@ table, tbody, thead, tfoot, tr, td, th {
 @import '../node_modules/ngx-owl-carousel-o/lib/styles/prebuilt-themes/owl.carousel.css';
 @import "../node_modules/@ng-select/ng-select/themes/default.theme.css";
 @import "../node_modules/leaflet/dist/leaflet.css";
+@import "../node_modules/maplibre-gl/dist/maplibre-gl.css";
 // angular material
 @import "../node_modules/@angular/material/prebuilt-themes/indigo-pink.css";
 @import '../node_modules/dropzone/dist/dropzone.css';
@@ -625,4 +626,16 @@ ul.productdetails {
 .table-responsive > .table {
   margin-bottom: 0;
   white-space: nowrap;
+}
+
+/* MapLibre control styling */
+.maplibregl-ctrl-group {
+  background-color: rgba(12, 18, 24, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.maplibregl-ctrl-icon {
+  filter: invert(1);
 }

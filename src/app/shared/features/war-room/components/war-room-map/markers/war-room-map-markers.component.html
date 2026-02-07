@@ -1,34 +1,83 @@
-<svg class="markers-overlay" [attr.viewBox]="viewBox()" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<svg class="markers-overlay" [attr.viewBox]="viewBox()" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <radialGradient id="marker-gloss" cx="30%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.45" />
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="marker-ring-sheen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </linearGradient>
+    <clipPath id="marker-logo-clip" clipPathUnits="userSpaceOnUse">
+      <circle cx="0" cy="0" r="9.5" />
+    </clipPath>
+  </defs>
+
   <g [attr.transform]="mapTransform()">
     @for (marker of markers(); track marker.id) {
-    @if (marker.hasLogo) {
-    <g class="pin-marker" [attr.transform]="marker.pinTransform" [attr.data-selected]="marker.isSelected ? 'true' : null"
-      [attr.data-node-id]="marker.id" [attr.tabindex]="0" role="button" [attr.aria-label]="marker.ariaLabel"
-      (mouseenter)="onMarkerEnter(marker)" (mouseleave)="onMarkerLeave()" (click)="onMarkerClick(marker)"
-      (keydown)="($event.key === 'Enter' || $event.key === ' ') && onMarkerClick(marker)"
-      [ngClass]="[marker.lodClass, marker.isSelected ? 'selected-marker' : '', marker.isHovered ? 'marker-temp-hover' : '']">
-      <circle class="pin-shadow" cx="0" cy="6" r="10"></circle>
-      <circle class="pin-bg-marker" cx="0" cy="0" r="8" [attr.display]="marker.showBgMarker ? 'block' : 'none'"></circle>
-      <circle class="pin-halo" cx="0" cy="0" r="28" [attr.display]="marker.showPinHalo ? '' : 'none'"></circle>
-      <path class="pin-body" [attr.d]="marker.pinBodyPath" [attr.display]="marker.showPinBody ? '' : 'none'"></path>
-      <path class="pin-gloss" [attr.display]="marker.showPinGloss ? '' : 'none'"
-        d="M -30 -50 H 30 Q 35 -50 35 -45 V -30 L -35 -30 V -45 Q -35 -50 -30 -50 Z"></path>
-      <image class="pin-logo" [attr.href]="marker.logoPath" [attr.x]="marker.pinLogoX" [attr.y]="marker.pinLogoY"
-        [attr.width]="marker.pinLogoSize" [attr.height]="marker.pinLogoSize" preserveAspectRatio="xMidYMid meet"
-        (error)="onLogoError(marker)"></image>
-      <text class="pin-label" [attr.x]="marker.pinLabelX" [attr.y]="marker.pinLabelY" dominant-baseline="middle"
-        [attr.display]="marker.showPinLabel ? '' : 'none'">{{ marker.pinLabelText }}</text>
+    <g class="marker-group" [attr.transform]="marker.pinTransform" [class.selected]="marker.isSelected"
+      [class.hovered]="marker.isHovered" [class.hq]="marker.isHQ" [class.hub]="marker.isHub"
+      [class.pinned]="marker.isPinned"
+      [class.lod-low]="marker.lodClass === 'lod-low'" [class.lod-medium]="marker.lodClass === 'lod-medium'"
+      [class.lod-high]="marker.lodClass === 'lod-high'" [class.status-online]="marker.statusKey === 'online'"
+      [class.status-maintenance]="marker.statusKey === 'maintenance'" [class.status-offline]="marker.statusKey === 'offline'"
+      [style.--status-color]="marker.statusColor" [style.--status-glow]="marker.statusGlow"
+      (mouseenter)="onMarkerEnter(marker)" (mouseleave)="onMarkerLeave()" (click)="onMarkerClick(marker); $event.stopPropagation()">
+
+      <g class="marker-scale" [attr.transform]="'scale(' + marker.pinScale + ')'">
+        <!-- Low LOD Dot -->
+        <g class="marker-dot-group">
+          <circle class="marker-dot-ring" cx="0" cy="0" r="6.5"></circle>
+          <circle class="marker-dot-core" cx="0" cy="0" r="3.5"></circle>
+        </g>
+
+        <!-- Full Marker -->
+        <g class="marker-shell">
+          @if (marker.statusKey === 'online') {
+          <circle class="marker-pulse" cx="0" cy="0" r="20"></circle>
+          }
+          <circle class="marker-halo" cx="0" cy="0" r="22"></circle>
+          <circle class="marker-ring" cx="0" cy="0" r="16"></circle>
+          <circle class="marker-sheen" cx="0" cy="0" r="16"></circle>
+          <circle class="marker-ring-inner" cx="0" cy="0" r="13.5"></circle>
+          <circle class="marker-core" cx="0" cy="0" r="11"></circle>
+          <circle class="marker-gloss" cx="0" cy="0" r="11"></circle>
+
+          <g class="marker-logo" clip-path="url(#marker-logo-clip)">
+            @if (marker.hasLogo) {
+            <image class="marker-logo-image" [attr.href]="marker.logoPath" x="-9.5" y="-9.5" width="19" height="19"
+              preserveAspectRatio="xMidYMid slice" (error)="onLogoError(marker)"></image>
+            } @else {
+            <text class="marker-initials" text-anchor="middle" dominant-baseline="central">{{ marker.initials }}</text>
+            }
+          </g>
+
+          <g class="marker-status" transform="translate(12, 12)">
+            <circle class="marker-status-shell" r="7"></circle>
+            <circle class="marker-status-core" r="5.6"></circle>
+            <g transform="scale(0.32) translate(-12, -12)">
+              <path class="marker-status-icon" [attr.d]="marker.statusIconPath"></path>
+            </g>
+          </g>
+
+          <g class="marker-pin-indicator" transform="translate(-14, 12)">
+            <circle class="pin-ring" r="4.6"></circle>
+            <circle class="pin-core" r="2.2"></circle>
+          </g>
+        </g>
+      </g>
+
+      <!-- Tactical Tooltip (Label) -->
+      @if (marker.showPinLabel) {
+      <g class="marker-tag" transform="translate(0, -34)">
+        <rect rx="6" ry="6" x="-60" y="-26" width="120" height="26" class="tag-bg"></rect>
+        <path class="tag-notch" d="M -6 -2 L 0 6 L 6 -2 Z"></path>
+        <text text-anchor="middle" y="-14" class="tag-title">{{ marker.shortName }}</text>
+        <text text-anchor="middle" y="-4" class="tag-sub">{{ marker.subLabel }}</text>
+      </g>
+      }
     </g>
-    } @else {
-    <g class="node-marker-wrapper" [attr.transform]="'translate(' + marker.mapX + ',' + marker.mapY + ')'"
-      [class.selected]="marker.isSelected" [class.hub]="marker.isHub" [class.marker-temp-hover]="marker.isHovered"
-      role="button" tabindex="0"
-      [attr.aria-label]="marker.ariaLabel" (mouseenter)="onMarkerEnter(marker)" (mouseleave)="onMarkerLeave()"
-      (click)="onMarkerClick(marker)" (keydown)="($event.key === 'Enter' || $event.key === ' ') && onMarkerClick(marker)">
-      <polygon class="node-marker" [class.hub-marker]="marker.isHub"
-        points="0,-6 6,0 0,6 -6,0"></polygon>
-    </g>
-    }
     }
   </g>
 </svg>

@@ -20,97 +20,167 @@
   }
 
   .tooltip-content {
-    background: rgba(10, 20, 15, 0.98);
-    backdrop-filter: blur(12px);
-    border: 1.5px solid #00ff41;
-    border-radius: 8px;
+    background:
+      linear-gradient(135deg, rgba(10, 20, 15, 0.98), rgba(8, 12, 18, 0.95));
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(0, 255, 65, 0.35);
+    border-radius: 12px;
     padding: 0 !important;
     width: 360px !important;
     max-width: 360px !important;
-    max-height: 320px !important;
+    max-height: 340px !important;
     box-shadow:
       0 8px 24px rgba(0, 0, 0, 0.6),
-      0 0 20px rgba(0, 255, 65, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      0 0 24px rgba(0, 255, 65, 0.25),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
     overflow: visible;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      background-image:
+        linear-gradient(rgba(0, 255, 100, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 255, 100, 0.06) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
   }
 
   .tooltip-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px !important;
+    padding: 12px 14px !important;
     background: rgba(0, 255, 65, 0.08);
-    border-bottom: 1px solid rgba(0, 255, 65, 0.3);
-    backdrop-filter: blur(4px);
+    border-bottom: 1px solid rgba(0, 255, 65, 0.25);
+    backdrop-filter: blur(6px);
 
     .tooltip-logo {
-      width: 36px !important;
-      height: 36px !important;
+      width: 38px !important;
+      height: 38px !important;
       object-fit: contain;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.08);
       padding: 3px;
-      border: 1px solid rgba(0, 255, 65, 0.2);
+      border: 1px solid rgba(0, 255, 65, 0.25);
       flex-shrink: 0;
       animation: logoPulse 2s ease-in-out infinite;
     }
 
+    .tooltip-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex: 1;
+      z-index: 1;
+    }
+
     .tooltip-title {
       font-weight: 700;
-      font-size: 0.75rem !important;
-      color: #00ff41;
+      font-size: 0.8rem !important;
+      color: #00ff84;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      line-height: 1.1;
+    }
+
+    .tooltip-subtitle {
+      font-size: 0.6rem;
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      flex: 1;
-      line-height: 1.1;
+      color: rgba(230, 249, 239, 0.7);
+    }
+
+    .tooltip-status-pill {
+      font-size: 0.6rem;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 255, 65, 0.4);
+      color: #0a0f14;
+      background: rgba(0, 255, 65, 0.9);
+      z-index: 1;
+    }
+
+    .tooltip-status-pill.status-offline,
+    .tooltip-status-pill.status-inactive {
+      background: rgba(239, 68, 68, 0.9);
+      border-color: rgba(239, 68, 68, 0.7);
+      color: #fff5f5;
+    }
+
+    .tooltip-status-pill.status-maintenance,
+    .tooltip-status-pill.status-paused {
+      background: rgba(245, 158, 11, 0.9);
+      border-color: rgba(245, 158, 11, 0.7);
+      color: #2b1903;
     }
   }
 
   .tooltip-body {
-    padding: 12px !important;
+    padding: 14px !important;
     max-height: none !important;
     overflow-y: visible !important;
 
-    .tooltip-description {
-      font-size: 0.75rem !important;
-      line-height: 1.4 !important;
-      letter-spacing: 0 !important;
-      color: #e0e0e0;
-      margin-bottom: 10px !important;
-      text-align: justify;
+    .tooltip-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
     }
 
-    .tooltip-location,
-    .tooltip-status,
-    .tooltip-type {
+    .tooltip-chip {
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(0, 255, 65, 0.25);
+      background: rgba(0, 255, 65, 0.08);
+      color: rgba(230, 249, 239, 0.85);
+    }
+
+    .tooltip-description {
+      font-size: 0.75rem !important;
+      line-height: 1.45 !important;
+      letter-spacing: 0 !important;
+      color: rgba(230, 249, 239, 0.85);
+      margin-bottom: 12px !important;
+      text-align: left;
+    }
+
+    .tooltip-details {
+      display: grid;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(0, 255, 65, 0.12);
+    }
+
+    .tooltip-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 6px 0 !important;
       font-size: 0.7rem !important;
-      line-height: 1.2 !important;
-      border-top: 1px solid rgba(0, 255, 65, 0.1);
+    }
 
-      &:first-of-type {
-        border-top: none;
-        padding-top: 0;
-      }
+    .tooltip-label {
+      color: rgba(176, 176, 176, 0.85);
+      font-size: 0.6rem !important;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      font-weight: 600;
+    }
 
-      .tooltip-label {
-        color: #b0b0b0;
-        font-size: 0.65rem !important;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-      }
-
-      .tooltip-value {
-        color: #ffffff;
-        font-weight: 600;
-        font-size: 0.7rem !important;
-        text-align: right;
-      }
+    .tooltip-value {
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.7rem !important;
+      text-align: right;
     }
   }
 
@@ -128,19 +198,53 @@
   [data-theme-mode="light"] & {
     .tooltip-content {
       background: rgba(255, 255, 255, 0.98);
-      border-color: #00ff41;
+      border-color: rgba(0, 140, 70, 0.35);
       box-shadow:
         0 8px 24px rgba(0, 0, 0, 0.3),
-        0 0 20px rgba(0, 255, 65, 0.15);
+        0 0 20px rgba(0, 255, 65, 0.12);
     }
 
     .tooltip-header {
-      background: rgba(0, 255, 65, 0.1);
-      border-bottom-color: rgba(0, 255, 65, 0.3);
+      background: rgba(0, 140, 70, 0.08);
+      border-bottom-color: rgba(0, 140, 70, 0.25);
 
       .tooltip-logo {
         background: rgba(0, 0, 0, 0.02);
-        border-color: rgba(0, 255, 65, 0.3);
+        border-color: rgba(0, 140, 70, 0.3);
+      }
+
+      .tooltip-title {
+        color: #0b5d2c;
+      }
+
+      .tooltip-subtitle {
+        color: rgba(11, 93, 44, 0.7);
+      }
+
+      .tooltip-status-pill {
+        background: rgba(0, 140, 70, 0.9);
+        border-color: rgba(0, 140, 70, 0.7);
+        color: #ffffff;
+      }
+    }
+
+    .tooltip-body {
+      .tooltip-chip {
+        border-color: rgba(0, 140, 70, 0.2);
+        background: rgba(0, 140, 70, 0.08);
+        color: rgba(11, 93, 44, 0.85);
+      }
+
+      .tooltip-description {
+        color: #3f3f3f;
+      }
+
+      .tooltip-label {
+        color: rgba(80, 80, 80, 0.8);
+      }
+
+      .tooltip-value {
+        color: #222;
       }
     }
   }

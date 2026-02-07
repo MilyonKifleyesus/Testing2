@@ -101,4 +101,47 @@ describe('WarRoomMapComponent logic helpers', () => {
     expect(offsetPoint.x).toBeCloseTo(basePoint.x - 100, 4);
     expect(offsetPoint.y).toBeCloseTo(basePoint.y - 50, 4);
   });
+
+  it('buildRouteFeatures resolves coordinates and defaults strokeWidth', () => {
+    const nodeA = {
+      id: 'factory-1',
+      name: 'Factory One',
+      company: 'Factory One',
+      companyId: 'factory-1',
+      city: 'Alpha',
+      coordinates: { latitude: 10, longitude: 20 },
+      type: 'Factory',
+      status: 'ACTIVE',
+      level: 'factory',
+    } as any;
+
+    const nodeB = {
+      id: 'factory-2',
+      name: 'Factory Two',
+      company: 'Factory Two',
+      companyId: 'factory-2',
+      city: 'Beta',
+      coordinates: { latitude: 30, longitude: 40 },
+      type: 'Factory',
+      status: 'ACTIVE',
+      level: 'factory',
+    } as any;
+
+    (component as any).nodes = signal([nodeA, nodeB]);
+    (component as any).selectedEntity = signal({ level: 'factory', id: 'factory-1' });
+    (component as any).transitRoutes = signal([{
+      id: 'route-1',
+      from: 'factory-1',
+      to: 'factory-2',
+      fromCoordinates: { latitude: 10, longitude: 20 },
+      toCoordinates: { latitude: 30, longitude: 40 },
+    }]);
+
+    const features = (component as any).buildRouteFeatures([nodeA, nodeB]);
+    expect(features.features.length).toBe(1);
+    expect(features.features[0].geometry.coordinates[0]).toEqual([20, 10]);
+    expect(features.features[0].geometry.coordinates[1]).toEqual([40, 30]);
+    expect(features.features[0].properties.strokeWidth).toBe(1.5);
+    expect(features.features[0].properties.highlighted).toBeTrue();
+  });
 });

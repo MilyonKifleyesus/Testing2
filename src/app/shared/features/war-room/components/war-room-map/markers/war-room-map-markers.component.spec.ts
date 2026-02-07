@@ -19,29 +19,25 @@ describe('WarRoomMapMarkersComponent', () => {
   const buildMarker = (overrides: Partial<MarkerVm>): MarkerVm => ({
     id: 'node-1',
     node: baseNode,
-    mapX: 100,
-    mapY: 200,
     displayName: 'NODE ONE',
-    ariaLabel: 'Node One',
+    shortName: 'NODE ONE',
+    subLabel: 'Test City / ACTIVE',
+    initials: 'NO',
     hasLogo: true,
     logoPath: '/assets/images/logo.png',
     isSelected: false,
     isHovered: false,
     isHub: false,
+    isHQ: false,
+    statusKey: 'online',
+    statusColor: '#00FF41',
+    statusGlow: 'rgba(0, 255, 65, 0.45)',
+    statusIconPath: 'M 0 0',
     lodClass: 'lod-medium',
-    pinTransform: 'translate(100, 200) scale(1)',
-    pinBodyPath: 'M 0 0',
-    pinLogoX: 0,
-    pinLogoY: 0,
-    pinLogoSize: 12,
-    pinLabelX: 0,
-    pinLabelY: 0,
-    pinLabelText: 'NODE ONE',
-    showPinBody: true,
-    showPinGloss: true,
+    isPinned: false,
+    pinTransform: 'translate(100, 200)',
+    pinScale: 1,
     showPinLabel: true,
-    showPinHalo: false,
-    showBgMarker: false,
     ...overrides,
   });
 
@@ -57,7 +53,7 @@ describe('WarRoomMapMarkersComponent', () => {
     fixture.componentRef.setInput('markers', [buildMarker({ lodClass: 'lod-medium' })]);
     fixture.detectChanges();
 
-    const pin = fixture.nativeElement.querySelector('.pin-marker') as SVGGElement | null;
+    const pin = fixture.nativeElement.querySelector('.marker-group') as SVGGElement | null;
     expect(pin).toBeTruthy();
     expect(pin?.classList.contains('lod-medium')).toBeTrue();
   });
@@ -66,7 +62,15 @@ describe('WarRoomMapMarkersComponent', () => {
     fixture.componentRef.setInput('markers', [buildMarker({ hasLogo: false })]);
     fixture.detectChanges();
 
-    const fallback = fixture.nativeElement.querySelector('.node-marker-wrapper') as SVGGElement | null;
+    const fallback = fixture.nativeElement.querySelector('.marker-initials') as SVGTextElement | null;
     expect(fallback).toBeTruthy();
+  });
+
+  it('adds pinned class when marker is pinned', () => {
+    fixture.componentRef.setInput('markers', [buildMarker({ isPinned: true })]);
+    fixture.detectChanges();
+
+    const pin = fixture.nativeElement.querySelector('.marker-group') as SVGGElement | null;
+    expect(pin?.classList.contains('pinned')).toBeTrue();
   });
 });

@@ -7,21 +7,33 @@
       <img [src]="tooltip()!.logoPath" [alt]="tooltip()!.displayName + ' logo'" class="tooltip-logo"
         (error)="logoError.emit({ nodeId: tooltip()!.nodeId, logoPath: tooltip()!.logoPath })">
       }
-      <div class="tooltip-title">{{ tooltip()!.displayName }}</div>
+      <div class="tooltip-title-block">
+        <div class="tooltip-title">{{ tooltip()!.displayName }}</div>
+        <div class="tooltip-subtitle">Operational Node</div>
+      </div>
+      <div class="tooltip-status-pill" [ngClass]="tooltip()!.statusClass">
+        {{ tooltip()!.statusLabel || 'STATUS' }}
+      </div>
     </div>
     <div class="tooltip-body">
-      <div class="tooltip-type">
-        <span class="tooltip-label">TYPE:</span>
-        <span class="tooltip-value">{{ tooltip()!.typeLabel }}</span>
+      <div class="tooltip-chips">
+        <span class="tooltip-chip">{{ tooltip()!.typeLabel }}</span>
+        <span class="tooltip-chip">{{ tooltip()!.locationLabel || 'Location Pending' }}</span>
       </div>
       <div class="tooltip-description">{{ tooltip()!.description }}</div>
-      <div class="tooltip-location">
-        <span class="tooltip-label">LOCATION:</span>
-        <span class="tooltip-value">{{ tooltip()!.locationLabel }}</span>
-      </div>
-      <div class="tooltip-status">
-        <span class="tooltip-label">STATUS:</span>
-        <span class="tooltip-value" [ngClass]="tooltip()!.statusClass">{{ tooltip()!.statusLabel }}</span>
+      <div class="tooltip-details">
+        <div class="tooltip-row">
+          <span class="tooltip-label">TYPE</span>
+          <span class="tooltip-value">{{ tooltip()!.typeLabel }}</span>
+        </div>
+        <div class="tooltip-row">
+          <span class="tooltip-label">LOCATION</span>
+          <span class="tooltip-value">{{ tooltip()!.locationLabel }}</span>
+        </div>
+        <div class="tooltip-row">
+          <span class="tooltip-label">STATUS</span>
+          <span class="tooltip-value" [ngClass]="tooltip()!.statusClass">{{ tooltip()!.statusLabel }}</span>
+        </div>
       </div>
     </div>
   </div>

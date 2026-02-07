@@ -1,21 +1,31 @@
-<div class="war-room-map-container">
+<div class="war-room-map-container" [attr.data-theme-mode]="currentTheme()">
   <!-- Grid Overlay -->
   <div class="grid-overlay"></div>
 
   <!-- Map Container -->
-  <div class="map-container">
+  <div class="map-container" (click)="clearPinned()">
     <div id="war-room-map"></div>
+
+    <app-war-room-map-routes
+      [viewBox]="mapViewBox()"
+      [mapTransform]="mapTransform()"
+      [routes]="routesVm()"
+      [routeStroke]="routeStroke()"
+      [routeFill]="routeFill()">
+    </app-war-room-map-routes>
+
+    <app-war-room-map-markers
+      [viewBox]="mapViewBox()"
+      [mapTransform]="mapTransform()"
+      [markers]="markersVm()"
+      (markerSelected)="handleMarkerClick($event)"
+      (markerHovered)="onMarkerHovered($event)"
+      (markerLogoError)="onMarkerLogoError($event)">
+    </app-war-room-map-markers>
 
     <app-war-room-map-controls [fullscreen]="fullscreenState()" (zoomIn)="zoomIn()" (zoomOut)="zoomOut()"
       (toggleFullscreen)="toggleFullscreen()"></app-war-room-map-controls>
   </div>
-
-  <app-war-room-map-routes [viewBox]="mapViewBox()" [mapTransform]="mapTransform()" [routes]="routesVm()"
-    [routeStroke]="routeStroke()" [routeFill]="routeFill()"></app-war-room-map-routes>
-
-  <app-war-room-map-markers [viewBox]="mapViewBox()" [mapTransform]="mapTransform()" [markers]="markersVm()"
-    (markerSelected)="nodeSelected.emit($event)" (markerHovered)="onMarkerHovered($event)"
-    (markerLogoError)="onMarkerLogoError($event)"></app-war-room-map-markers>
 
   <app-war-room-map-tooltip [tooltip]="tooltipVm()" (logoError)="onTooltipLogoError($event)">
   </app-war-room-map-tooltip>

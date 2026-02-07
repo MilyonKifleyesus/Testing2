@@ -3,31 +3,27 @@ import { CommonModule } from '@angular/common';
 import { Node as WarRoomNode } from '../../../../../models/war-room.interface';
 
 export interface MarkerVm {
-  id: string;
-  node: WarRoomNode;
-  mapX: number;
-  mapY: number;
+  id: string; // Internal unique ID
+  node: WarRoomNode; // Reference to original data
   displayName: string;
-  ariaLabel: string;
+  shortName: string;
+  subLabel: string;
+  initials: string;
   hasLogo: boolean;
   logoPath: string;
   isSelected: boolean;
   isHovered: boolean;
   isHub: boolean;
+  isHQ: boolean;
+  statusKey: 'online' | 'maintenance' | 'offline';
+  statusColor: string;
+  statusGlow: string;
+  statusIconPath: string;
   lodClass: 'lod-low' | 'lod-medium' | 'lod-high';
-  pinTransform: string;
-  pinBodyPath: string;
-  pinLogoX: number;
-  pinLogoY: number;
-  pinLogoSize: number;
-  pinLabelX: number;
-  pinLabelY: number;
-  pinLabelText: string;
-  showPinBody: boolean;
-  showPinGloss: boolean;
+  isPinned: boolean;
+  pinTransform: string; // translate(x, y)
+  pinScale: number;
   showPinLabel: boolean;
-  showPinHalo: boolean;
-  showBgMarker: boolean;
 }
 
 @Component({
@@ -41,7 +37,7 @@ export class WarRoomMapMarkersComponent {
   viewBox = input<string>('0 0 950 550');
   mapTransform = input<string>('');
   markers = input<MarkerVm[]>([]);
-  markerSelected = output<WarRoomNode>();
+  markerSelected = output<WarRoomNode | undefined>();
   markerHovered = output<WarRoomNode | null>();
   markerLogoError = output<{ node: WarRoomNode; logoPath: string }>();
 
@@ -54,7 +50,11 @@ export class WarRoomMapMarkersComponent {
   }
 
   onMarkerClick(marker: MarkerVm): void {
-    this.markerSelected.emit(marker.node);
+    if (marker.isSelected) {
+      this.markerSelected.emit(undefined);
+    } else {
+      this.markerSelected.emit(marker.node);
+    }
   }
 
   onLogoError(marker: MarkerVm): void {

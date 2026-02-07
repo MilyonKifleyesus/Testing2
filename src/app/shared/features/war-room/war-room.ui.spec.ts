@@ -26,6 +26,30 @@ describe('WarRoomComponent UI (responsive + a11y)', () => {
     error: jasmine.createSpy('error'),
   };
 
+  const createMapStub = () => ({
+    on: jasmine.createSpy('on').and.callFake((event: string, cb: () => void) => {
+      if (event === 'load' && typeof cb === 'function') {
+        cb();
+      }
+    }),
+    project: jasmine.createSpy('project').and.returnValue({ x: 100, y: 100 }),
+    resize: jasmine.createSpy('resize'),
+    remove: jasmine.createSpy('remove'),
+    getContainer: () => ({
+      getBoundingClientRect: () => ({ left: 0, top: 0, right: 800, bottom: 400, width: 800, height: 400 } as DOMRect)
+    }),
+    getZoom: jasmine.createSpy('getZoom').and.returnValue(4),
+    addSource: jasmine.createSpy('addSource'),
+    addLayer: jasmine.createSpy('addLayer'),
+    getSource: jasmine.createSpy('getSource').and.returnValue(null),
+    getLayer: jasmine.createSpy('getLayer').and.returnValue(null),
+    setPaintProperty: jasmine.createSpy('setPaintProperty'),
+    easeTo: jasmine.createSpy('easeTo'),
+    flyTo: jasmine.createSpy('flyTo'),
+    zoomIn: jasmine.createSpy('zoomIn'),
+    zoomOut: jasmine.createSpy('zoomOut'),
+  });
+
   const emptyState = {
     parentGroups: [],
     nodes: [],
@@ -156,8 +180,9 @@ describe('WarRoomComponent UI (responsive + a11y)', () => {
   };
 
   beforeEach(async () => {
-    spyOn(WarRoomMapComponent.prototype as any, 'loadScripts').and.returnValue(Promise.resolve());
-    spyOn(WarRoomMapComponent.prototype as any, 'initializeMap').and.stub();
+    spyOn(WarRoomMapComponent.prototype as any, 'createMap').and.returnValue(createMapStub());
+    spyOn(WarRoomMapComponent.prototype as any, 'setupResizeObserver').and.stub();
+    spyOn(WarRoomMapComponent.prototype as any, 'setupFullscreenListeners').and.stub();
     spyOn(WarRoomMapComponent.prototype as any, 'zoomToEntity').and.stub();
     spyOn(WarRoomMapComponent.prototype as any, 'getNodePosition').and.returnValue({ top: 100, left: 100 });
 

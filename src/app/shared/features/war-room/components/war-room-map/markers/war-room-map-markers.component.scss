@@ -3,50 +3,272 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
   z-index: 20;
-  pointer-events: none;
 }
 
-.pin-marker,
-.node-marker-wrapper {
-  pointer-events: auto;
+.marker-group {
   cursor: pointer;
+  pointer-events: auto;
+  transition: filter 0.2s ease-out;
+  --status-color: #00ff41;
+  --status-glow: rgba(0, 255, 65, 0.45);
 }
 
-.pin-marker.marker-temp-hover {
-  filter: brightness(1.15) drop-shadow(0 0 10px rgba(0, 255, 65, 0.6));
+.marker-group.hovered {
+  filter: drop-shadow(0 0 10px var(--status-glow));
 }
 
-.node-marker-wrapper {
-  transform: translate(-50%, -50%);
-
-  &.selected .node-marker {
-    transform: scale(1.5);
-    box-shadow: 0 0 15px rgba(0, 255, 65, 0.8);
-  }
-
-  &.marker-temp-hover .node-marker {
-    box-shadow: 0 0 10px rgba(0, 255, 65, 0.6);
-    transform: scale(1.2);
-  }
-
-  &.hub .node-marker {
-    background-color: #3a3a3a;
-    border-color: #00ff41;
-  }
+.marker-group.selected {
+  filter: drop-shadow(0 0 14px var(--status-glow));
 }
 
-.node-marker {
-  width: 0.75rem;
-  height: 0.75rem;
-  background-color: #00ff41;
-  border: 2px solid #3a3a3a;
-  transform: translate(-50%, -50%);
-  transition: all 0.2s ease;
+.marker-group.pinned {
+  filter: drop-shadow(0 0 18px var(--status-glow));
+}
+
+.marker-group.pinned .marker-ring {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 8px var(--status-glow));
+}
+
+.marker-group.pinned .marker-halo {
+  opacity: 0.35;
+}
+
+.marker-group.pinned .marker-core {
+  stroke: rgba(255, 255, 255, 0.18);
+}
+
+.marker-group.pinned .marker-pulse {
+  display: block;
+  animation-duration: 2s;
+}
+
+.marker-group.pinned .marker-status-shell {
+  stroke-width: 1.6;
+}
+
+.marker-group.pinned .marker-status-core {
+  filter: drop-shadow(0 0 6px var(--status-glow));
+}
+
+.marker-group.pinned .marker-tag {
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.55));
+}
+
+.marker-group.pinned .marker-pin-indicator {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.marker-group.pinned .marker-pin-indicator .pin-core {
+  fill: var(--status-color);
+}
+
+.marker-group.pinned .marker-pin-indicator .pin-ring {
+  stroke: var(--status-color);
+  opacity: 0.9;
+}
+
+.marker-shell {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+}
+
+.marker-scale {
+  transform-origin: center;
+}
+
+.marker-group:hover .marker-shell {
+  transform: scale(1.06);
+}
+
+.marker-dot-group {
+  display: none;
+}
+
+.marker-dot-ring {
+  fill: rgba(8, 12, 16, 0.75);
+  stroke: var(--status-color);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 6px var(--status-glow));
+}
+
+.marker-dot-core {
+  fill: var(--status-color);
+}
+
+.marker-halo {
+  fill: var(--status-color);
+  opacity: 0.22;
+  filter: blur(6px);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.marker-ring {
+  fill: #0c1218;
+  stroke: var(--status-color);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.marker-sheen {
+  fill: url(#marker-ring-sheen);
+  opacity: 0.6;
+}
+
+.marker-ring-inner {
+  fill: #0e1722;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.marker-core {
+  fill: #0b1118;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 0.8;
+  vector-effect: non-scaling-stroke;
+}
+
+.marker-gloss {
+  fill: url(#marker-gloss);
+  opacity: 0.9;
+}
+
+.marker-logo-image {
+  opacity: 0.95;
+}
+
+.marker-initials {
+  fill: #e6f9ef;
+  font-weight: 700;
+  font-size: 7px;
+  letter-spacing: 0.6px;
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+.marker-status-shell {
+  fill: #0a0f14;
+  stroke: var(--status-color);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
+.marker-status-core {
+  fill: var(--status-color);
+  vector-effect: non-scaling-stroke;
+}
+
+.marker-status-icon {
+  fill: none;
+  stroke: #0a0f14;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.marker-pulse {
+  fill: none;
+  stroke: var(--status-color);
+  stroke-width: 1.6;
+  opacity: 0.6;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: marker-pulse 2.6s ease-out infinite;
+}
+
+.marker-tag {
   pointer-events: none;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45));
 }
 
-.node-marker.hub-marker {
-  background-color: #3a3a3a;
-  border-color: #00ff41;
+.marker-pin-indicator {
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  transform-origin: center;
+
+  .pin-ring {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.35);
+    stroke-width: 1.4;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .pin-core {
+    fill: rgba(255, 255, 255, 0.65);
+  }
+}
+
+.tag-bg {
+  fill: rgba(10, 16, 22, 0.92);
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 1;
+}
+
+.tag-notch {
+  fill: rgba(10, 16, 22, 0.92);
+  stroke: rgba(255, 255, 255, 0.15);
+  stroke-width: 1;
+}
+
+.tag-title {
+  fill: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+}
+
+.tag-sub {
+  fill: rgba(255, 255, 255, 0.7);
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+}
+
+.marker-group.hq .marker-ring {
+  stroke-dasharray: 4 2;
+}
+
+.marker-group.hub .marker-ring-inner {
+  stroke: rgba(255, 255, 255, 0.25);
+}
+
+.marker-group.lod-low .marker-shell {
+  display: none;
+}
+
+.marker-group.lod-low .marker-dot-group {
+  display: block;
+}
+
+.marker-group.lod-medium .marker-status {
+  display: none;
+}
+
+.marker-group.lod-medium .marker-pulse {
+  display: none;
+}
+
+@keyframes marker-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.5;
+  }
+
+  70% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
 }
