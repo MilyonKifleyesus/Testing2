@@ -1,0 +1,238 @@
+<div class="container-fluid">
+  <!-- Page Header -->
+  <div class="page-header" style="margin-top: 2rem;">
+    <div>
+      <h2 class="main-content-title tx-24 mg-b-5">Vehicle Ticket Report</h2>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a [routerLink]="['/admin/dashboard']">Home</a></li>
+        <li class="breadcrumb-item"><a [routerLink]="['/admin/reports']">Reports</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Vehicle Ticket Report</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card custom-card">
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Project Filter -->
+            <div class="col-md-6">
+              <label class="form-label">Project</label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="selectedProject"
+                (ngModelChange)="onProjectChange()"
+                [disabled]="isLoadingFilters">
+                <option value="">Select Project</option>
+                <option value="all">All Projects</option>
+                <option *ngFor="let project of projects" [value]="project.name">{{ project.name }}</option>
+              </select>
+            </div>
+
+            <!-- Vehicle Filter -->
+            <div class="col-md-6">
+              <label class="form-label">Vehicle</label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="selectedVehicle"
+                [disabled]="isLoadingVehicles || !selectedProject">
+                <option value="">Select Vehicle</option>
+                <option value="all">All Vehicles</option>
+                <option *ngFor="let vehicle of vehicles" [value]="vehicle.fleetNumber">
+                  {{ vehicle.fleetNumber }} - {{ vehicle.vin }}
+                </option>
+              </select>
+              <small class="text-muted" *ngIf="!selectedProject">Please select a project first</small>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="col-12">
+              <!-- Error Message -->
+              <div class="alert alert-danger" role="alert" *ngIf="errorMessage">
+                <i class="ti-alert me-2"></i>{{ errorMessage }}
+              </div>
+              
+              <div class="d-flex gap-2">
+                <button 
+                  class="btn btn-success"
+                  (click)="runReport()"
+                  [disabled]="isLoading || !selectedProject || !selectedVehicle">
+                  <span *ngIf="!isLoading">
+                    <i class="ti-control-play me-2"></i>Run Report
+                  </span>
+                  <span *ngIf="isLoading">
+                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    Loading...
+                  </span>
+                </button>
+                <button 
+                  class="btn btn-secondary"
+                  (click)="printReport()"
+                  [disabled]="!reportGenerated || isLoading">
+                  <i class="ti-printer me-2"></i>Print Report
+                </button>
+                <button 
+                  class="btn btn-info"
+                  (click)="downloadReport()"
+                  [disabled]="!reportGenerated || isLoading">
+                  <i class="ti-download me-2"></i>Download Report
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Results -->
+  <div class="row" *ngIf="reportGenerated">
+    <div class="col-12">
+      <div class="card custom-card">
+        <div class="card-header border-bottom-0">
+          <div class="card-title">Report result</div>
+        </div>
+        <div class="card-body">
+          <!-- Search Box -->
+          <div class="row mb-3">
+            <div class="col-md-4 ms-auto">
+              <div class="input-group">
+                <span class="input-group-text bg-transparent">
+                  <i class="ti-search"></i>
+                </span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  placeholder="Search..."
+                  [(ngModel)]="searchTerm"
+                  (ngModelChange)="filterTickets()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Table -->
+          <div class="table-responsive">
+            <table class="table table-bordered text-nowrap border-bottom">
+              <thead>
+                <tr>
+                  <th class="wd-5p">
+                    <label class="ckbox mg-b-0">
+                      <input type="checkbox"><span></span>
+                    </label>
+                  </th>
+                  <th (click)="sortTickets('ticketNumber')" style="cursor:pointer">Ticket # <span *ngIf="sortColumn === 'ticketNumber'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('clientName')" style="cursor:pointer">Client <span *ngIf="sortColumn === 'clientName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('projectName')" style="cursor:pointer">Project <span *ngIf="sortColumn === 'projectName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('vehicleNumber')" style="cursor:pointer">Vehicle <span *ngIf="sortColumn === 'vehicleNumber'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('safetyCritical')" style="cursor:pointer">Safety Critical <span *ngIf="sortColumn === 'safetyCritical'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('createdDate')" style="cursor:pointer">Created Date <span *ngIf="sortColumn === 'createdDate'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('defectType')" style="cursor:pointer">Defect Type <span *ngIf="sortColumn === 'defectType'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('defectLocation')" style="cursor:pointer">Defect Location <span *ngIf="sortColumn === 'defectLocation'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('description')" style="cursor:pointer">Description <span *ngIf="sortColumn === 'description'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('hasImages')" style="cursor:pointer">Images <span *ngIf="sortColumn === 'hasImages'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('assignedByName')" style="cursor:pointer">Assign By <span *ngIf="sortColumn === 'assignedByName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('assignedToName')" style="cursor:pointer">Assign To <span *ngIf="sortColumn === 'assignedToName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('stationName')" style="cursor:pointer">Station <span *ngIf="sortColumn === 'stationName'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('status')" style="cursor:pointer">Status <span *ngIf="sortColumn === 'status'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                  <th (click)="sortTickets('resolvedDate')" style="cursor:pointer">Resolved Date <span *ngIf="sortColumn === 'resolvedDate'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let ticket of filteredTickets">
+                  <td>
+                    <label class="ckbox mg-b-0">
+                      <input type="checkbox"><span></span>
+                    </label>
+                  </td>
+                  <td>
+                    <a href="javascript:void(0);" class="text-primary">{{ ticket.ticketNumber }}</a>
+                  </td>
+                  <td>{{ ticket.clientName }}</td>
+                  <td>{{ ticket.projectName }}</td>
+                  <td>{{ ticket.vehicleNumber }} / {{ ticket.vehicleVIN }}</td>
+                  <td>
+                    <span [ngClass]="getSafetyCriticalClass(ticket.safetyCritical)">
+                      {{ ticket.safetyCritical ? 'True' : 'False' }}
+                    </span>
+                  </td>
+                  <td>{{ formatDate(ticket.createdDate) }}</td>
+                  <td>{{ ticket.defectType }}</td>
+                  <td>{{ ticket.defectLocation }}</td>
+                  <td>
+                    <div class="description-cell">{{ ticket.description }}</div>
+                  </td>
+                  <td class="text-center">
+                    <i *ngIf="ticket.hasImages" class="ti-image text-primary"></i>
+                    <span *ngIf="!ticket.hasImages">-</span>
+                  </td>
+                  <td>{{ ticket.assignedByName }}</td>
+                  <td>{{ ticket.assignedToName }}</td>
+                  <td>{{ ticket.stationName || '-' }}</td>
+                  <td>
+                    <span [ngClass]="getStatusClass(ticket.status)">
+                      {{ ticket.status }}
+                    </span>
+                  </td>
+                  <td>{{ ticket.resolvedDate ? formatDate(ticket.resolvedDate) : '-' }}</td>
+                </tr>
+                <tr *ngIf="filteredTickets.length === 0">
+                  <td colspan="16" class="text-center py-5">
+                    <i class="ti-info-alt tx-48 text-muted mb-3"></i>
+                    <p class="text-muted mb-0">No tickets found for selected vehicle</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination Controls -->
+          <div class="card-footer border-top" *ngIf="reportGenerated && totalCount > 10">
+            <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+              <div class="text-muted small">
+                Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong> to <strong>{{ Math.min(currentPage * pageSize, totalCount) }}</strong> of <strong>{{ totalCount }}</strong> tickets
+              </div>
+              
+              <nav aria-label="Pagination" *ngIf="getTotalPages() > 1">
+                <ul class="pagination mb-0">
+                  <li class="page-item" [class.disabled]="currentPage === 1">
+                    <button class="page-link" (click)="previousPage()" [disabled]="currentPage === 1" type="button">
+                      <i class="ti-angle-left"></i> Previous
+                    </button>
+                  </li>
+                  
+                  <li class="page-item" *ngFor="let page of getPageNumbers()" [class.active]="page === currentPage" [class.disabled]="page === -1">
+                    <button *ngIf="page !== -1" class="page-link" (click)="goToPage(page)" [class.active]="page === currentPage" type="button">
+                      {{ page }}
+                    </button>
+                    <span class="page-link" *ngIf="page === -1">...</span>
+                  </li>
+                  
+                  <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
+                    <button class="page-link" (click)="nextPage()" [disabled]="currentPage === getTotalPages()" type="button">
+                      Next <i class="ti-angle-right"></i>
+                    </button>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State - Before Report Run -->
+  <div class="row" *ngIf="!reportGenerated">
+    <div class="col-12">
+      <div class="card custom-card">
+        <div class="card-body text-center py-5">
+          <i class="ti-clipboard tx-64 text-muted mb-3"></i>
+          <h4 class="text-muted">Select Project and Vehicle to view tickets</h4>
+          <p class="text-muted mb-0">Choose a project and vehicle from the filters above, then click "Run Report"</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

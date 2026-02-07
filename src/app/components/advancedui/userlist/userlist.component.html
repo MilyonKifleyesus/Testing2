@@ -1,0 +1,79 @@
+<app-page-header [title]="'Userlist'" [title1]="['Advanced Ui']" [activeitem]="'Userlist'"></app-page-header>
+
+    <!-- Start::row-1 -->
+    <div class="row row-sm">
+        <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 grid-margin">
+            <div class="card custom-card">
+                <div class="card-header border-bottom-0 pb-0 d-block">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <label class="main-content-label mb-0 pt-1">User Table</label>
+                        <div class="ms-auto float-end">
+                            <div class="file-drop" ngbDropdown>
+                                <a href="javascript:void(0);" ngbDropdownToggle class="option-dots" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-horizontal"></i></a>
+                                <div class="dropdown-menu dropdown-menu-end" ngbDropdownMenu>
+                                    <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Today</a>
+                                    <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Last Week</a>
+                                    <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Last Month</a>
+                                    <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Last Year</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="fs-12 text-gray-5 mt-0 mb-2">Example of Spruha Simple Table. <a href="javascript:void(0);" class="text-primary">Learn more</a></p>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive userlist-table">
+                        <spk-reusable-tables [columns]="userColumns" [span]="true" [tableClass]="'card-table table-striped table-vcenter border text-nowrap mb-0'">
+                            @for(user of users;track $index){
+
+                                <tr>
+                                    <td>
+                                        <div class="avatar-md">
+                                            <img alt="avatar" class="rounded-circle me-2" [src]="user.src">
+                                        </div>
+                                    </td>
+                                    <td>{{user.name}}</td>
+                                    <td>
+                                       {{user.date}} 
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="label {{user.bg1}} d-flex"><span class="dot-label bg-{{user.bg}} me-1"></span>{{user.status}}</span>
+                                    </td>
+                                    <td>
+                                        <a href="javascript:void(0);">{{user.mail}}</a>
+                                    </td>
+                                    <td>
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-primary me-2">
+                                            <i class="fe fe-search"></i>
+                                        </a>
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-info me-2">
+                                            <i class="fe fe-edit-2"></i>
+                                        </a>
+                                        <a href="javascript:void(0);" (click)="close(user.id)" class="btn btn-sm btn-danger">
+                                            <i class="fe fe-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </spk-reusable-tables>
+                    </div>
+                    <nav aria-label="...">
+                        <ul class="pagination mt-4 mb-0 float-end">
+                            <li class="page-item disabled">
+                                <span class="page-link">Previous</span>
+                            </li>
+                            <li class="page-item"><a class="page-link" href="javascript:void(0);">1</a></li>
+                            <li class="page-item active" aria-current="page">
+                                <span class="page-link">2</span>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="javascript:void(0);">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div><!-- COL END -->
+    </div>
+    <!--End::row-1 -->
+

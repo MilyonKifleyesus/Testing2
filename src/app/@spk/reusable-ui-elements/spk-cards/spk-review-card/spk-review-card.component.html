@@ -1,0 +1,31 @@
+<div class="card custom-card">
+    <!-- Card Header -->
+    <div class="card-header border-bottom-0 pb-0">
+      <div>
+        <!-- Star Ratings -->
+         @for (star of [].constructor(5); let i = $index; track $index) {
+        <span  [ngClass]="i < rating ? 'text-warning me-1' : 'text-black op-1 me-1'">
+          <i class="bi bi-star-fill"></i>
+        </span>
+    }
+        <p class="d-block text-muted mb-0 fs-12 fw-medium">{{ timestamp }}</p>
+      </div>
+    </div>
+  
+    <!-- Card Body -->
+    <div class="card-body pt-3">
+      <div class="fw-medium fs-15 mb-2">{{ reviewTitle }}</div>
+      {{ reviewText }}
+    </div>
+  
+    <!-- Card Footer -->
+    <div class="card-footer">
+      <div class="d-flex align-items-center">
+        <span class="avatar avatar-sm avatar-rounded me-2">
+          <img [src]="reviewerAvatar" alt="Reviewer Avatar">
+        </span>
+        <div class="fw-medium fs-14">{{ reviewerName }}</div>
+      </div>
+    </div>
+  </div>
+  

@@ -1,0 +1,64 @@
+<app-page-header [title]="'File-Manager-List'" [title1]="['File-Manager']" [activeitem]="'File-Manager-List'"></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    @for(item of fileManagerItems;track $index){
+    <div class="col-xxl-2 col-xl-3 col-md-3 col-lg-6">
+        <div class="card custom-card border shadow-none" [ngClass]="{'overflow-hidden': item.isImage}">
+             @if(!item.isImage){
+            <div class="card-body text-center">
+                <div class="file-manger-icon">
+                    <a [routerLink]="item.link">
+                        <img [src]="item.image" alt="img" class="br-7" />
+                    </a>
+                </div>
+                <h6 class="mb-1 fw-medium mt-0">{{ item.type }}</h6>
+                <span class="text-muted">{{ item.size }}</span>
+            </div>
+            }
+            @if(item.isImage){
+            <div>
+                <a [routerLink]="item.link">
+                    <img [src]="item.image" alt="img" class="w-100" />
+                </a>
+                <div class="card-footer bd-t-0 py-3">
+                    <div class="d-flex">
+                        <div>
+                            <h6 class="mb-0">{{ item.type }}</h6>
+                        </div>
+                        <div class="ms-auto">
+                            <h6 class="text-muted mb-0">{{ item.size }}</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+    </div>
+    }
+</div>
+<nav>
+    <ul class="pagination justify-content-end">
+        <li class="page-item disabled">
+            <a class="page-link" href="javascript:void(0);">Prev</a>
+        </li>
+        <li class="page-item active">
+            <a class="page-link" href="javascript:void(0);">1</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="javascript:void(0);">2</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="javascript:void(0);">3</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="javascript:void(0);">4</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="javascript:void(0);">5</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="javascript:void(0);">Next</a>
+        </li>
+    </ul>
+</nav>
+<!--End::row-1 -->

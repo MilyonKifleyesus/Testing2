@@ -1,0 +1,70 @@
+<div class="metrics-panel">
+  <!-- Network Throughput -->
+  <div class="metric-module">
+    <div class="metric-title">
+      <span>NETWORK THROUGHPUT</span>
+      @if (networkThroughput(); as throughput) {
+        <span class="metric-status">ACTIVE</span>
+      }
+    </div>
+    <div class="throughput-bars">
+      @if (networkThroughput(); as throughput) {
+        @for (bar of throughput.bars; track $index) {
+          <div
+            class="throughput-bar"
+            [class]="'throughput-bar bar-' + getBarLevel(bar)"
+            [style.height.%]="bar"
+          ></div>
+        }
+      }
+    </div>
+    @if (networkThroughput(); as throughput) {
+      <div class="throughput-footer">
+        <span>{{ throughput.channelStatus }}</span>
+        <span>{{ throughput.throughput }}</span>
+      </div>
+    }
+  </div>
+
+  <!-- Geopolitical Heatmap -->
+  <div class="metric-module">
+    <div class="metric-title">
+      <span>GEOPOLITICAL HEATMAP</span>
+      @if (geopoliticalHeatmap(); as heatmap) {
+        <span class="metric-status">MONITORING</span>
+      }
+    </div>
+    @if (geopoliticalHeatmap(); as heatmap) {
+      <div class="heatmap-grid" [style.grid-template-columns]="'repeat(' + heatmap.cols + ', 1fr)'">
+        @for (row of heatmap.grid; track $index) {
+          @for (cell of row; track $index) {
+            <div
+              class="heatmap-cell"
+              [style.background-color]="'rgba(0, 255, 65, ' + clampAlpha(cell) + ')'"
+            ></div>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Satellite Uplink Status -->
+  <div class="metric-module">
+    <div class="metric-title">
+      <span>SATELLITE UPLINK STATUS</span>
+      @if (satelliteStatuses().length > 0) {
+        <span class="metric-status">ONLINE</span>
+      }
+    </div>
+    <div class="satellite-list">
+      @for (satellite of satelliteStatuses(); track satellite.id) {
+        <div class="satellite-item">
+          <span class="satellite-name">{{ satellite.name }} ({{ satellite.type }})</span>
+          <span class="satellite-status" [class.status-online]="isSatelliteOnline(satellite.status)">
+            {{ satellite.status }}
+          </span>
+        </div>
+      }
+    </div>
+  </div>
+</div>

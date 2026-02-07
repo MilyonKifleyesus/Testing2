@@ -1,0 +1,19 @@
+
+    <div class="card custom-card  {{cardClass}}">
+      <div class="bg-transparent border-0">
+        <div class="pricing-title" [class.text-primary]="isPremium">{{ title }}</div>
+        <h1 class="h1 font-weight-normal text-center mb-0">
+          $<span class="price">{{ price }}</span><span class="h6 text-muted ms-2">/MO</span>
+        </h1>
+      </div>
+      <div class="card-body pt-0 text-center">
+        <ul class="list-unstyled mb-4">
+            @for(feature of features;track $index){
+
+                <li>{{ feature }}</li>
+            }
+        </ul>
+        <a href="javascript:void(0);" class="btn ripple" [class.btn-primary]="isPrimary" [class.btn-light]="!isPrimary">Order Now</a>
+      </div>
+    </div>
+  

@@ -1,0 +1,17 @@
+// Import shared styles from ticket reports
+@use '../ticket-reports/ticket-reports.component.scss' as *;
+
+// Vehicle final reports specific styles
+.btn-success {
+  white-space: nowrap;
+  
+  i {
+    font-size: 14px;
+  }
+}
+
+table tbody tr {
+  td {
+    vertical-align: middle;
+  }
+}

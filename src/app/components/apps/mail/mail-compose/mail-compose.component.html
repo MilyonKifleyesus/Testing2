@@ -1,0 +1,123 @@
+<app-page-header [title]="'Mail Compose'" [title1]="['Apps']" [activeitem]="'Mail Compose'"></app-page-header>
+                <!-- Start::row-1 -->
+                <div class="row row-sm">
+                    <div class="col-lg-4 col-xl-3 col-md-12">
+                        <div class="card custom-card">
+                            <div class="card-body">
+                                <div class="">
+                                    <div class="main-mail-menu">
+                                        <nav class="nav main-nav-column mg-b-20">
+                                            <a class="nav-link active" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-mail"></i> Inbox <span class="badge bg-light">20</span>
+                                            </a>
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-star"></i> Starred <span class="badge bg-primary">3</span>
+                                            </a>
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-bookmark"></i> Important <span class="badge bg-secondary">10</span>
+                                            </a>
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-send"></i> Sent Mail <span class="badge bg-success">8</span>
+                                            </a>
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-edit-2"></i> Drafts <span class="badge bg-danger">15</span>
+                                            </a>
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-disc"></i> Spam <span class="badge bg-warning">128</span>
+                                            </a>
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-trash-2"></i> Trash <span class="badge bg-info">6</span>
+                                            </a>
+                                        </nav>
+                                        <label class="main-content-label main-content-label-sm">Label</label>
+                                        <nav class="nav main-nav-column">
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-folder"></i> Social <span class="badge bg-primary">10</span>
+                                            </a>
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-folder"></i> Promotions <span class="badge bg-secondary">22</span>
+                                            </a>
+                                            <a class="nav-link" href="javascript:void(0);">
+                                                <i class="fs-18 fe fe-folder"></i> Updates <span class="badge bg-success">17</span>
+                                            </a>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-8 col-xl-9 col-md-12">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <h3 class="card-title fs-18">
+                                    <label class="main-content-label fs-15">Compose New Message</label>
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <form>
+                                    <div class="form-group">
+                                        <div class="row align-items-center">
+                                            <label class="col-sm-3 col-xl-2 form-label fw-medium text-muted">To</label>
+                                            <div class="col-sm-9 col-xl-10">
+                                                <input type="text" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="row align-items-center">
+                                            <label class="col-sm-3 col-xl-2 form-label fw-medium text-muted">CC</label>
+                                            <div class="col-sm-9 col-xl-10">
+                                                <input type="text" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="row align-items-center">
+                                            <label class="col-sm-3 col-xl-2 form-label fw-medium text-muted">BC</label>
+                                            <div class="col-sm-9 col-xl-10">
+                                                <input type="text" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="row align-items-center">
+                                            <label class="col-sm-3 col-xl-2 form-label fw-medium text-muted">Subject</label>
+                                            <div class="col-sm-9 col-xl-10">
+                                                <input type="text" class="form-control">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <div class="row">
+                                            <label class="col-sm-3 col-xl-2 form-label fw-medium text-muted">Message</label>
+                                            <div class="col-sm-9 col-xl-10">
+                                                <textarea rows="10" class="form-control"></textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="card-footer d-sm-flex rounded-0">
+                                <div class="">
+                                    <a href="javascript:void(0)" class="btn px-2" data-bs-toggle="tooltip" title="" placement="top" ngbTooltip="Attach">
+                                        <i class="fe fe-paperclip fs-16"></i>
+                                    </a>
+                                    <a href="javascript:void(0)" class="btn px-2" data-bs-toggle="tooltip" title="" placement="top" ngbTooltip="Link">
+                                        <i class="fe fe-link fs-16"></i>
+                                    </a>
+                                    <a href="javascript:void(0)" class="btn px-2" data-bs-toggle="tooltip" title="" placement="top" ngbTooltip="Photos">
+                                        <i class="fe fe-image fs-16"></i>
+                                    </a>
+                                    <a href="javascript:void(0)" class="btn px-2" data-bs-toggle="tooltip" title="" placement="top" ngbTooltip="Delete">
+                                        <i class="fe fe-trash fs-16"></i>
+                                    </a>
+                                </div>
+                                <div class="btn-list ms-auto">
+                                    <button class="btn btn-danger">Cancel</button>
+                                    <button class="btn btn-primary">Send message</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--End::row-1 -->

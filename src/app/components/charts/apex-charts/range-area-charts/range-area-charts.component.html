@@ -1,0 +1,34 @@
+<app-page-header [title]="'Apex Range Area Charts'" [activeitem]="'Apex Range Area Charts'" [title1]="['Apex  Charts']"></app-page-header>
+
+<!-- Start::row-1 -->
+ <div class="row">
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Basic Range Area Chart
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="rangearea-basic">
+                    <spk-apex-charts  [chartOptions]="chartOptions"></spk-apex-charts>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Combo Range Area Chart
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="rangearea-combo">
+                    <spk-apex-charts  [chartOptions]="chartOptions1"></spk-apex-charts>
+                </div>            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

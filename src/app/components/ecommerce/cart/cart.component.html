@@ -1,0 +1,107 @@
+<app-page-header [title]="' Cart'" [title1]="['Ecommerce']" [activeitem]="' Cart'"></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    <div class="col-lg-12 col-xl-9 col-md-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Shopping cart</div>
+            </div>
+            <div class="card-body pt-2">
+                <div class="table-responsive">
+                    <spk-reusable-tables [tableClass]="'border table-hover text-nowrap table-shopping-cart mb-0'"
+                        [trClass]="'small text-uppercase'" [tableHead]="'text-muted'" [columns]="cartColums">
+                        @for(product of products; track $index){
+                        <tr>
+                            <td>
+                                <div class="media align-items-center">
+                                    <div class="card-aside-img">
+                                        <img [src]="product.src" alt="img" class="img-sm">
+                                    </div>
+                                    <div class="media-body mt-2">
+                                        <div class="card-item-desc mt-0">
+                                            <h6 class="fw-medium mt-0 text-uppercase">{{product.name}}</h6>
+                                            <dl class="card-item-desc-1 mb-0">
+                                                <dt>Color: </dt>
+                                                <dd>{{product.color}}</dd>
+                                            </dl>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <p class="text-{{product.statuscolor}} small mb-0 mt-1 fs-12">{{product.status}}</p>
+                            </td>
+                            <td class="product-quantity-container">
+                                <div class="input-group br-3 flex-nowrap quantity">
+                                    <button
+                                        class="btn btn-icon btn-light input-group-text flex-fill product-quantity-minus"><i
+                                            class="ri-subtract-line"></i></button>
+                                    <input type="text" class="form-control form-control-sm text-center w-100 qty"
+                                        aria-label="quantity" id="product-quantity1" value="2">
+                                    <button
+                                        class="btn btn-icon btn-light input-group-text flex-fill product-quantity-plus"><i
+                                            class="ri-add-line"></i></button>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="price-wrap"> <span class="price fw-semibold fs-16">{{product.price}}</span>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <a class="remove-list text-danger fs-20 remove-button"
+                                    (click)="click(product.id)" data-abc="true"><i
+                                        class="fa fa-trash"></i></a>
+                            </td>
+                        </tr>
+                        }
+                    </spk-reusable-tables>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-xl-3 col-md-12">
+        <div class="card custom-card">
+            <div class="card-body">
+                <form>
+                    <div class="form-group mb-0"> <label class="form-label fw-medium">Have coupon?</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control text-truncate" placeholder="Coupon code"
+                                aria-label="Coupon code">
+                            <button class="btn btn-primary" type="button">Apply</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="card custom-card cart-details">
+            <div class="card-body">
+                <h5 class="mb-3 fw-semibold fs-14">PRICE DETAIL</h5>
+                <dl class="dlist-align mb-1">
+                    <dt class="">ITEMS 3</dt>
+                    <dd class="text-end ms-auto">$ 262.00</dd>
+                </dl>
+                <dl class="dlist-align mb-1">
+                    <dt>Discount:</dt>
+                    <dd class="text-end text-danger ms-auto">- $20.00</dd>
+                </dl>
+                <dl class="dlist-align mb-1">
+                    <dt>Total price:</dt>
+                    <dd class="text-end ms-auto">$252.97</dd>
+                </dl>
+                <dl class="dlist-align mb-0">
+                    <dt>Delivery:</dt>
+                    <dd class="text-end text-success ms-auto">Free</dd>
+                </dl>
+                <hr>
+                <dl class="dlist-align">
+                    <dt>Total:</dt>
+                    <dd class="text-end  ms-auto"><strong>$252.97</strong></dd>
+                </dl>
+                <div class="d-grid">
+                    <a class="btn btn-primary" routerLink="/ecommerce/products">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

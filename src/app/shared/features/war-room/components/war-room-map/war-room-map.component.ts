@@ -1,0 +1,5078 @@
+﻿import { Component, input, output, AfterViewInit, OnDestroy, inject, effect, signal, computed, HostBinding } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Node as WarRoomNode, FleetSelection, TransitRoute } from '../../../../../shared/models/war-room.interface';
+import { WarRoomService } from '../../../../../shared/services/war-room.service';
+import { AppStateService } from '../../../../../shared/services/app-state.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+
+declare global {
+  interface Window {
+    jsVectorMap: any;
+  }
+}
+
+@Component({
+  selector: 'app-war-room-map',
+  imports: [CommonModule],
+  templateUrl: './war-room-map.component.html',
+  styleUrls: ['./war-room-map.component.scss'],
+})
+export class WarRoomMapComponent implements AfterViewInit, OnDestroy {
+  // Inputs
+  nodes = input<WarRoomNode[]>([]);
+  selectedEntity = input<FleetSelection | null>(null);
+  transitRoutes = input<TransitRoute[]>([]);
+  filterStatus = input<'all' | 'active' | 'inactive'>('all');
+
+  // Outputs
+  nodeSelected = output<WarRoomNode | undefined>();
+
+  // State
+  private mapInstance: any;
+  private isInitializing = true;
+  private destroyed = false;
+  private isFullscreen = false;
+  private isDragging = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private dragStartViewBoxX = 0;
+  private dragStartViewBoxY = 0;
+  private userHasZoomed = false;
+  private pendingZoomCompanyId: string | null = null;
+  private tooltipTimeoutId: any = null;
+  private tooltipClampRafId: number | null = null;
+  private sidebarExpanded = signal(true);
+  private lastUpdateTimestamp = 0;
+  // Milli: default view should show the full world map on every device size.
+  private readonly defaultZoomFill = 1;
+  private readonly defaultZoomMin = 1;
+  private readonly defaultZoomMax = 1;
+  private readonly defaultZoomCenter = { lat: 0, lng: 0 };
+
+  // Caches and Observers
+  private geocodeCache = new Map<string, { latitude: number; longitude: number }>();
+  private geocodeInFlight = new Map<string, Promise<{ latitude: number; longitude: number }>>();
+  private logoFailureCache = new Map<string, Set<string>>();
+  private viewBoxObserver: MutationObserver | null = null;
+  private labelsDirty = signal(0);
+  private tooltipAnchor: { node: WarRoomNode; markerIndex: number; logoSource: string | null; element: Element } | null = null;
+  private initialViewportMetrics: {
+    container: { width: number; height: number };
+    viewBox: string;
+  } | null = null;
+
+  // Signals
+  mapViewBox = signal<string>('0 0 950 550');
+  hoveredCompanyTooltip = signal<{
+    node: WarRoomNode;
+    displayName: string;
+    logoPath: string;
+    description: string;
+    position: { top: number; left: number };
+  } | null>(null);
+
+  // Milli: Add the tooltipFlipped signal here
+  tooltipFlipped = signal<boolean>(false);
+
+  // Bound Handlers
+  private boundFullscreenHandler: (() => void) | null = null;
+  private boundResizeHandler: (() => void) | null = null;
+  private boundWheelHandler: ((e: WheelEvent) => void) | null = null;
+  private boundPanSyncMouseDownHandler: ((e: MouseEvent) => void) | null = null;
+  private boundPanSyncMouseMoveHandler: (() => void) | null = null;
+  private boundPanSyncMouseUpHandler: (() => void) | null = null;
+  private boundDragMouseMoveHandler: ((e: MouseEvent) => void) | null = null;
+  private boundDragMouseUpHandler: ((e: MouseEvent) => void) | null = null;
+
+  // Color Schemes
+  private colorSchemes = {
+    dark: {
+      backgroundColor: '#1a1a1a',
+      regionFill: '#2d2d2d',
+      regionStroke: '#3d3d3d',
+      regionHoverFill: '#404040',
+      regionFillOpacity: 0.7,
+      markerFill: '#00ffcc',
+      markerStroke: '#ffffff',
+    },
+    light: {
+      backgroundColor: '#f5f5f5',
+      regionFill: '#e0e0e0',
+      regionStroke: '#d0d0d0',
+      regionHoverFill: '#d5d5d5',
+      regionFillOpacity: 0.8,
+      markerFill: '#00887a',
+      markerStroke: '#333333',
+    },
+  };
+
+  private currentTheme = signal<'light' | 'dark'>('dark');
+
+  // Helper methods for template
+  getSelectedNode(): WarRoomNode | undefined {
+    const selectedId = this.selectedEntity()?.id;
+    if (!selectedId) return undefined;
+    return this.nodes().find(n => n.companyId === selectedId);
+  }
+
+  getSelectedNodePosition(): { top: number; left: number } {
+    const node = this.getSelectedNode();
+    if (!node) return { top: 0, left: 0 };
+    return this.getNodePosition(node);
+  }
+
+  getSelectedNodeCity(): string {
+    return this.getSelectedNode()?.city || '';
+  }
+
+  // Debug helper methods
+  getContainerDimensions(): string {
+    const container = document.getElementById('war-room-map');
+    if (!container) return 'N/A';
+    const rect = container.getBoundingClientRect();
+    return `${Math.round(rect.width)}x${Math.round(rect.height)}`;
+  }
+
+  getAspectRatio(): string {
+    const container = document.getElementById('war-room-map');
+    if (!container) return 'N/A';
+    const rect = container.getBoundingClientRect();
+    if (!rect.height) return 'N/A';
+    return (rect.width / rect.height).toFixed(2);
+  }
+
+  getUserHasZoomed(): boolean {
+    return this.userHasZoomed;
+  }
+
+  private getCompanyLogoSource(node: WarRoomNode): string | null {
+    const customLogo = typeof node.logo === 'string' ? node.logo.trim() : '';
+    if (customLogo) {
+      return customLogo;
+    }
+    return null;
+  }
+
+  private getLogoImagePaths(logoSource: string): string[] {
+    const trimmed = logoSource.trim();
+    if (!trimmed) return [];
+
+    if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) {
+      return [trimmed];
+    }
+
+    if (
+      trimmed.startsWith('http://') ||
+      trimmed.startsWith('https://') ||
+      trimmed.startsWith('/') ||
+      trimmed.startsWith('./') ||
+      trimmed.startsWith('../')
+    ) {
+      return [trimmed];
+    }
+
+    const baseUrl = window.location.origin;
+    return [
+      `${baseUrl}/assets/images/${trimmed}`,
+      `/assets/images/${trimmed}`,
+      `./assets/images/${trimmed}`,
+      `assets/images/${trimmed}`,
+    ];
+  }
+
+  private getLogoFallbackPath(): string {
+    return '/assets/images/svgs/user.svg';
+  }
+
+  private getNextLogoPath(logoSource: string, currentIndex: number): string {
+    const paths = this.getLogoImagePaths(logoSource);
+    const failures = this.logoFailureCache.get(logoSource) ?? new Set<string>();
+    for (let i = currentIndex + 1; i < paths.length; i += 1) {
+      if (!failures.has(paths[i])) {
+        return paths[i];
+      }
+    }
+    return this.getLogoFallbackPath();
+  }
+
+  private setPinLogoSource(pinLogo: SVGImageElement, logoSource: string): void {
+    const paths = this.getLogoImagePaths(logoSource);
+    const failures = this.logoFailureCache.get(logoSource) ?? new Set<string>();
+    const preferred = paths.find((path) => !failures.has(path)) || this.getLogoFallbackPath();
+    pinLogo.setAttribute('data-logo-path-index', Math.max(0, paths.indexOf(preferred)).toString());
+    pinLogo.setAttribute('href', preferred);
+    pinLogo.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', preferred);
+  }
+
+  private getCompanyDescription(node: WarRoomNode): string {
+    const customDescription = node.description?.trim();
+    if (customDescription) {
+      return customDescription;
+    }
+    const location = node.country ? `${node.city}, ${node.country}` : node.city;
+    const displayName = this.getCompanyDisplayName(node);
+    if (!location) {
+      return displayName ? `${displayName} location pending.` : 'Location pending.';
+    }
+    return displayName ? `${displayName} located in ${location}.` : `Located in ${location}.`;
+  }
+
+  private getCompanyDisplayName(node: WarRoomNode): string {
+    return node.company || node.name || node.city || 'Company';
+  }
+
+  private getCompanyLogoPath(logoSource: string | null): string {
+    if (!logoSource) {
+      return '';
+    }
+    const paths = this.getLogoImagePaths(logoSource);
+    return paths[0] || '';
+  }
+
+  private getLogoSizeMultiplier(node: WarRoomNode): number {
+    return 1.0;
+  }
+
+  private getLogoImageSize(radius: number, zoomFactor: number, sizeMultiplier: number = 1): number {
+    const baseImageSize = radius * 4.6 * sizeMultiplier;
+    const effectiveZoom = Math.max(1, zoomFactor);
+    const scaleFactor = Math.pow(effectiveZoom, 0.6);
+    const responsiveImageSize = baseImageSize / scaleFactor;
+    const minSize = radius * 2.4 * sizeMultiplier;
+    const maxSize = radius * 8.0 * sizeMultiplier;
+    return Math.max(minSize, Math.min(maxSize, responsiveImageSize));
+  }
+
+  private showCompanyTooltipAtElement(node: WarRoomNode, target: Element, logoSource: string | null): void {
+    const description = this.getCompanyDescription(node);
+    const displayName = this.getCompanyDisplayName(node);
+    const logoPath = this.getCompanyLogoPath(logoSource);
+    const rect = target.getBoundingClientRect();
+
+    const bounds = this.getTooltipBounds();
+    const availableWidth = Math.max(120, bounds.right - bounds.left);
+    const availableHeight = Math.max(120, bounds.bottom - bounds.top);
+    const tooltipWidth = Math.min(420, Math.max(260, Math.floor(availableWidth * 0.92)));
+    const tooltipHeight = Math.min(360, Math.max(180, Math.floor(availableHeight * 0.6)));
+    const spacing = 12;
+
+    let tooltipTop = rect.top - spacing;
+    let tooltipLeft = rect.left + (rect.width / 2);
+
+    if (tooltipLeft + (tooltipWidth / 2) > bounds.right) {
+      tooltipLeft = bounds.right - (tooltipWidth / 2);
+    }
+    if (tooltipLeft - (tooltipWidth / 2) < bounds.left) {
+      tooltipLeft = bounds.left + (tooltipWidth / 2);
+    }
+
+    if (tooltipTop - tooltipHeight < bounds.top) {
+      tooltipTop = rect.bottom + spacing;
+    }
+
+    if (tooltipTop + tooltipHeight > bounds.bottom) {
+      tooltipTop = bounds.bottom - tooltipHeight;
+    }
+
+    this.hoveredCompanyTooltip.set({
+      node,
+      displayName,
+      logoPath,
+      description,
+      position: { top: tooltipTop, left: tooltipLeft }
+    });
+
+    const markerIndex = this.getNodeIndex(node);
+    this.tooltipAnchor = { node, markerIndex, logoSource, element: target };
+    this.scheduleTooltipClamp();
+  }
+
+  getTypeLabel(node: WarRoomNode): string {
+    const level = node.level || 'factory';
+    if (level === 'parent') return 'Hub / Group HQ';
+    if (level === 'subsidiary') return 'Subsidiary / Regional Hub';
+    return 'Factory / Production Site';
+  }
+
+  private getNodeIndex(node: WarRoomNode): number {
+    const nodes = this.getNodesWithValidCoordinates(this.nodes());
+    const nodeId = node.id;
+    if (nodeId === undefined || nodeId === null) {
+      return nodes.indexOf(node);
+    }
+    return nodes.findIndex((n) => n.id === nodeId);
+  }
+
+  private async ensureNodeCoordinates(nodes: WarRoomNode[]): Promise<void> {
+    const candidates = nodes
+      .map((node) => ({ node, label: this.getLocationLabel(node) }))
+      .filter((item) => !!item.label);
+    if (candidates.length === 0) return;
+
+    await Promise.all(
+      candidates.map(async ({ node, label }) => {
+        if (this.isValidCoordinates(node.coordinates)) {
+          return;
+        }
+        try {
+          const coords = await this.geocodeLocation(label);
+          if (this.isValidCoordinates(coords)) {
+            node.coordinates = { latitude: coords.latitude, longitude: coords.longitude };
+          } else {
+            console.warn('Geocoding returned invalid coordinates for node location:', label, coords);
+          }
+        } catch (error) {
+          console.warn('Geocoding failed for node location:', label, error);
+        }
+      })
+    );
+  }
+
+  private getLocationLabel(node: WarRoomNode): string {
+    const city = (node.city || '').trim();
+    const country = (node.country || '').trim();
+    if (city && country) return `${city}, ${country}`;
+    return city || country || '';
+  }
+
+  private isValidCoordinates(coords?: { latitude: number; longitude: number } | null): boolean {
+    if (!coords) return false;
+    if (!Number.isFinite(coords.latitude) || !Number.isFinite(coords.longitude)) return false;
+    if (coords.latitude === 0 && coords.longitude === 0) return false;
+    return true;
+  }
+
+  private getNodesWithValidCoordinates(nodes: WarRoomNode[]): WarRoomNode[] {
+    return nodes.filter((node) => this.isValidCoordinates(node.coordinates));
+  }
+
+  getTooltipStatusClass(): string {
+    const status = this.hoveredCompanyTooltip()?.node.status;
+    if (!status) return '';
+    return `status-${status.toLowerCase().replace(/\s+/g, '-')}`;
+  }
+
+  private async geocodeLocation(location: string): Promise<{ latitude: number; longitude: number }> {
+    const cached = this.geocodeCache.get(location);
+    if (cached) return cached;
+
+    const inflight = this.geocodeInFlight.get(location);
+    if (inflight) return inflight;
+
+    const request = (async () => {
+      const geocodeUrl =
+        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}` +
+        `&count=1&language=en&format=json`;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      try {
+        const response = await fetch(geocodeUrl, { cache: 'no-store', signal: controller.signal });
+        if (!response.ok) {
+          throw new Error(`Geocoding request failed with status ${response.status}`);
+        }
+        const data = (await response.json()) as { results?: Array<{ latitude: number; longitude: number }> };
+        const result = data.results?.[0];
+        if (!result) {
+          throw new Error('No geocoding results found for location.');
+        }
+        const coords = { latitude: result.latitude, longitude: result.longitude };
+        this.geocodeCache.set(location, coords);
+        return coords;
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    })();
+
+    this.geocodeInFlight.set(location, request);
+    try {
+      return await request;
+    } finally {
+      this.geocodeInFlight.delete(location);
+    }
+  }
+
+  private getTooltipBounds(): { left: number; right: number; top: number; bottom: number } {
+    const padding = 12;
+    const viewportBounds = {
+      left: padding,
+      top: padding,
+      right: window.innerWidth - padding,
+      bottom: window.innerHeight - padding
+    };
+
+    const mapContainer = document.getElementById('war-room-map');
+    const container = (mapContainer ? mapContainer.closest('.war-room-map-container') : null) as HTMLElement | null;
+    if (!container) {
+      return viewportBounds;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const bounds = {
+      left: Math.max(viewportBounds.left, containerRect.left + padding),
+      top: Math.max(viewportBounds.top, containerRect.top + padding),
+      right: Math.min(viewportBounds.right, containerRect.right - padding),
+      bottom: Math.min(viewportBounds.bottom, containerRect.bottom - padding)
+    };
+
+    if (bounds.right <= bounds.left || bounds.bottom <= bounds.top) {
+      return viewportBounds;
+    }
+
+    return bounds;
+  }
+
+  private scheduleTooltipClamp(): void {
+    if (!this.hoveredCompanyTooltip()) return;
+
+    if (this.tooltipClampRafId !== null) {
+      cancelAnimationFrame(this.tooltipClampRafId);
+    }
+
+    this.tooltipClampRafId = requestAnimationFrame(() => {
+      this.tooltipClampRafId = null;
+      this.clampTooltipToBounds();
+      // Milli: Delete the line below to fix the infinite loop
+      this.refreshTooltipPosition();
+    });
+  }
+
+  private clampTooltipToBounds(): void {
+    const tooltip = this.hoveredCompanyTooltip();
+    if (!tooltip) return;
+
+    const tooltipEl = document.querySelector('.company-logo-tooltip') as HTMLElement | null;
+    if (!tooltipEl) return;
+
+    const bounds = this.getTooltipBounds();
+    const rect = tooltipEl.getBoundingClientRect();
+    let deltaX = 0;
+    let deltaY = 0;
+
+    if (rect.left < bounds.left) {
+      deltaX = bounds.left - rect.left;
+    } else if (rect.right > bounds.right) {
+      deltaX = bounds.right - rect.right;
+    }
+
+    if (rect.top < bounds.top) {
+      deltaY = bounds.top - rect.top;
+    } else if (rect.bottom > bounds.bottom) {
+      deltaY = bounds.bottom - rect.bottom;
+    }
+
+    if (Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5) {
+      this.hoveredCompanyTooltip.set({
+        ...tooltip,
+        position: {
+          top: tooltip.position.top + deltaY,
+          left: tooltip.position.left + deltaX
+        }
+      });
+    }
+  }
+
+  private refreshTooltipPosition(): void {
+    const tooltip = this.hoveredCompanyTooltip();
+    if (!tooltip) return;
+
+    const anchor = this.tooltipAnchor;
+    const container = document.getElementById('war-room-map');
+    if (!container || !anchor) {
+      this.scheduleTooltipClamp();
+      return;
+    }
+
+    let target: Element | null = anchor.element;
+    if (!target || !target.isConnected) {
+      const svg = container.querySelector('svg');
+      if (svg && anchor.markerIndex >= 0) {
+        target =
+          svg.querySelector(`image#company-logo-image-${anchor.markerIndex}`) ||
+          svg.querySelector(`circle[data-index=\"${anchor.markerIndex}\"]`) ||
+          svg.querySelectorAll('circle.jvm-marker, circle[data-index], circle[class*=\"jvm-marker\"]')[anchor.markerIndex] ||
+          anchor.element ||
+          null;
+      }
+    }
+
+    if (target) {
+      this.showCompanyTooltipAtElement(anchor.node, target, anchor.logoSource);
+    } else {
+      this.scheduleTooltipClamp();
+    }
+  }
+
+
+
+  private syncMapViewport(force: boolean = false): void {
+    if (!force && (this.userHasZoomed || this.pendingZoomCompanyId)) {
+      return;
+    }
+
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const fullWorldViewBox = this.getResponsiveWorldViewBox(container);
+
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.maxWidth = '100%';
+    svg.style.maxHeight = '100%';
+    svg.style.display = 'block';
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    if (force || this.isInitializing || svg.getAttribute('viewBox') !== fullWorldViewBox) {
+      svg.setAttribute('viewBox', fullWorldViewBox);
+    }
+
+    const regionsGroup = svg.querySelector('#jvm-regions-group') as SVGGElement | null;
+    if (regionsGroup) {
+      regionsGroup.setAttribute('transform', 'translate(0, 0) scale(1)');
+    }
+
+    const mapAny = this.mapInstance as any;
+    if (mapAny) {
+      const fullWorldScale = 1;
+      try {
+        if (typeof mapAny.updateSize === 'function') {
+          mapAny.updateSize();
+        }
+      } catch (e) {
+        console.warn('updateSize failed:', e);
+      }
+      try {
+        if (typeof mapAny.setFocus === 'function') {
+          mapAny.setFocus({ lat: 0, lng: 0, scale: fullWorldScale, animate: false });
+        }
+      } catch (e) {
+        console.warn('setFocus reset failed:', e);
+      }
+      try {
+        if (typeof mapAny.setZoom === 'function') {
+          mapAny.setZoom(fullWorldScale);
+        }
+      } catch (e) {
+        console.warn('setZoom reset failed:', e);
+      }
+      try {
+        if (typeof mapAny._applyTransform === 'function') {
+          mapAny.scale = fullWorldScale;
+          mapAny.transX = 0;
+          mapAny.transY = 0;
+          mapAny._applyTransform();
+        }
+      } catch (e) {
+        console.warn('internal transform reset failed:', e);
+      }
+
+      const internalMap = mapAny.map as any;
+      if (internalMap && typeof internalMap._applyTransform === 'function') {
+        try {
+          internalMap.scale = fullWorldScale;
+          internalMap.transX = 0;
+          internalMap.transY = 0;
+          internalMap._applyTransform();
+        } catch (e) {
+          console.warn('internal map transform reset failed:', e);
+        }
+      }
+    }
+  }
+
+  private clearCompanyTooltip(): void {
+    this.hoveredCompanyTooltip.set(null);
+    this.tooltipAnchor = null;
+    if (this.tooltipClampRafId !== null) {
+      cancelAnimationFrame(this.tooltipClampRafId);
+      this.tooltipClampRafId = null;
+    }
+  }
+
+  onPopupClose(event: Event): void {
+    event.stopPropagation();
+    this.nodeSelected.emit(undefined);
+  }
+
+  onPopupViewDetails(event: Event): void {
+    event.stopPropagation();
+    const node = this.getSelectedNode();
+    if (node) {
+      this.nodeSelected.emit(node);
+    }
+  }
+
+  onLogoError(event: Event): void {
+    const img = event.target as HTMLImageElement | null;
+    if (!img) return;
+    img.style.display = 'none';
+  }
+
+  // ...
+
+
+
+  // Services
+  private warRoomService = inject(WarRoomService);
+  private appStateService = inject(AppStateService);
+
+  // Theme management
+  private appState = toSignal(this.appStateService.state$, {
+    initialValue: {
+      theme: 'light',
+      direction: 'ltr',
+      navigationStyles: 'vertical',
+      menuStyles: '',
+      layoutStyles: 'default',
+      pageStyles: 'regular',
+      widthStyles: 'fullwidth',
+      menuPosition: 'fixed',
+      headerPosition: 'fixed',
+      menuColor: 'dark',
+      headerColor: 'light',
+      themePrimary: '',
+      themeBackground: '',
+      backgroundImage: ''
+    }
+  });
+  /*
+  // Company descriptions - single source of truth
+  private readonly companyDescriptions: Record<string, string> = {
+    'creative carriage': `Creative Carriage has been a leader in wheelchair accessible vehicle manufacturing and conversions since 1988, when they built Canada's first fully-compliant wheelchair accessible taxi. Based near Brantford, Ontario, they specialize in custom, low-floor van conversions and serve as the exclusive Ontario dealer for six major US manufacturers of accessible and specialty vehicles. Their mission is to improve design and safety standards for wheelchair accessible vehicles.`,
+    'alexander dennis': `Alexander Dennis is a world-class bus manufacturer with over 130 years of heritage in design and engineering excellence. Operating 16 facilities across 10 countries and operating North America's only double-deck bus facility in Las Vegas, they lead the industry's transition to zero-emission mobility with 3,000+ electric buses delivered globally.`,
+    'karsan': `Karsan is a leading Turkish commercial vehicle manufacturer with over 58 years of industry experience. We specialize in innovative public transportation solutions, including electric buses like the e-JEST and e-ATAK, as well as hydrogen-powered and autonomous vehicles. As Turkey's only independent multi-brand vehicle manufacturer, we manage the entire value chain from R&D to after-sales service. Our state-of-the-art manufacturing facilities in Bursa can produce up to 20,000 vehicles annually.`,
+    'arbroc': `ARBOC Specialty Vehicles is North America's pioneer and industry leader in low-floor cutaway bus technology, founded in 2008 and based in Middlebury, Indiana. With 5,000+ buses produced and a 70% market share in Canada and the US, they specialize in fully accessible paratransit, transit, and shuttle vehicles that exceed federal fuel economy and accessibility standards.`,
+    'tam': `TAM-Europe is a leading bus and commercial vehicle manufacturer founded in 1947 and based in Maribor, Slovenia. With over 77 years of experience, they specialize in airport buses (VivAir with 40% global market share), electric city buses, and coaches serving markets globally, with strong commitment to product efficiency and environmental sustainability.`,
+    'nfl': `New Flyer is North America's largest transit bus manufacturer, founded in 1930 and headquartered in Winnipeg, Manitoba. Operating under parent company NFI Group, they offer the advanced Xcelsior family of buses including battery-electric (Xcelsior CHARGE NGÃ¢â€žÂ¢), hydrogen fuel cell (Xcelsior CHARGE FCÃ¢â€žÂ¢), and hybrid options, with 35,000+ buses in service globally and 265+ million zero-emission miles traveled.`,
+    'new flyer': `New Flyer is North America's largest transit bus manufacturer, founded in 1930 and headquartered in Winnipeg, Manitoba. Operating under parent company NFI Group, they offer the advanced Xcelsior family of buses including battery-electric (Xcelsior CHARGE NGÃ¢â€žÂ¢), hydrogen fuel cell (Xcelsior CHARGE FCÃ¢â€žÂ¢), and hybrid options, with 35,000+ buses in service globally and 265+ million zero-emission miles traveled.`,
+    'nova': `Nova Bus is Canada's leading transit bus manufacturer, founded in 1993 and based in Saint-Eustache, Quebec. As part of the Volvo Group, they deliver innovative mobility solutions including the 100% electric LFSe+ bus with dual charging options, CNG, diesel-electric hybrid, and conventional vehicles, supporting transit agencies across North America with proven expertise and industry-leading parts and service support.`,
+    'nova bus': `Nova Bus is Canada's leading transit bus manufacturer, founded in 1993 and based in Saint-Eustache, Quebec. As part of the Volvo Group, they deliver innovative mobility solutions including the 100% electric LFSe+ bus with dual charging options, CNG, diesel-electric hybrid, and conventional vehicles, supporting transit agencies across North America with proven expertise and industry-leading parts and service support.`
+  };
+  */
+
+  // Private properties
+  private scriptsLoaded = false;
+  private zoomTimeoutId: any = null;
+  private updateMarkersTimeoutId: any = null;
+  private resizeDebounceId: any = null;
+  private lastResizeDimensions: { width: number; height: number } | null = null;
+  private updateLabelsRAFId: number | null = null;
+  private mapReadyRetryInterval: any = null;
+  private labelObserver: MutationObserver | null = null;
+  private nodeObserver: MutationObserver | null = null;
+  private resizeObserver: ResizeObserver | null = null;
+  private lastNodesSignature: string | null = null;
+  private elementCache = new Map<string, Element | null>();
+  private currentPopup: HTMLElement | null = null;
+  private closePopupHandler: ((e: MouseEvent) => void) | null = null;
+  private closePopupTimer: any = null;
+  // Map of nodeId -> SVG coordinate (map-space) used for drawing routes and SVG elements
+  private labelPositions = new Map<string, { x: number; y: number }>();
+
+  // Map of nodeId -> pixel coordinate in container space used for positioning HTML overlays
+  private labelPixelPositions = new Map<string, { x: number; y: number }>();
+  private mapInitAttempts = 0;
+  private readonly maxMapInitRetries = 10;
+  private labelsUpdateDirty: boolean = false;
+
+  // Signal for current  // SVG viewBox for responsive transit routes overlay
+
+  // Map transform for synchronizing transit routes overlay with internal map transforms
+  readonly mapTransform = signal<string>('');
+
+  // Signal for marker SVG coordinates to ensure perfect alignment
+  private markerCoordinates = signal<Map<string, { x: number; y: number }>>(new Map());
+
+  // Computed properties for dynamic coloring
+  readonly routeStroke = computed(() => {
+    const status = this.filterStatus();
+    if (status === 'active') return '#00C853';
+    if (status === 'inactive') return '#D50000';
+    return 'url(#path-gradient)';
+  });
+
+  readonly routeFill = computed(() => {
+    const status = this.filterStatus();
+    if (status === 'active') return '#00C853';
+    if (status === 'inactive') return '#D50000';
+    return '#0ea5e9';
+  });
+
+  constructor() {
+    // Effect to zoom to selected company location when it changes
+    effect((onCleanup) => {
+      const selected = this.selectedEntity();
+      if (this.mapInstance && this.scriptsLoaded) {
+        this.updateSelectedMarkerStyles();
+      }
+      if (selected && this.mapInstance) {
+        if (this.isInitializing && !this.userHasZoomed) {
+          return;
+        }
+        if (!this.userHasZoomed && selected.level === 'parent') {
+          return;
+        }
+        // Clear any existing timeout
+        if (this.zoomTimeoutId) {
+          clearTimeout(this.zoomTimeoutId);
+        }
+        this.zoomTimeoutId = setTimeout(() => {
+          if (!this.destroyed) {
+            this.zoomToEntity(selected.id);
+          }
+          this.zoomTimeoutId = null;
+        }, 200);
+      }
+      onCleanup(() => {
+        if (this.zoomTimeoutId) {
+          clearTimeout(this.zoomTimeoutId);
+          this.zoomTimeoutId = null;
+        }
+      });
+    });
+
+    effect((onCleanup) => {
+      const nodes = this.nodes();
+      if (this.mapInstance && nodes.length > 0 && this.scriptsLoaded) {
+        // Clear any existing timeout
+        if (this.updateMarkersTimeoutId) {
+          clearTimeout(this.updateMarkersTimeoutId);
+        }
+        this.updateMarkersTimeoutId = setTimeout(() => {
+          if (!this.destroyed) {
+            this.updateMapMarkers();
+          }
+          this.updateMarkersTimeoutId = null;
+        }, 500);
+      }
+      onCleanup(() => {
+        if (this.updateMarkersTimeoutId) {
+          clearTimeout(this.updateMarkersTimeoutId);
+          this.updateMarkersTimeoutId = null;
+        }
+      });
+    });
+
+    // NEW: React to pan/zoom requests from service or other components
+    effect(() => {
+      const panRequest = this.warRoomService.panToEntity();
+      if (panRequest && this.mapInstance && !this.destroyed) {
+        // Use the timestamp to ensure effect re-runs even for same entity
+        this.zoomToEntity(panRequest.id, 8);
+      }
+    });
+
+    // NEW: React to hover state changes for cross-component highlighting
+    effect(() => {
+      const hovered = this.warRoomService.hoveredEntity();
+      if (!this.destroyed) {
+        this.updateHoveredMarkerStyles(hovered);
+      }
+    });
+
+    effect(() => {
+      const selected = this.selectedEntity();
+      if (!selected && this.mapInstance && this.scriptsLoaded) {
+        // When no company is selected, return to the default zoom view.
+        this.userHasZoomed = false;
+        this.applyDefaultZoom();
+      }
+    });
+
+    // Effect to update map colors when theme changes
+    effect(() => {
+      const theme = this.currentTheme();
+      if (this.mapInstance && !this.destroyed) {
+        this.updateMapColors(theme);
+      }
+    });
+  }
+
+  // Computed property for projected transit routes with SVG coordinates
+  readonly projectedRoutes = computed(() => {
+    const routes = this.transitRoutes();
+    const markers = this.markerCoordinates();
+    const nodes = this.getNodesWithValidCoordinates(this.nodes());
+    if (!routes || routes.length === 0) return [];
+
+    const projected = routes.map((route, index) => {
+      const selected = this.selectedEntity();
+
+      // Find all matching nodes for source and destination (Level-agnostic)
+      const findMatches = (id: string): WarRoomNode[] => {
+        const nid = id.toLowerCase();
+
+        // 1. Direct ID match
+        const direct = nodes.filter((n: WarRoomNode) =>
+          n.id === id || n.factoryId === id || n.subsidiaryId === id || n.parentGroupId === id
+        );
+        if (direct.length > 0) return direct;
+
+        // 2. Resolve Factory ID to higher level nodes
+        const factory = this.warRoomService.factories().find(f => f.id === id);
+        if (factory) {
+          const resolved = nodes.filter(n => n.id === factory.subsidiaryId || n.id === factory.parentGroupId);
+          if (resolved.length > 0) return resolved;
+        }
+
+        // 3. System matches
+        if (nid.includes('fleetzero') || nid.includes('fleet-zero')) {
+          return nodes.filter(n => n.id === 'fleetzero' || (n.name && n.name.toLowerCase().includes('fleetzero')));
+        }
+
+        // 4. Source handling
+        if (id.startsWith('source-')) {
+          const baseId = id.replace('source-', '');
+          const resolved = nodes.filter(n => n.id === baseId || n.factoryId === baseId || n.subsidiaryId === baseId);
+          if (resolved.length > 0) return resolved;
+
+          // Try resolving baseId as factory
+          const baseFactory = this.warRoomService.factories().find(f => f.id === baseId);
+          if (baseFactory) {
+            return nodes.filter(n => n.id === baseFactory.subsidiaryId || n.id === baseFactory.parentGroupId);
+          }
+        }
+
+        // 5. Name match fallback
+        return nodes.filter((n: WarRoomNode) =>
+          (!!n.name && n.name.toLowerCase() === nid) ||
+          (!!n.company && n.company.toLowerCase().includes(nid))
+        );
+      };
+
+      const fromMatches = findMatches(route.from);
+      const toMatches = findMatches(route.to);
+
+      if (fromMatches.length === 0 || toMatches.length === 0) {
+        return null;
+      }
+
+      // Prioritize the selected entity if it's among the matches
+      const fromNode = fromMatches.find((n: WarRoomNode) =>
+        n.id === selected?.id || n.subsidiaryId === selected?.id || n.factoryId === selected?.id
+      ) || fromMatches[0];
+
+      const toNode = toMatches.find((n: WarRoomNode) =>
+        n.id === selected?.id || n.subsidiaryId === selected?.id || n.factoryId === selected?.id
+      ) || toMatches[0];
+
+      // Try to get coordinates from the markers first (most accurate)
+      let start = fromNode ? markers.get(fromNode.id) : null;
+      let end = toNode ? markers.get(toNode.id) : null;
+
+      // Fallback to projection if markers not yet available and route coords are valid
+      if (!start && this.isValidCoordinates(route.fromCoordinates)) {
+        start = this.projectCoordinatesToSVG(
+          route.fromCoordinates.latitude,
+          route.fromCoordinates.longitude
+        );
+      }
+      if (!end && this.isValidCoordinates(route.toCoordinates)) {
+        end = this.projectCoordinatesToSVG(
+          route.toCoordinates.latitude,
+          route.toCoordinates.longitude
+        );
+      }
+
+      if (!start || !end) {
+        return null;
+      }
+
+      return {
+        id: route.id,
+        from: route.from,
+        to: route.to,
+        start,
+        end,
+        fromLabel: fromNode ? fromNode.city || fromNode.name : route.from,
+        toLabel: toNode ? toNode.city || toNode.name : route.to,
+        path: this.createCurvedPath(start, end),
+        strokeColor: route.strokeColor,
+        strokeWidth: route.strokeWidth || 1.5,
+        dashArray: route.dashArray,
+        animated: route.animated !== false,
+        index,
+        highlighted: !!selected && (
+          route.from === selected.id ||
+          route.to === selected.id ||
+          route.from === selected.subsidiaryId ||
+          route.to === selected.subsidiaryId ||
+          route.from === selected.factoryId ||
+          route.to === selected.factoryId
+        )
+      };
+    });
+
+    return projected.filter((route): route is NonNullable<typeof route> => !!route);
+  });
+
+  // Computed property for SVG viewBox
+  readonly svgViewBox = computed(() => {
+    // Sync with the map's current viewBox for perfect alignment
+    return this.mapViewBox();
+  });
+
+  /**
+   * Synchronize the mapViewBox signal with the current SVG viewBox
+   * This ensures transit lines overlay stays aligned with the map during zoom/pan
+   */
+  private syncViewBoxFromMap(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const viewBox = svg.getAttribute('viewBox');
+    if (viewBox && !viewBox.includes('NaN')) {
+      // Only update if the viewBox actually changed to avoid unnecessary recomputes
+      if (this.mapViewBox() !== viewBox) {
+        this.mapViewBox.set(viewBox);
+      }
+    }
+  }
+
+  /**
+   * Project latitude/longitude coordinates to SVG coordinate space
+   * Uses Mercator projection to match jsVectorMap's coordinate system
+   */
+  private projectCoordinatesToSVG(lat: number, lng: number): { x: number; y: number } {
+    // Try to use the map instance's coordinate conversion if available
+    if (this.mapInstance && typeof this.mapInstance.latLngToPoint === 'function') {
+      try {
+        const point = this.mapInstance.latLngToPoint([lat, lng]);
+        if (point && typeof point.x === 'number' && typeof point.y === 'number') {
+          return { x: point.x, y: point.y };
+        }
+      } catch (e) {
+        console.warn('Failed to use mapInstance.latLngToPoint, falling back to manual projection:', e);
+      }
+    }
+
+    // Fallback: Manual Miller Cylindrical projection aligned with map's default viewport
+    // Base dimensions match the map's full world view (950x550)
+    const baseWidth = 950;
+    const baseHeight = 550;
+    const centralMeridian = 11.5;
+
+    // Longitudinal projection (linear mapping with central meridian offset)
+    let x = (lng - centralMeridian) * (baseWidth / 360) + (baseWidth / 2);
+
+    // Normalize X to map bounds
+    if (x < 0) x += baseWidth;
+    if (x > baseWidth) x -= baseWidth;
+
+    // Miller Latitudinal projection
+    const latRad = (lat * Math.PI) / 180;
+    const millerY = 1.25 * Math.log(Math.tan(Math.PI / 4 + 0.4 * latRad));
+
+    // The multiplier for Y depends on the map's specifically tuned dimensions
+    // Adjusted for 950x550 viewport
+    const multiplier = baseWidth / (2 * Math.PI) * 0.82;
+    const y = baseHeight / 2 - (multiplier * millerY);
+
+    return { x, y };
+  }
+
+  /**
+   * Create a curved SVG path between two points using quadratic BÃ©zier curve
+   * Matches React inspiration with a fixed arc height (hump)
+   */
+  private createCurvedPath(start: { x: number; y: number } | null, end: { x: number; y: number } | null): string {
+    if (!start || !end) return '';
+
+    // Calculate control point for the curve
+    const midX = (start.x + end.x) / 2;
+
+    // Fixed arc height for consistent React-like "hump"
+    // We use a minimum to avoid negative or awkward flips, but target ~50
+    const midY = Math.min(start.y, end.y) - 50;
+
+    // Return quadratic BÃ©zier curve path
+    return `M ${start.x} ${start.y} Q ${midX} ${midY} ${end.x} ${end.y}`;
+  }
+
+  ngAfterViewInit(): void {
+    // Wait for view to be fully initialized
+    setTimeout(() => {
+      this.setupContainerResizeObserver();
+      this.loadScripts()
+        .then(() => {
+          this.initializeMap();
+        })
+        .catch((error) => {
+          console.error('Failed to load map scripts:', error);
+        });
+    }, 200);
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup tooltip
+    if (this.tooltipTimeoutId) {
+      clearTimeout(this.tooltipTimeoutId);
+      this.tooltipTimeoutId = null;
+    }
+    this.clearCompanyTooltip();
+    this.destroyed = true;
+    this.pendingZoomCompanyId = null;
+
+    // Remove resize listener
+    // Clear timeouts
+    if (this.zoomTimeoutId) {
+      clearTimeout(this.zoomTimeoutId);
+      this.zoomTimeoutId = null;
+    }
+    if (this.updateMarkersTimeoutId) {
+      clearTimeout(this.updateMarkersTimeoutId);
+      this.updateMarkersTimeoutId = null;
+    }
+    if (this.resizeDebounceId) {
+      clearTimeout(this.resizeDebounceId);
+      this.resizeDebounceId = null;
+    }
+
+    // Cancel RAF loop
+    if (this.updateLabelsRAFId !== null) {
+      cancelAnimationFrame(this.updateLabelsRAFId);
+      this.updateLabelsRAFId = null;
+    }
+    if (this.mapReadyRetryInterval) {
+      clearInterval(this.mapReadyRetryInterval);
+      this.mapReadyRetryInterval = null;
+    }
+
+    // Remove popup if it exists (this will also clean up the click listener)
+    this.hideMarkerPopup();
+
+    // Disconnect MutationObservers
+    if (this.labelObserver) {
+      this.labelObserver.disconnect();
+      this.labelObserver = null;
+    }
+    if (this.nodeObserver) {
+      this.nodeObserver.disconnect();
+      this.nodeObserver = null;
+    }
+    if (this.viewBoxObserver) {
+      this.viewBoxObserver.disconnect();
+      this.viewBoxObserver = null;
+    }
+
+    // Remove event listeners
+    if (this.boundFullscreenHandler) {
+      document.removeEventListener('fullscreenchange', this.boundFullscreenHandler);
+      document.removeEventListener('webkitfullscreenchange', this.boundFullscreenHandler);
+      document.removeEventListener('msfullscreenchange', this.boundFullscreenHandler);
+      this.boundFullscreenHandler = null;
+    }
+    if (this.boundResizeHandler) {
+      window.removeEventListener('resize', this.boundResizeHandler);
+      this.boundResizeHandler = null;
+    }
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+    if (this.boundPanSyncMouseDownHandler) {
+      const container = document.getElementById('war-room-map');
+      if (container) {
+        container.removeEventListener('mousedown', this.boundPanSyncMouseDownHandler);
+      }
+      this.boundPanSyncMouseDownHandler = null;
+    }
+    if (this.boundPanSyncMouseMoveHandler) {
+      document.removeEventListener('mousemove', this.boundPanSyncMouseMoveHandler);
+      this.boundPanSyncMouseMoveHandler = null;
+    }
+    if (this.boundPanSyncMouseUpHandler) {
+      document.removeEventListener('mouseup', this.boundPanSyncMouseUpHandler);
+      this.boundPanSyncMouseUpHandler = null;
+    }
+    if (this.boundDragMouseMoveHandler) {
+      document.removeEventListener('mousemove', this.boundDragMouseMoveHandler);
+      this.boundDragMouseMoveHandler = null;
+    }
+    if (this.boundDragMouseUpHandler) {
+      document.removeEventListener('mouseup', this.boundDragMouseUpHandler);
+      this.boundDragMouseUpHandler = null;
+    }
+    if (this.boundWheelHandler) {
+      const container = document.getElementById('war-room-map');
+      if (container) {
+        container.removeEventListener('wheel', this.boundWheelHandler);
+      }
+      this.boundWheelHandler = null;
+    }
+
+    if (this.isFullscreen) {
+      this.exitFullscreen();
+    }
+    this.mapInstance = null;
+  }
+
+  private setupContainerResizeObserver(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
+
+    this.resizeObserver = new ResizeObserver(() => {
+      if (this.destroyed) return;
+      this.scheduleResizeUpdate('observer');
+    });
+
+    this.resizeObserver.observe(container);
+    // Also observe the parent map area for layout changes
+    const mapArea = container.closest('.war-room-map-area');
+    if (mapArea && mapArea !== container) {
+      this.resizeObserver.observe(mapArea);
+    }
+    const mapContainer = container.closest('.map-container');
+    if (mapContainer && mapContainer !== container) {
+      this.resizeObserver.observe(mapContainer);
+    }
+    const warRoomContainer = container.closest('.war-room-map-container');
+    if (warRoomContainer && warRoomContainer !== container) {
+      this.resizeObserver.observe(warRoomContainer);
+    }
+  }
+
+  private scheduleResizeUpdate(reason: 'observer' | 'window' | 'fullscreen' = 'observer', force: boolean = false): void {
+    if (this.destroyed) return;
+
+    if (this.resizeDebounceId) {
+      clearTimeout(this.resizeDebounceId);
+    }
+
+    this.resizeDebounceId = setTimeout(() => {
+      this.resizeDebounceId = null;
+      this.handleResize(reason, force);
+    }, 120);
+  }
+
+  private handleResize(reason: 'observer' | 'window' | 'fullscreen', force: boolean = false): void {
+    if (this.destroyed) return;
+    void reason;
+
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+
+    const sizeChanged =
+      !this.lastResizeDimensions ||
+      Math.abs(this.lastResizeDimensions.width - rect.width) > 0.5 ||
+      Math.abs(this.lastResizeDimensions.height - rect.height) > 0.5;
+
+    if (!sizeChanged && !force) {
+      return;
+    }
+
+    this.lastResizeDimensions = { width: rect.width, height: rect.height };
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Always refresh the map engine bounds first so zoom limits are correct.
+    if (this.mapInstance && typeof (this.mapInstance as any).updateSize === 'function') {
+      try {
+        (this.mapInstance as any).updateSize();
+      } catch (e) {
+        console.warn('updateSize failed:', e);
+      }
+    }
+
+    if (!this.userHasZoomed && !this.pendingZoomCompanyId) {
+      this.ensureSvgResponsive();
+    } else {
+      const baseViewBox = this.calculateFullWorldViewBox(rect);
+      this.updateBaseViewportMetrics(baseViewBox, rect.width, rect.height);
+      this.applySvgSizing(container, svg);
+
+      const currentViewBox = svg.getAttribute('viewBox');
+      if (!currentViewBox || currentViewBox.includes('NaN')) {
+        svg.setAttribute('viewBox', baseViewBox);
+        this.mapViewBox.set(baseViewBox);
+      } else {
+        this.mapViewBox.set(currentViewBox);
+      }
+    }
+
+    if (this.userHasZoomed || this.pendingZoomCompanyId) {
+      this.updateLabelPositions();
+      this.updateCompanyLogosAndLabelsPositions();
+      this.refreshTooltipPosition();
+    } else {
+      this.markLabelsDirty();
+    }
+  }
+
+  private loadScripts(): Promise<void> {
+    // Check if scripts are already loaded (via angular.json)
+    if (this.scriptsLoaded || (window as any).jsVectorMap) {
+      this.scriptsLoaded = true;
+      // Wait longer for world map data to be available
+      return new Promise((resolve) => setTimeout(resolve, 500));
+    }
+
+    // Fallback: dynamically load scripts if not loaded via angular.json
+    return new Promise((resolve, reject) => {
+      // Load CSS specifically for jsVectorMap
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/assets/libs/jsvectormap/css/jsvectormap.min.css';
+      document.head.appendChild(link);
+
+      // Load jsVectorMap library
+      const script1 = document.createElement('script');
+      script1.src = '/assets/libs/jsvectormap/js/jsvectormap.min.js';
+      script1.onload = () => {
+        if (this.destroyed) {
+          reject(new Error('Component destroyed before scripts loaded'));
+          return;
+        }
+        // Load world map data
+        const script2 = document.createElement('script');
+        script2.src = '/assets/libs/jsvectormap/maps/world.js';
+        script2.onload = () => {
+          if (this.destroyed) {
+            reject(new Error('Component destroyed before scripts loaded'));
+            return;
+          }
+          this.scriptsLoaded = true;
+          // Wait a bit more for the map data to be fully processed
+          setTimeout(() => {
+            if (!this.destroyed) {
+              resolve();
+            }
+          }, 300);
+        };
+        script2.onerror = () => reject(new Error('Failed to load world map data'));
+        document.head.appendChild(script2);
+      };
+      script1.onerror = () => reject(new Error('Failed to load jsVectorMap library'));
+      document.head.appendChild(script1);
+    });
+  }
+
+  private initializeMap(): void {
+    if (!window.jsVectorMap) {
+      console.error('jsVectorMap library not loaded');
+      return;
+    }
+
+    // Check if container exists
+    const container = document.getElementById('war-room-map');
+    if (!container) {
+      console.error('Map container #war-room-map not found');
+      this.mapInitAttempts++;
+      if (this.mapInitAttempts < this.maxMapInitRetries) {
+        setTimeout(() => {
+          if (!this.destroyed) {
+            this.initializeMap();
+          }
+        }, 200); // Retry after 200ms
+      } else {
+        console.error('Max retry attempts reached for map initialization');
+      }
+      return;
+    }
+
+    // Check if container has dimensions, if not set a minimum
+    const rect = container.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      console.warn('Map container has no dimensions, setting minimum...', rect);
+      // Set explicit dimensions if parent doesn't provide them
+      const parent = container.parentElement;
+      if (parent) {
+        const parentRect = parent.getBoundingClientRect();
+        if (parentRect.height === 0 || rect.height === 0) {
+          // Set explicit height on both container and parent if needed
+          if (rect.height === 0) {
+            container.style.height = '600px';
+            console.log('Set container height to 600px');
+          }
+          if (parentRect.height === 0 && parent) {
+            parent.style.height = '600px';
+            console.log('Set parent height to 600px');
+          }
+        }
+        if (parentRect.width === 0 || rect.width === 0) {
+          container.style.width = '100%';
+          if (parent) {
+            parent.style.width = '100%';
+          }
+          console.log('Set container width to 100%');
+        }
+      }
+      // Wait a bit for styles to apply, then retry
+      this.mapInitAttempts++;
+      if (this.mapInitAttempts < this.maxMapInitRetries) {
+        setTimeout(() => {
+          if (!this.destroyed) {
+            this.initializeMap();
+          }
+        }, 150);
+      } else {
+        console.error('Max retry attempts reached for map dimension initialization');
+      }
+      return;
+    }
+
+    // Reset attempt counter on successful initialization
+    this.mapInitAttempts = 0;
+
+    // Set initializing flag
+    this.isInitializing = true;
+
+    console.log('Map container dimensions:', rect.width, 'x', rect.height);
+    // ✅ Measure & cache the first container size/viewBox before jsVectorMap renders.
+    this.ensureInitialViewportMetrics(container, rect);
+
+    const nodes = this.nodes();
+    if (nodes.length === 0) {
+      console.warn('No nodes available for map initialization. Rendering map without markers.');
+    }
+
+    console.log('Initializing map with', nodes.length, 'nodes');
+
+    // Clean up any existing map instance without removing the container.
+    // Removing the container causes "Container disappeared before initialization" when
+    // reinitializing (e.g. after adding a company) because the DOM node is gone.
+    if (this.mapInstance) {
+      try {
+        const el = document.getElementById('war-room-map');
+        if (el) {
+          el.innerHTML = '';
+        }
+      } catch (e) {
+        console.warn('Error cleaning up existing map:', e);
+      }
+      this.mapInstance = null;
+    }
+
+    // Clear element cache
+    this.elementCache.clear();
+
+    // Ensure observers are disconnected before creating new ones
+    if (this.nodeObserver) {
+      this.nodeObserver.disconnect();
+      this.nodeObserver = null;
+    }
+    if (this.labelObserver) {
+      this.labelObserver.disconnect();
+      this.labelObserver = null;
+    }
+
+    setTimeout(async () => {
+      try {
+        if (this.destroyed) return;
+        const finalCheck = document.getElementById('war-room-map');
+        if (!finalCheck) return;
+
+        const finalRect = finalCheck.getBoundingClientRect();
+        if (finalRect.width === 0 || finalRect.height === 0) {
+          console.error('Container still has no dimensions:', finalRect);
+          // Force dimensions
+          finalCheck.style.width = '100%';
+          finalCheck.style.height = '600px';
+          console.log('Forced container dimensions');
+        }
+
+        await this.ensureNodeCoordinates(nodes);
+
+        const nodesWithCoordinates = this.getNodesWithValidCoordinates(nodes);
+        this.lastNodesSignature = this.getNodesSignature(nodesWithCoordinates);
+        if (nodes.length > 0 && nodesWithCoordinates.length === 0) {
+          console.warn('No nodes with valid coordinates after geocoding. Rendering map without markers.');
+        }
+
+        // Convert nodes to jsVectorMap markers format
+        // jsVectorMap typically expects [latitude, longitude] format for both coords and latLng
+        const allMarkers = nodesWithCoordinates.map((node) => ({
+          name: node.name,
+          coords: [node.coordinates.latitude, node.coordinates.longitude] as [number, number], // [lat, lng]
+          latLng: [node.coordinates.latitude, node.coordinates.longitude] as [number, number], // [lat, lng]
+          // Attach rich metadata for robust interaction handling
+          data: {
+            id: node.id,
+            companyId: node.companyId,
+            name: node.company || node.name,
+            type: node.level || 'factory',
+            status: node.status || 'ACTIVE',
+            city: node.city,
+            country: node.country,
+            coordinates: node.coordinates
+          }
+        }));
+
+        // Get transit routes from filtered input
+        const transitRoutes = this.transitRoutes();
+        const lines = transitRoutes
+          .filter((route) =>
+            this.isValidCoordinates(route.fromCoordinates) &&
+            this.isValidCoordinates(route.toCoordinates)
+          )
+          .map((route) => ({
+            from: [route.fromCoordinates.latitude, route.fromCoordinates.longitude],
+            to: [route.toCoordinates.latitude, route.toCoordinates.longitude],
+          }));
+
+        // Get current theme for initial map colors
+        const currentTheme = this.currentTheme();
+        const colors = this.colorSchemes[currentTheme] || this.colorSchemes.dark;
+
+        // Initialize the map with proper configuration
+        const mapConfig: any = {
+          selector: '#war-room-map',
+          map: 'world',
+          zoomButtons: false, // use custom zoom in/out in .map-controls
+          backgroundColor: colors.backgroundColor,
+          // Enable scroll zoom
+          zoomOnScroll: true, // Enable scroll zoom
+          zoomMin: 1.0, // Minimum zoom level (full-world view; prevents extra zoom-out)
+          zoomMax: 15, // Maximum zoom level
+          // Enable pan/drag functionality
+          panOnDrag: true, // Enable dragging to pan the map
+          markers: allMarkers,
+          markerStyle: {
+            initial: {
+              fill: '#00FF41', // Tactical green
+              fillOpacity: 0.4,
+              stroke: '#00FF41',
+              strokeWidth: 1,
+              r: 5,
+            },
+            hover: {
+              fill: '#00FF41',
+              fillOpacity: 1,
+              stroke: '#ffffff',
+              strokeWidth: 2,
+              r: 9,
+            },
+          },
+          regionStyle: {
+            initial: {
+              fill: colors.regionFill,
+              fillOpacity: colors.regionFillOpacity,
+              stroke: colors.regionStroke,
+              strokeWidth: 0.5,
+            },
+            hover: {
+              fill: colors.regionHoverFill,
+            },
+          },
+          // Use custom tooltip only (prevents duplicate tooltips)
+          showTooltip: false,
+          // Disable default marker labels (we use custom pin labels)
+          labels: {
+            markers: {
+              render: () => '' // Return empty string to prevent label rendering
+            }
+          },
+        };
+
+        // Add tooltip handler
+        mapConfig.onMarkerTipShow = (event: any, label: any, index: number) => {
+          const node = nodesWithCoordinates[index];
+          if (!node) return;
+
+          console.log('Tooltip show for node:', node.company, 'index:', index);
+
+          const displayName = this.getCompanyDisplayName(node);
+          const locationLabel = node.country ? `${node.city}, ${node.country}` : node.city;
+          const description = this.getCompanyDescription(node);
+          const tooltipContent = this.buildMarkerTooltipContent(node, displayName, locationLabel, description);
+
+          if (label && typeof label.html === 'function') {
+            label.html(tooltipContent.outerHTML);
+          } else if (label && typeof label.appendChild === 'function') {
+            while (label.firstChild) {
+              label.removeChild(label.firstChild);
+            }
+            label.appendChild(tooltipContent);
+          }
+        };
+
+        // Add click handler with zoom functionality
+        mapConfig.onMarkerClick = (event: any, index: number) => {
+          const node = nodesWithCoordinates[index];
+          console.log('Marker clicked via jsVectorMap handler:', node);
+          this.nodeSelected.emit(node);
+        };
+
+        // onViewportChange: Handle zoom/pan events to update label positions
+        mapConfig.onViewportChange = () => {
+          // Mark that user has interacted with the map (zoomed/panned)
+          // Only if we're not in the initialization phase where many automatic layout shifts happen
+          if (!this.isInitializing) {
+            this.userHasZoomed = true;
+          }
+
+          // Sync the viewBox signal first to ensure transit lines update correctly
+          this.syncViewBoxFromMap();
+
+          this.updateLabelPositions();
+          // Update logo and label positions when viewport changes - ensure text sticks to circle
+          // Use requestAnimationFrame for smoother updates, but also call directly for immediate response
+          this.updateCompanyLogosAndLabelsPositions();
+          this.updateSelectedMarkerStyles(); // Ensure highlighting persists after pan/zoom
+          this.refreshTooltipPosition();
+          requestAnimationFrame(() => {
+            this.updateCompanyLogosAndLabelsPositions();
+            this.updateSelectedMarkerStyles();
+            // Re-apply logos and labels IN CASE they were lost (e.g. library cleared DOM)
+            // BUT: Calling this in a loop causes ghosting artifacts if the library didn't actually clear them.
+            // Optimized: Only call update positions. The elements should persist.
+            // If elements disappear, we need a better check than blind re-adding.
+            // this.addCompanyLogosAndLabels(); 
+          });
+        };
+
+        // Initialize the map
+        console.log('Creating jsVectorMap instance with config:', mapConfig);
+        console.log('Container element:', finalCheck);
+        console.log('Container dimensions:', finalCheck.getBoundingClientRect());
+
+        try {
+          this.mapInstance = new window.jsVectorMap(mapConfig);
+          console.log('Map instance created successfully:', this.mapInstance);
+
+          // Immediately after map creation, ensure cross-browser responsiveness
+          // Fixes issue where Edge/Chrome handle SVG scaling differently
+          setTimeout(() => {
+            const svg = finalCheck.querySelector('svg');
+            if (svg) {
+              // Ensure full width/height
+              svg.style.width = '100%';
+              svg.style.height = '100%';
+              svg.removeAttribute('width');
+              svg.removeAttribute('height');
+
+              // Force aspect ratio preservation to fit container
+              svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+              // Reset regions group transform to ensure no pre-applied zoom/pan persists
+              const regionsGroup = svg.querySelector('#jvm-regions-group');
+              if (regionsGroup) {
+                regionsGroup.setAttribute('transform', 'translate(0, 0) scale(1)');
+              }
+
+              // Set a sane default viewBox if none exists, or respect existing one but enforce 'meet'
+              const currentVb = svg.getAttribute('viewBox');
+              if (!currentVb || currentVb.includes('NaN')) {
+                const initialViewBox = this.getResponsiveWorldViewBox(finalCheck);
+                svg.setAttribute('viewBox', initialViewBox);
+                this.mapViewBox.set(initialViewBox);
+              } else {
+                this.mapViewBox.set(currentVb);
+              }
+
+              // Also refresh the map instance size if possible
+              if (this.mapInstance && typeof this.mapInstance.updateSize === 'function') {
+                this.mapInstance.updateSize();
+              }
+            }
+
+            if (!this.destroyed && !this.pendingZoomCompanyId) {
+              this.applyDefaultZoom();
+            }
+          }, 50);
+
+          setTimeout(() => {
+            if (this.destroyed) return;
+            // Force another sync of dimensions
+            if (this.mapInstance && typeof this.mapInstance.updateSize === 'function') {
+              this.mapInstance.updateSize();
+            }
+            this.updateLabelPositions();
+            this.startLabelPositionUpdates();
+            this.attachMarkerClickHandlers();
+            this.attachMarkerHoverHandlers(); // Add hover handlers for tooltips
+            const pending = this.pendingZoomCompanyId;
+            this.pendingZoomCompanyId = null;
+            if (pending) this.zoomToEntity(pending, 12);
+
+            // Retain lines group to display route connections
+
+            // Add logos and company names to Creative Carriage markers
+            this.addCompanyLogosAndLabels();
+
+            // Apply default zoom (after logos are added)
+            // Only if no pending zoom is queued
+            if (!pending) {
+              // Call immediately and also after a delay to ensure it sticks
+              this.applyDefaultZoom();
+              setTimeout(() => {
+                if (!this.destroyed) {
+                  this.applyDefaultZoom();
+                }
+              }, 500);
+              setTimeout(() => {
+                if (!this.destroyed) {
+                  this.applyDefaultZoom();
+                  // Initialization complete - allow user interactions to be tracked
+                  this.isInitializing = false;
+                  console.log('Map initialization complete - user interactions enabled');
+                }
+              }, 2500); // Give plenty of time for all layout shifts to settle
+            } else {
+              // If there was a pending zoom, we're done initializing
+              this.isInitializing = false;
+            }
+          }, 1000);
+
+          // Listen for fullscreen changes
+          this.setupFullscreenListeners();
+
+          // Verify map was created
+          if (!this.mapInstance) {
+            console.error('Map instance is null after creation');
+          } else {
+            // Verify SVG was created
+            setTimeout(() => {
+              const svg = finalCheck.querySelector('svg');
+              if (svg) {
+                console.log('Map SVG found:', svg);
+                console.log('SVG dimensions:', svg.getBoundingClientRect());
+                console.log('SVG viewBox:', svg.getAttribute('viewBox'));
+
+                // Fix missing viewBox if needed (common issue)
+                if (!svg.getAttribute('viewBox')) {
+                  console.warn('SVG missing viewBox, forcing default...');
+                  svg.setAttribute('viewBox', this.getResponsiveWorldViewBox(finalCheck));
+                }
+
+                // Ensure SVG is responsive - remove fixed width/height attributes
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = '100%';
+                svg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); // Show entire map, maintain aspect ratio
+
+                // Immediately set to default zoom (responsive to container)
+                this.applyDefaultZoom();
+
+                // Check if SVG has content
+                const hasContent = svg.children.length > 0;
+                console.log('SVG has content:', hasContent, 'children:', svg.children.length);
+
+                if (!hasContent) {
+                  console.warn('SVG exists but has no content - map may not have rendered');
+                } else {
+                  // Log SVG structure
+                  console.log('SVG children:', Array.from(svg.children).map((child: any) => ({
+                    tagName: child.tagName,
+                    id: child.id,
+                    className: child.className,
+                  })));
+                }
+              } else {
+                console.error('Map SVG not found - map initialization may have failed');
+                // Log container contents for debugging
+                console.log('Container innerHTML length:', finalCheck.innerHTML.length);
+                console.log('Container children:', Array.from(finalCheck.children).map((child: any) => ({
+                  tagName: child.tagName,
+                  id: child.id,
+                  className: child.className,
+                })));
+              }
+
+              // Check for regions
+              const regions = finalCheck.querySelectorAll('#jvm-regions-group path');
+              console.log('Number of region paths found:', regions.length);
+              if (regions.length === 0) {
+                console.warn('No region paths found - map regions may not have rendered');
+              }
+
+              // Ensure SVG is responsive
+              this.ensureSvgResponsive();
+
+              // Apply default zoom by default
+              // Only if no pending zoom is queued
+              if (!this.pendingZoomCompanyId) {
+                this.applyDefaultZoom();
+              }
+
+              // Setup resize handler to keep SVG responsive
+              this.setupResizeHandler();
+
+              // Setup viewBox observer to maintain full world view
+              this.setupViewBoxObserver();
+
+              // Setup wheel/scroll zoom handler
+              this.setupWheelZoomHandler();
+              // Keep logo overlays synced while dragging the map
+              this.setupPanSyncHandlers();
+
+              // Check for markers
+              const markers = finalCheck.querySelectorAll('.jvm-marker, circle[class*="marker"], circle[data-index]');
+              console.log('Number of markers found:', markers.length);
+              if (markers.length === 0) {
+                console.warn('No markers found - map markers may not have rendered');
+              } else {
+                console.log('Markers:', Array.from(markers).map((m: any) => ({
+                  cx: m.getAttribute('cx'),
+                  cy: m.getAttribute('cy'),
+                  fill: m.getAttribute('fill'),
+                })));
+              }
+            }, 500);
+          }
+        } catch (initError) {
+          console.error('Error during map initialization:', initError);
+          throw initError;
+        }
+
+        // If lines need to be added after initialization, use addLines method
+        // COMMENTED OUT: Lines removed from map
+        // if (this.mapInstance && this.mapInstance.addLines && lines.length > 0) {
+        //   setTimeout(() => {
+        //     try {
+        //       this.mapInstance.addLines(lines.map((line: any) => ({
+        //         ...line,
+        //         style: {
+        //           stroke: '#00FF41', // Tactical green
+        //           strokeWidth: 3,
+        //           strokeDasharray: '0',
+        //           strokeOpacity: 0.8,
+        //         },
+        //       })));
+        //       console.log('Lines added to map');
+        //     } catch (error) {
+        //       console.warn('Could not add lines via addLines method:', error);
+        //     }
+        //   }, 500);
+        // }
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        console.error('Error details:', error);
+      }
+    }, 300);
+  }
+
+  /**
+   * Get node display name
+   */
+  getNodeDisplayName(node: WarRoomNode): string {
+    const displayName = this.getCompanyDisplayName(node).toUpperCase();
+    const nodeLevel = node.level ?? 'factory';
+    if (nodeLevel === 'parent') {
+      return `${displayName} (GROUP)`;
+    }
+    if (nodeLevel === 'subsidiary') {
+      return `${displayName} (${node.hubCode || 'HQ'})`;
+    }
+    return `${node.city.toUpperCase()} (${displayName})`;
+  }
+
+  getMarkerAriaLabel(node: WarRoomNode): string {
+    const name = this.getCompanyDisplayName(node);
+    const location = node.city ? (node.country ? `${node.city}, ${node.country}` : node.city) : '';
+    const typeLabel = this.getTypeLabel(node);
+    const statusLabel = node.status ? `Status ${node.status}` : '';
+    const parts = [name, typeLabel, location].filter(Boolean);
+    const base = parts.length > 0 ? parts.join(' - ') : 'Map location';
+    return statusLabel ? `View ${base}. ${statusLabel}.` : `View ${base}.`;
+  }
+
+  /**
+   * Check if node is selected
+   */
+  isNodeSelected(node: WarRoomNode): boolean {
+    const selected = this.selectedEntity();
+    const nodeLevel = node.level ?? 'factory';
+    return !!selected && selected.id === node.companyId && selected.level === nodeLevel;
+  }
+
+  /**
+   * Check if node is hub
+   */
+  isHub(node: WarRoomNode): boolean {
+    return node.isHub || node.type === 'Hub';
+  }
+
+  /**
+   * Hide and remove the current marker popup if it exists
+   */
+  private hideMarkerPopup(): void {
+    if (this.currentPopup) {
+      this.currentPopup.remove();
+      this.currentPopup = null;
+    }
+  }
+
+  private buildMarkerTooltipContent(
+    node: WarRoomNode,
+    displayName: string,
+    locationLabel: string,
+    description?: string
+  ): HTMLElement {
+    const wrapper = document.createElement('div');
+    wrapper.style.backgroundColor = 'rgba(26, 26, 26, 0.95)';
+    wrapper.style.border = '1px solid #00FF41';
+    wrapper.style.borderRadius = '4px';
+    wrapper.style.padding = '12px';
+    wrapper.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+    wrapper.style.maxWidth = '300px';
+
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.marginBottom = '8px';
+    wrapper.appendChild(header);
+
+    const title = document.createElement('div');
+    title.style.fontWeight = '700';
+    title.style.fontSize = '14px';
+    title.style.color = '#00FF41';
+    title.style.textTransform = 'uppercase';
+    title.textContent = `COMPANY: ${displayName}`;
+    header.appendChild(title);
+
+    const typeBadge = document.createElement('div');
+    typeBadge.style.fontSize = '10px';
+    typeBadge.style.color = '#888';
+    typeBadge.style.marginTop = '2px';
+    typeBadge.textContent = `TYPE: ${this.getTypeLabel(node).toUpperCase()}`;
+    header.appendChild(typeBadge);
+
+    const statusBadge = document.createElement('div');
+    statusBadge.style.fontSize = '10px';
+    statusBadge.style.fontWeight = '700';
+    statusBadge.style.padding = '2px 6px';
+    statusBadge.style.borderRadius = '2px';
+    statusBadge.style.textTransform = 'uppercase';
+
+    const status = node.status?.toUpperCase() || 'ACTIVE';
+    if (status === 'ACTIVE' || status === 'OPTIMAL' || status === 'ONLINE') {
+      statusBadge.style.backgroundColor = 'rgba(0, 255, 65, 0.1)';
+      statusBadge.style.color = '#00FF41';
+      statusBadge.style.border = '1px solid rgba(0, 255, 65, 0.3)';
+      statusBadge.textContent = 'ONLINE';
+    } else if (status === 'WARNING' || status === 'MAINTENANCE') {
+      statusBadge.style.backgroundColor = 'rgba(255, 193, 7, 0.1)';
+      statusBadge.style.color = '#ffc107';
+      statusBadge.style.border = '1px solid rgba(255, 193, 7, 0.3)';
+      statusBadge.textContent = 'WARNING';
+    } else {
+      statusBadge.style.backgroundColor = 'rgba(108, 117, 125, 0.1)';
+      statusBadge.style.color = '#adb5bd';
+      statusBadge.style.border = '1px solid rgba(108, 117, 125, 0.3)';
+      statusBadge.textContent = 'OFFLINE';
+    }
+    header.appendChild(statusBadge);
+
+    const location = document.createElement('div');
+    location.style.fontSize = '11px';
+    location.style.color = '#6c757d';
+    location.style.marginBottom = '8px';
+    location.style.fontWeight = '600';
+    location.textContent = locationLabel || 'LOCATION PENDING';
+    wrapper.appendChild(location);
+
+    if (description) {
+      const descriptionEl = document.createElement('div');
+      descriptionEl.style.fontSize = '12px';
+      descriptionEl.style.color = '#e0e0e0';
+      descriptionEl.style.lineHeight = '1.4';
+      descriptionEl.textContent = description;
+      wrapper.appendChild(descriptionEl);
+    }
+
+    return wrapper;
+  }
+
+  /**
+   * Show a popup with company details when a marker is clicked
+   */
+  private showMarkerPopup(node: WarRoomNode, marker: HTMLElement, event: MouseEvent): void {
+    // Remove any existing popup first
+    this.hideMarkerPopup();
+
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const description = this.getCompanyDescription(node);
+    const displayName = this.getCompanyDisplayName(node);
+    const locationLabel = node.country ? `${node.city}, ${node.country}` : node.city;
+
+    // Create popup element
+    const popup = document.createElement('div');
+    popup.className = 'marker-popup';
+    popup.style.position = 'absolute';
+    popup.style.zIndex = '1000';
+    popup.style.pointerEvents = 'auto';
+
+    const content = this.buildMarkerTooltipContent(node, displayName, locationLabel, description);
+    popup.appendChild(content);
+
+    // Position popup near the marker
+    const rect = marker.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    popup.style.left = (rect.left - containerRect.left + rect.width / 2) + 'px';
+    popup.style.top = (rect.top - containerRect.top - 10) + 'px';
+    popup.style.transform = 'translate(-50%, -100%)';
+
+    // Append to container
+    container.appendChild(popup);
+    this.currentPopup = popup;
+
+    // Add click handler to close popup when clicking outside
+    this.closePopupHandler = (e: MouseEvent) => {
+      if (popup && !popup.contains(e.target as Node) && !marker.contains(e.target as Node)) {
+        this.hideMarkerPopup();
+      }
+    };
+
+    // Use setTimeout to avoid immediate closure
+    this.closePopupTimer = setTimeout(() => {
+      if (this.closePopupHandler) {
+        document.addEventListener('click', this.closePopupHandler);
+      }
+      this.closePopupTimer = null;
+    }, 0);
+  }
+
+  // Cache for stable coordinate projection
+  private cachedMapDimensions: { width: number; height: number } | null = null;
+  private cachedViewBox: { x: number; y: number; width: number; height: number } | null = null;
+
+  /**
+   * Convert latitude/longitude to pixel coordinates on the map
+   * Uses Mercator projection similar to jsVectorMap
+   */
+  private latLngToPixel(lat: number, lng: number, containerWidth?: number, containerHeight?: number): { x: number; y: number } {
+    // Try to use jsVectorMap's internal coordinate conversion if available
+    if (this.mapInstance && this.mapInstance.latLngToPoint) {
+      try {
+        const point = this.mapInstance.latLngToPoint([lat, lng]);
+        return { x: point.x, y: point.y };
+      } catch (e) {
+        // console.warn('Could not use map instance coordinate conversion:', e);
+      }
+    }
+
+    // Update cached dimensions if container is available
+    const container = document.getElementById('war-room-map');
+    let width = containerWidth || (this.cachedMapDimensions?.width || 950);
+    let height = containerHeight || (this.cachedMapDimensions?.height || 550);
+
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        this.cachedMapDimensions = { width: rect.width, height: rect.height };
+        width = rect.width;
+        height = rect.height;
+      }
+
+      const svg = container.querySelector('svg');
+      if (svg) {
+        const viewBox = svg.getAttribute('viewBox');
+        if (viewBox) {
+          const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+          this.cachedViewBox = { x: vbX, y: vbY, width: vbWidth, height: vbHeight };
+        }
+      }
+    }
+
+    // Use cached viewBox if available, otherwise default
+    const vb = this.cachedViewBox;
+
+    // Manual Mercator projection fallback
+    // jsVectorMap typically uses a world map with these dimensions (base)
+    const mapWidth = 1000;
+    const mapHeight = 500;
+
+    // Convert longitude to x (0 to 360 degrees, centered at 0)
+    const x = ((lng + 180) / 360) * mapWidth;
+
+    // Convert latitude to y using Mercator projection
+    const latRad = (lat * Math.PI) / 180;
+    const mercN = Math.log(Math.tan(Math.PI / 4 + latRad / 2));
+    const y = mapHeight / 2 - (mapWidth * mercN) / (2 * Math.PI);
+
+    // If we have viewBox info (either current or cached), we can project correctly to SVG space
+    if (vb) {
+      // Calculate scale factors - how much the SVG is scaled relative to the viewBox
+      // Note: In SVG space, we just want coordinates relative to the viewBox origin
+      // The rendering is handled by the browser scaling the viewBox to the container
+
+      // However, our markers might be transformed or our parent SVG might be scaled.
+      // But typically we want coordinates that match the circle cx/cy which are in viewBox space usually?
+      // Actually jsVectorMap places markers in "map space".
+
+      // Let's rely on standard mercator to map-space conversion used by specific map region (world)
+      // For World map in jsVectorMap:
+      // it shifts and scales.
+
+      // If we are here, mapInstance didn't help. 
+      // We return the raw map-space coordinates shifted by viewBox if needed?
+      // Actually, standard projection above gives global map coordinates.
+
+      // If we have a viewBox, we likely want to project these global coords into the current viewport 
+      // primarily if we are drawing overlays effectively.
+
+      // Let's assume standard scaling for now.
+
+      // Adjust for viewBox offset
+      const adjustedX = (x); // - vb.x? depends on if x is absolute or relative
+      const adjustedY = (y); // - vb.y?
+
+      // Note: jsVectorMap internal coords might be different, but this is a decent approximation
+      // provided we are drawing in the same SVG coordinate system.
+      // If our transit overlay shares the viewBox of the map (which it does via svgViewBox computed),
+      // then we just need coordinates in that same space.
+
+      return { x: adjustedX, y: adjustedY };
+    }
+
+    // Fallback scaling to container size
+    const scaleX = width / mapWidth;
+    const scaleY = height / mapHeight;
+
+    return {
+      x: x * scaleX,
+      y: y * scaleY
+    };
+  }
+
+  /**
+   * Convert an SVG point in map (viewBox) coordinates into container-relative pixels.
+   * Uses SVGPoint + getScreenCTM for accurate handling of transforms and scaling.
+   */
+  private svgPointToContainerPixels(svgEl: SVGSVGElement | null, svgX: number, svgY: number, container: HTMLElement | null): { x: number; y: number } | null {
+    if (!svgEl || !container) return null;
+
+    try {
+      // Prefer the precise SVG -> screen transformation when available
+      const createPoint = (svgEl as any).createSVGPoint;
+      if (typeof createPoint === 'function' && typeof svgEl.getScreenCTM === 'function') {
+        const pt = (svgEl as any).createSVGPoint();
+        pt.x = svgX; pt.y = svgY;
+        const screenPt = pt.matrixTransform(svgEl.getScreenCTM());
+        const containerRect = container.getBoundingClientRect();
+        return { x: screenPt.x - containerRect.left, y: screenPt.y - containerRect.top };
+      }
+    } catch (e) {
+      // Fall back to viewBox proportional math
+      // (fall-through to fallback implementation below)
+      // Intentional silent catch so we don't spam logs in production
+    }
+
+    // Fallback: use viewBox proportional mapping (less accurate when transforms are applied)
+    const vbAttr = svgEl.getAttribute('viewBox');
+    let vbX = 0; let vbY = 0; let vbW = 950; let vbH = 550;
+    if (vbAttr) {
+      const parts = vbAttr.split(' ').map(Number);
+      if (parts.length === 4 && parts.every(Number.isFinite)) {
+        [vbX, vbY, vbW, vbH] = parts;
+      }
+    } else if (this.cachedViewBox) {
+      vbX = this.cachedViewBox.x; vbY = this.cachedViewBox.y; vbW = this.cachedViewBox.width; vbH = this.cachedViewBox.height;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const left = ((svgX - vbX) / vbW) * containerRect.width;
+    const top = ((svgY - vbY) / vbH) * containerRect.height;
+    if (Number.isFinite(left) && Number.isFinite(top)) {
+      return { x: left, y: top };
+    }
+
+    return null;
+  }
+
+
+  /**
+   * Update label positions based on current map state
+   */
+  private updateLabelPositions(): void {
+    const container = document.getElementById('war-room-map');
+    // Allow update even if mapInstance is null, using cached data if possible
+    if (!container && !this.cachedMapDimensions) return;
+
+    // Use cached dimensions if container is missing (during re-render)
+    const width = container ? container.clientWidth : (this.cachedMapDimensions?.width || 0);
+    const height = container ? container.clientHeight : (this.cachedMapDimensions?.height || 0);
+
+    if (width === 0 || height === 0) return;
+
+    const nodes = this.getNodesWithValidCoordinates(this.nodes());
+    const svg = container?.querySelector('svg');
+
+    // Update cached viewBox if available
+    if (svg) {
+      const viewBox = svg.getAttribute('viewBox');
+      if (viewBox) {
+        const [vbX, vbY, vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+        this.cachedViewBox = { x: vbX, y: vbY, width: vbWidth, height: vbHeight };
+      }
+    }
+
+    nodes.forEach((node) => {
+      // Best-effort: keep both SVG (map-space) and pixel positions for each node
+      let svgPos: { x: number; y: number } | null = null;
+      let pixelPos: { x: number; y: number } | null = null;
+
+      // 1) Preferred: Use the map instance's coordinate conversion when available.
+      if (this.mapInstance && typeof (this.mapInstance as any).latLngToPoint === 'function' && this.isValidCoordinates(node.coordinates)) {
+        try {
+          const point = (this.mapInstance as any).latLngToPoint([node.coordinates.latitude, node.coordinates.longitude]);
+          if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
+            svgPos = { x: point.x, y: point.y };
+
+            // If we have a container and viewBox info, derive pixel position for overlays
+            if (container) {
+              const svgEl = container.querySelector('svg');
+              let vbX = 0; let vbY = 0; let vbW = 950; let vbH = 550;
+              const vbAttr = svgEl?.getAttribute('viewBox');
+              if (vbAttr) {
+                const parts = vbAttr.split(' ').map(Number);
+                if (parts.length === 4 && parts.every(Number.isFinite)) {
+                  [vbX, vbY, vbW, vbH] = parts;
+                }
+              } else if (this.cachedViewBox) {
+                vbX = this.cachedViewBox.x; vbY = this.cachedViewBox.y; vbW = this.cachedViewBox.width; vbH = this.cachedViewBox.height;
+              }
+
+              const pixels = this.svgPointToContainerPixels(svgEl as SVGSVGElement, svgPos.x, svgPos.y, container);
+              if (pixels) {
+                pixelPos = { x: pixels.x, y: pixels.y };
+              }
+            }
+          }
+        } catch (e) {
+          console.warn('mapInstance.latLngToPoint failed, falling back to DOM-based calculation', e);
+        }
+      }
+
+      // 2) Fallback: derive from DOM marker position if present
+      if (!svgPos && svg) {
+        const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], .jvm-marker');
+        const index = this.getNodeIndex(node);
+        if (index >= 0 && index < markers.length) {
+          const marker = markers[index] as Element;
+          try {
+            const markerRect = (marker as any).getBoundingClientRect();
+            if (container) {
+              const containerRect = container.getBoundingClientRect();
+              const centerPxX = markerRect.left - containerRect.left + markerRect.width / 2;
+              const centerPxY = markerRect.top - containerRect.top + markerRect.height / 2;
+
+              // Determine viewBox (prefer live attribute, fallback to cachedViewBox)
+              let vbX = 0; let vbY = 0; let vbW = 950; let vbH = 550;
+              const vbAttr = svg?.getAttribute('viewBox');
+              if (vbAttr) {
+                const parts = vbAttr.split(' ').map(Number);
+                if (parts.length === 4 && parts.every(Number.isFinite)) {
+                  [vbX, vbY, vbW, vbH] = parts;
+                }
+              } else if (this.cachedViewBox) {
+                vbX = this.cachedViewBox.x; vbY = this.cachedViewBox.y; vbW = this.cachedViewBox.width; vbH = this.cachedViewBox.height;
+              }
+
+              // Convert pixel center -> SVG coords
+              const svgX = vbX + (centerPxX / width) * vbW;
+              const svgY = vbY + (centerPxY / height) * vbH;
+
+              if (Number.isFinite(svgX) && Number.isFinite(svgY)) {
+                svgPos = { x: svgX, y: svgY };
+                pixelPos = { x: centerPxX, y: centerPxY };
+              }
+            } else {
+              const cx = parseFloat(markers[index].getAttribute('cx') || '0');
+              const cy = parseFloat(markers[index].getAttribute('cy') || '0');
+              svgPos = { x: cx, y: cy };
+            }
+          } catch (e) {
+            const cx = parseFloat(markers[index].getAttribute('cx') || '0');
+            const cy = parseFloat(markers[index].getAttribute('cy') || '0');
+            svgPos = { x: cx, y: cy };
+          }
+        }
+      }
+
+      // 3) Fallback: compute from lat/lng using our projection
+      if (!svgPos && this.isValidCoordinates(node.coordinates)) {
+        svgPos = this.latLngToPixel(
+          node.coordinates.latitude,
+          node.coordinates.longitude,
+          width,
+          height
+        );
+
+        // Derive pixel position from svgPos if possible
+        if (container && svgPos) {
+          const svgEl = container.querySelector('svg');
+          let vbX = 0; let vbY = 0; let vbW = 950; let vbH = 550;
+          const vbAttr = svgEl?.getAttribute('viewBox');
+          if (vbAttr) {
+            const parts = vbAttr.split(' ').map(Number);
+            if (parts.length === 4 && parts.every(Number.isFinite)) {
+              [vbX, vbY, vbW, vbH] = parts;
+            }
+          } else if (this.cachedViewBox) {
+            vbX = this.cachedViewBox.x; vbY = this.cachedViewBox.y; vbW = this.cachedViewBox.width; vbH = this.cachedViewBox.height;
+          }
+
+          const pixels = this.svgPointToContainerPixels(svgEl as SVGSVGElement, svgPos.x, svgPos.y, container);
+          if (pixels) {
+            pixelPos = { x: pixels.x, y: pixels.y };
+          }
+        }
+      }
+
+      // Persist best-effort coordinates
+      if (svgPos) {
+        this.labelPositions.set(node.id, svgPos);
+      } else {
+        this.labelPositions.delete(node.id);
+      }
+
+      if (pixelPos) {
+        this.labelPixelPositions.set(node.id, { x: pixelPos.x, y: pixelPos.y });
+      } else {
+        this.labelPixelPositions.delete(node.id);
+      }
+    });
+
+    // Extract SVG coordinates for perfect route alignment
+    // This is the primary driver for projectedRoutes
+    const newMarkerCoords = new Map<string, { x: number; y: number }>();
+
+    // Fill from labelPositions which now contains the best available coordinates (SVG coords)
+    this.labelPositions.forEach((pos, id) => {
+      newMarkerCoords.set(id, pos);
+    });
+
+    // Only update signal if we actually have coordinates
+    // Important: Don't set empty map if we just failed to find DOM elements temporarily
+    if (newMarkerCoords.size > 0) {
+      this.markerCoordinates.set(newMarkerCoords);
+    } else if (nodes.length === 0) {
+      // Valid empty state
+      this.markerCoordinates.set(new Map());
+    }
+  }
+
+  /**
+   * Start updating label positions using requestAnimationFrame
+   */
+  private startLabelPositionUpdates(): void {
+    // RAF-based update loop
+    const updateLoop = () => {
+      if (this.destroyed) return;
+
+      if (this.labelsUpdateDirty || this.isDragging) {
+        this.updateLabelPositions();
+        // Also update company logos and labels to ensure they stick to circles and are responsive
+        this.updateCompanyLogosAndLabelsPositions();
+        // this.addCompanyLogosAndLabels(); // Removed to prevent ghosting
+        this.labelsUpdateDirty = false;
+      }
+
+      // Continue RAF loop only if dirty or map is animating
+      if (this.labelsUpdateDirty || this.isDragging) {
+        this.updateLabelsRAFId = requestAnimationFrame(updateLoop);
+      } else {
+        this.updateLabelsRAFId = null;
+      }
+    };
+
+    // Start the RAF loop
+    this.updateLabelsRAFId = requestAnimationFrame(updateLoop);
+
+    // Also try to listen to map events if available
+    if (this.mapInstance) {
+      // Try to attach event listeners for zoom/pan
+      try {
+        const container = document.getElementById('war-room-map');
+        if (container) {
+          const svg = container.querySelector('svg');
+          if (svg) {
+            // Listen to transform changes on the SVG
+            this.labelObserver = new MutationObserver(() => {
+              if (!this.destroyed) {
+                this.labelsUpdateDirty = true;
+                // Restart RAF loop if it's not running
+                if (this.updateLabelsRAFId === null) {
+                  this.updateLabelsRAFId = requestAnimationFrame(updateLoop);
+                }
+              }
+            });
+            this.labelObserver.observe(svg, {
+              attributes: true,
+              attributeFilter: ['transform', 'viewBox']
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('Could not set up map event listeners:', e);
+      }
+    }
+  }
+
+  /**
+   * Mark labels as dirty and trigger update
+   */
+  private markLabelsDirty(): void {
+    this.labelsUpdateDirty = true;
+    if (this.updateLabelsRAFId === null && !this.destroyed) {
+      const updateLoop = () => {
+        if (this.destroyed) return;
+
+        if (this.labelsUpdateDirty || this.isDragging) {
+          this.updateLabelPositions();
+          this.updateCompanyLogosAndLabelsPositions();
+          // this.addCompanyLogosAndLabels(); // Removed to prevent ghosting
+
+          this.refreshTooltipPosition();
+          this.labelsUpdateDirty = false;
+        }
+
+        if (this.labelsUpdateDirty || this.isDragging) {
+          this.updateLabelsRAFId = requestAnimationFrame(updateLoop);
+        } else {
+          this.updateLabelsRAFId = null;
+        }
+      };
+      this.updateLabelsRAFId = requestAnimationFrame(updateLoop);
+    }
+  }
+
+  private getNodesSignature(nodes: WarRoomNode[]): string {
+    return nodes
+      .map((node) => {
+        const id = String(node.id ?? node.companyId ?? node.name ?? '');
+        const latValue = node.coordinates?.latitude;
+        const lngValue = node.coordinates?.longitude;
+        const lat = Number.isFinite(latValue) ? latValue.toFixed(4) : '0';
+        const lng = Number.isFinite(lngValue) ? lngValue.toFixed(4) : '0';
+        return { key: id, signature: `${id}:${lat},${lng}` };
+      })
+      .sort((a, b) => a.key.localeCompare(b.key))
+      .map((item) => item.signature)
+      .join('|');
+  }
+
+  /**
+   * Update map markers when nodes change dynamically
+   */
+  private async updateMapMarkers(): Promise<void> {
+    if (this.destroyed) return;
+
+    // No map instance? try to init
+    if (!this.mapInstance) {
+      this.initializeMap();
+      return;
+    }
+
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const nodes = this.nodes();
+    await this.ensureNodeCoordinates(nodes);
+    const nodesWithCoordinates = this.getNodesWithValidCoordinates(nodes);
+    const nextSignature = this.getNodesSignature(nodesWithCoordinates);
+    const signatureChanged = nextSignature !== this.lastNodesSignature;
+
+    const svg = container.querySelector('svg');
+    if (!svg) {
+      console.warn('SVG not found for marker update, re-initializing');
+      this.initializeMap();
+      return;
+    }
+
+    // Get current markers from SVG
+    const existingMarkers = svg.querySelectorAll('circle.jvm-marker, circle[data-index]');
+    const existingMarkerCount = existingMarkers.length;
+    console.log(
+      `Existing markers: ${existingMarkerCount}, Valid nodes: ${nodesWithCoordinates.length}, Total nodes: ${nodes.length}`
+    );
+
+    // If nodes changed significantly, we usually have to re-init to let jsVectorMap handle the complex ADD/REMOVE logic
+    // However, if we preserve the markerCoordinates signal, the lines won't flash as badly.
+    // The issue was likely that re-init caused a gap where markerCoordinates was empty or invalid.
+
+    if (
+      signatureChanged ||
+      nodesWithCoordinates.length !== existingMarkerCount ||
+      nodesWithCoordinates.length > existingMarkerCount
+    ) {
+      const sel = this.selectedEntity();
+      if (sel?.id) {
+        this.pendingZoomCompanyId = sel.id;
+      }
+      this.lastNodesSignature = nextSignature;
+
+      console.log('Nodes changed, re-initializing map...');
+      // Note: We do NOT clear markerCoordinates here. We let the old ones persist until new ones overwrite them.
+      // This prevents the "disappear" frame.
+      this.initializeMap();
+    } else {
+      // Just update label positions if markers are already consistent
+      console.log('Node count/signature unchanged, updating label positions only');
+      this.updateLabelPositions();
+      this.attachMarkerClickHandlers();
+      this.attachMarkerHoverHandlers();
+      setTimeout(() => {
+        this.addCompanyLogosAndLabels();
+        this.updateCompanyLogosAndLabelsPositions();
+      }, 200);
+    }
+  }
+
+  /**
+   * Attach explicit click handlers to SVG markers for better reliability
+   * This ensures markers are clickable even if the jsVectorMap onMarkerClick handler fails
+   */
+  private attachMarkerClickHandlers(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const nodes = this.nodes();
+    if (nodes.length === 0) return;
+
+    // Wait a bit for markers to be fully rendered
+    setTimeout(() => {
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+
+      // Find all marker circles in the SVG
+      const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], circle[class*="jvm-marker"]');
+
+      markers.forEach((marker: any, index: number) => {
+        if (index < nodes.length && !marker.hasAttribute('data-click-handler')) {
+          const node = nodes[index];
+
+          // Mark marker as having a click handler to prevent duplicates
+          marker.setAttribute('data-click-handler', 'true');
+
+          // Ensure marker is clickable
+          marker.style.cursor = 'pointer';
+          marker.style.pointerEvents = 'auto';
+
+          // Add click handler
+          marker.addEventListener('click', (event: MouseEvent) => {
+            event.stopPropagation(); // Prevent event bubbling
+            event.preventDefault(); // Prevent default behavior
+            console.log(`Marker ${index} clicked directly:`, node);
+            this.clearCompanyTooltip();
+            this.nodeSelected.emit(node);
+            this.hideMarkerPopup();
+          }, true); // Use capture phase for better reliability
+
+          // Also add mousedown as backup
+          marker.addEventListener('mousedown', (event: MouseEvent) => {
+            event.stopPropagation();
+          }, true);
+        }
+      });
+
+      // Also listen for new markers that might be added dynamically
+      // CRITICAL: Always recreate observer to ensure it's watching the CURRENT SVG
+      // When map re-initializes (e.g., after filtering), the old SVG is destroyed
+      if (this.nodeObserver) {
+        this.nodeObserver.disconnect();
+      }
+
+      this.nodeObserver = new MutationObserver(() => {
+        if (!this.destroyed) {
+          // Re-attach handlers if new markers are added
+          const newMarkers = svg.querySelectorAll('circle.jvm-marker:not([data-click-handler]), circle[data-index]:not([data-click-handler])');
+          if (newMarkers.length > 0) {
+            this.attachMarkerClickHandlers();
+          }
+        }
+      });
+
+      this.nodeObserver.observe(svg, {
+        childList: true,
+        subtree: true
+      });
+    }, 500);
+  }
+
+  /**
+   * Attach hover handlers to markers for tooltip display
+   * This ensures tooltips work even if jsVectorMap's built-in tooltip doesn't
+   */
+  private attachMarkerHoverHandlers(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) {
+      console.warn('Container not found for attaching marker hover handlers');
+      return;
+    }
+
+    const nodes = this.nodes();
+    if (nodes.length === 0) {
+      console.warn('No nodes available for marker hover handlers');
+      return;
+    }
+
+    // Wait a bit for markers to be fully rendered
+    setTimeout(() => {
+      const svg = container.querySelector('svg');
+      if (!svg) {
+        console.warn('SVG not found for attaching marker hover handlers');
+        return;
+      }
+
+      // Find all marker circles in the SVG
+      const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], circle[class*="jvm-marker"]');
+      console.log(`Found ${markers.length} markers to attach hover handlers to`);
+
+      markers.forEach((marker: Element, index: number) => {
+        if (index < nodes.length && !marker.hasAttribute('data-hover-handler')) {
+          const node = nodes[index];
+          const logoSource = this.getCompanyLogoSource(node);
+
+          // Mark marker as having a hover handler to prevent duplicates
+          marker.setAttribute('data-hover-handler', 'true');
+
+          const handleMouseEnter: EventListener = (event) => {
+            if (this.destroyed) return;
+
+            if (this.tooltipTimeoutId) {
+              clearTimeout(this.tooltipTimeoutId);
+              this.tooltipTimeoutId = null;
+            }
+
+            const mouseEvent = event as MouseEvent;
+            this.showCompanyTooltipAtElement(node, mouseEvent.currentTarget as Element, logoSource);
+
+            // NEW: Update service hover state for cross-component synchronization
+            const selection: FleetSelection = {
+              level: node.level ?? 'factory',
+              id: node.companyId,
+              parentGroupId: node.parentGroupId,
+              subsidiaryId: node.subsidiaryId,
+              factoryId: node.factoryId,
+            };
+            this.warRoomService.setHoveredEntity(selection);
+          };
+
+          const handleMouseLeave: EventListener = (event) => {
+            if (this.destroyed) return;
+
+            if (this.tooltipTimeoutId) {
+              clearTimeout(this.tooltipTimeoutId);
+              this.tooltipTimeoutId = null;
+            }
+
+            this.clearCompanyTooltip();
+
+            // NEW: Clear service hover state
+            this.warRoomService.setHoveredEntity(null);
+          };
+
+          const handleMouseMove: EventListener = (event) => {
+            if (this.destroyed || !this.hoveredCompanyTooltip()) return;
+            const mouseEvent = event as MouseEvent;
+            this.showCompanyTooltipAtElement(node, mouseEvent.currentTarget as Element, logoSource);
+          };
+
+          // Mouse events
+          marker.addEventListener('mouseenter', handleMouseEnter, true);
+          marker.addEventListener('mouseleave', handleMouseLeave, true);
+          marker.addEventListener('mousemove', handleMouseMove, true);
+
+          // NEW: Keyboard accessibility - add tabindex and ARIA attributes
+          marker.setAttribute('tabindex', '0');
+          marker.setAttribute('role', 'button');
+          marker.setAttribute('aria-label', `View details for ${node.company || node.name}`);
+
+          // Keyboard event handlers
+          const handleFocus: EventListener = (event) => {
+            handleMouseEnter(event);
+          };
+
+          const handleBlur: EventListener = (_event) => {
+            handleMouseLeave(_event);
+          };
+
+          const handleKeyDown: EventListener = (event) => {
+            const keyEvent = event as KeyboardEvent;
+            if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+              keyEvent.preventDefault();
+              this.nodeSelected.emit(node);
+            }
+          };
+
+          marker.addEventListener('focus', handleFocus, true);
+          marker.addEventListener('blur', handleBlur, true);
+          marker.addEventListener('keydown', handleKeyDown, true);
+
+          console.log(`Attached hover handler to marker ${index} for node:`, node.company);
+        }
+      });
+    }, 600);
+  }
+
+  /**
+   * Get node position in pixels for absolute positioning on the map
+   *
+   * Notes:
+   * - The map itself renders in an SVG with a viewBox. The marker circle cx/cy values
+   *   are in SVG (viewBox) coordinate space. Our node overlay is HTML positioned in
+   *   CSS pixels. We must convert viewBox coordinates -> container pixels here so the
+   *   HTML diamond/marker lines up exactly with SVG routes and animated dots.
+   */
+  getNodePosition(node: WarRoomNode): { top: number; left: number } {
+    // Prefer pixel cache when available (faster and avoids repeated viewBox -> pixel conversions)
+    const cachedPx = this.labelPixelPositions.get(node.id);
+    if (cachedPx) {
+      const container = document.getElementById('war-room-map');
+      if (container) {
+        return { top: cachedPx.y, left: cachedPx.x };
+      }
+    }
+
+    const position = this.labelPositions.get(node.id);
+    if (position) {
+      // Try to map from SVG viewBox coordinates to container pixel space
+      const container = document.getElementById('war-room-map');
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        const svg = container.querySelector('svg');
+
+        // Prefer explicit viewBox on the SVG when available
+        const viewBoxAttr = svg?.getAttribute('viewBox');
+        if (viewBoxAttr) {
+          const parts = viewBoxAttr.split(' ').map(Number);
+          if (parts.length === 4 && parts.every(Number.isFinite)) {
+            const [vbX, vbY, vbW, vbH] = parts;
+            const left = ((position.x - vbX) / vbW) * rect.width;
+            const top = ((position.y - vbY) / vbH) * rect.height;
+            if (Number.isFinite(left) && Number.isFinite(top)) {
+              return { top, left };
+            }
+          }
+        }
+
+        // Fallback: use cached viewBox (kept up to date in updateLabelPositions)
+        if (this.cachedViewBox) {
+          const vb = this.cachedViewBox;
+          const left = ((position.x - vb.x) / vb.width) * rect.width;
+          const top = ((position.y - vb.y) / vb.height) * rect.height;
+          if (Number.isFinite(left) && Number.isFinite(top)) {
+            return { top, left };
+          }
+        }
+      }
+
+      // If we couldn't convert, treat stored coordinates as pixel values as a last resort
+      return { top: position.y, left: position.x };
+    }
+
+    // Fallback to percentage-based positioning if coordinates not available yet
+    const positions: Record<string, { top: number; left: number }> = {
+      'winnipeg': { top: 30, left: 15 },
+      'indianapolis': { top: 45, left: 25 },
+      'st-eustache': { top: 35, left: 35 },
+      'las-vegas': { top: 60, left: 20 },
+      'paris-ontario': { top: 40, left: 50 },
+      'turkey': { top: 55, left: 65 },
+      'nanjing': { top: 45, left: 80 },
+    };
+
+    const fallback = positions[node.name] || { top: 50, left: 50 };
+    // Convert percentage to pixels (approximate)
+    const container = document.getElementById('war-room-map');
+    if (container) {
+      const rect = container.getBoundingClientRect();
+      return {
+        top: (fallback.top / 100) * rect.height,
+        left: (fallback.left / 100) * rect.width
+      };
+    }
+
+    return { top: 0, left: 0 };
+  }
+
+  /**
+   * Zoom to a specific location on the map
+   * @param latitude - Latitude coordinate
+   * @param longitude - Longitude coordinate
+   * @param scale - Zoom scale (higher = more zoomed in, typically 1-15)
+   *                Ã°Å¸â€Â§ ZOOM LEVEL ADJUSTMENT: Change default value (5) here to adjust default zoom
+   *                
+   *                Ã°Å¸â€œÅ  ZOOM SCALE GUIDE - Try these values:
+   *                ============================================
+   *                Scale 1  = 1x zoom      (2^0)   - Very wide view, see entire world
+   *                Scale 2  = 2x zoom      (2^1)   - Wide view, see continents
+   *                Scale 3  = 4x zoom      (2^2)   - Country level view
+   *                Scale 4  = 8x zoom      (2^3)   - Regional view
+   *                Scale 5  = 16x zoom     (2^4)   - State/Province level (DEFAULT)
+   *                Scale 6  = 32x zoom     (2^5)   - Large city area
+   *                Scale 7  = 64x zoom     (2^6)   - City level
+   *                Scale 8  = 128x zoom    (2^7)   - City district
+   *                Scale 9  = 256x zoom    (2^8)   - Neighborhood level
+   *                Scale 10 = 512x zoom    (2^9)   - Street level
+   *                Scale 11 = 1024x zoom   (2^10)  - Very close street view
+   *                Scale 12 = 2048x zoom   (2^11)  - Very high zoom (CURRENT)
+   *                Scale 13 = 4096x zoom   (2^12)  - Extreme zoom
+   *                Scale 14 = 8192x zoom   (2^13)  - Maximum practical zoom
+   *                Scale 15 = 16384x zoom  (2^14)  - Maximum zoom (may be too close)
+   *                
+   *                Ã°Å¸â€™Â¡ RECOMMENDED VALUES:
+   *                - For activity log clicks: 10-12 (good balance)
+   *                - For marker clicks: 10-12 (shows marker clearly)
+   *                - For smooth experience: 8-10 (less jarring)
+   *                - For maximum detail: 12-14 (very close)
+   */
+  zoomToLocation(latitude: number, longitude: number, scale: number = 5): void {
+    console.log(`zoomToLocation called: lat=${latitude}, lng=${longitude}, scale=${scale}`);
+
+    if (!this.mapInstance) {
+      let retryCount = 0;
+      const maxRetries = 25;
+      // Clear any existing retry interval
+      if (this.mapReadyRetryInterval) {
+        clearInterval(this.mapReadyRetryInterval);
+      }
+      this.mapReadyRetryInterval = setInterval(() => {
+        retryCount++;
+        if (this.mapInstance) {
+          clearInterval(this.mapReadyRetryInterval!);
+          this.mapReadyRetryInterval = null;
+          this.zoomToLocation(latitude, longitude, scale);
+        } else if (retryCount >= maxRetries) {
+          clearInterval(this.mapReadyRetryInterval!);
+          this.mapReadyRetryInterval = null;
+        }
+      }, 200);
+      return;
+    }
+
+    try {
+      // jsVectorMap API methods - try multiple approaches
+      // Method 1: Try setFocus (most common)
+      if (typeof this.mapInstance.setFocus === 'function') {
+        console.log('Using setFocus method');
+        this.mapInstance.setFocus({
+          animate: true,
+          lat: latitude,
+          lng: longitude,
+          scale: scale,
+        });
+        console.log(`Ã¢Å“â€œ Zoomed to location: ${latitude}, ${longitude} at scale ${scale}`);
+        setTimeout(() => this.updateLabelPositions(), 500);
+        return;
+      }
+
+      // Method 2: Try focusOn
+      if (typeof this.mapInstance.focusOn === 'function') {
+        console.log('Using focusOn method');
+        this.mapInstance.focusOn({
+          animate: true,
+          latLng: [latitude, longitude],
+          scale: scale,
+        });
+        console.log(`Ã¢Å“â€œ Zoomed to location using focusOn: ${latitude}, ${longitude} at scale ${scale}`);
+        setTimeout(() => this.updateLabelPositions(), 500);
+        return;
+      }
+
+      // Method 3: Try setCenter + setZoom
+      if (typeof this.mapInstance.setCenter === 'function') {
+        console.log('Using setCenter + setZoom method');
+        this.mapInstance.setCenter(latitude, longitude);
+        if (typeof this.mapInstance.setZoom === 'function') {
+          this.mapInstance.setZoom(scale);
+        }
+        console.log(`Ã¢Å“â€œ Zoomed to location using setCenter: ${latitude}, ${longitude}`);
+        setTimeout(() => this.updateLabelPositions(), 500);
+        return;
+      }
+
+      // Method 4: Try internal map object and transform methods
+      const mapInternal = (this.mapInstance as any).map;
+      if (mapInternal) {
+        if (typeof mapInternal.setFocus === 'function') {
+          console.log('Using internal map.setFocus');
+          mapInternal.setFocus({
+            animate: true,
+            lat: latitude,
+            lng: longitude,
+            scale: scale,
+          });
+          setTimeout(() => this.updateLabelPositions(), 500);
+          return;
+        }
+        if (typeof mapInternal.focusOn === 'function') {
+          console.log('Using internal map.focusOn');
+          mapInternal.focusOn({
+            animate: true,
+            latLng: [latitude, longitude],
+            scale: scale,
+          });
+          setTimeout(() => this.updateLabelPositions(), 500);
+          return;
+        }
+        // Try transform methods if available
+        if (mapInternal.setScale && mapInternal.setFocus) {
+          console.log('Using internal map.setScale and setFocus');
+          mapInternal.setFocus(latitude, longitude);
+          mapInternal.setScale(scale);
+          setTimeout(() => this.updateLabelPositions(), 500);
+          return;
+        }
+      }
+
+      // Method 4.5: Try accessing SVG transform directly via map instance
+      const container = document.getElementById('war-room-map');
+      if (container) {
+        const svg = container.querySelector('svg');
+        const mapGroup = svg?.querySelector('g#jvm-regions-group, g[class*="regions"]');
+        if (mapGroup && this.mapInstance) {
+          // Try to get current transform and modify it
+          const currentTransform = mapGroup.getAttribute('transform');
+          console.log('Current map transform:', currentTransform);
+          // If we can manipulate transform, we can pan and scale
+        }
+      }
+
+      // Method 5: Direct viewBox manipulation as fallback - find marker and center on it
+      console.warn('No standard zoom method available, trying viewBox manipulation with marker position');
+      // Reuse container variable from Method 4.5 above
+      if (container) {
+        const svg = container.querySelector('svg');
+        if (svg) {
+          // Get current viewBox
+          const currentViewBox = svg.viewBox.baseVal;
+          const currentWidth = currentViewBox.width || 950;
+          const currentHeight = currentViewBox.height || 550;
+
+          // Find the marker for this location by checking all markers
+          const nodes = this.nodes();
+          const targetNode = nodes.find(n =>
+            Math.abs(n.coordinates.latitude - latitude) < 0.1 &&
+            Math.abs(n.coordinates.longitude - longitude) < 0.1
+          );
+
+          if (targetNode) {
+            // Find the marker element in the SVG
+            const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index]');
+            const nodeIndex = nodes.findIndex(n => n.id === targetNode.id);
+            const marker = markers[nodeIndex] as SVGCircleElement;
+
+            if (marker) {
+              // Get marker's current position in SVG coordinates
+              const markerX = parseFloat(marker.getAttribute('cx') || '0');
+              const markerY = parseFloat(marker.getAttribute('cy') || '0');
+
+              // Calculate zoom factor (scale 12 = very high zoom, scale 1 = low zoom)
+              // Ã°Å¸â€Â§ ZOOM LEVEL ADJUSTMENT: The zoom factor is calculated as 2^(scale-1)
+              // See zoomToLocation() method documentation above for full zoom scale guide
+              const zoomFactor = Math.pow(2, scale - 1);
+              const newWidth = currentWidth / zoomFactor;
+              const newHeight = currentHeight / zoomFactor;
+
+              // Center viewBox on marker
+              const newX = Math.max(0, Math.min(currentWidth - newWidth, markerX - newWidth / 2));
+              const newY = Math.max(0, Math.min(currentHeight - newHeight, markerY - newHeight / 2));
+
+              // Apply smooth transition
+              svg.style.transition = 'viewBox 0.5s ease-in-out';
+              svg.setAttribute('viewBox', `${newX} ${newY} ${newWidth} ${newHeight}`);
+              console.log(`Ã¢Å“â€œ Zoomed using viewBox manipulation to marker at (${markerX}, ${markerY}): ${latitude}, ${longitude}`);
+              setTimeout(() => {
+                this.updateLabelPositions();
+                svg.style.transition = ''; // Remove transition after animation
+              }, 500);
+              return;
+            }
+          }
+
+          // Fallback: Use Mercator projection calculation
+          console.log('Marker not found, using Mercator projection calculation');
+          const viewBoxWidth = currentWidth;
+          const viewBoxHeight = currentHeight;
+          // Convert lat/lng to SVG coordinates using Mercator projection approximation
+          const centerX = ((longitude + 180) / 360) * viewBoxWidth;
+          const centerY = ((90 - latitude) / 180) * viewBoxHeight;
+          const zoomFactor = Math.pow(2, scale - 1);
+          const newWidth = viewBoxWidth / zoomFactor;
+          const newHeight = viewBoxHeight / zoomFactor;
+          const newX = Math.max(0, Math.min(viewBoxWidth - newWidth, centerX - newWidth / 2));
+          const newY = Math.max(0, Math.min(viewBoxHeight - newHeight, centerY - newHeight / 2));
+
+          svg.style.transition = 'viewBox 0.5s ease-in-out';
+          svg.setAttribute('viewBox', `${newX} ${newY} ${newWidth} ${newHeight}`);
+          console.log(`Ã¢Å“â€œ Zoomed using Mercator projection: ${latitude}, ${longitude}`);
+          setTimeout(() => {
+            this.updateLabelPositions();
+            svg.style.transition = '';
+          }, 500);
+          return;
+        }
+      }
+
+      console.error('No zoom method found on map instance and viewBox fallback failed');
+    } catch (error) {
+      console.error('Error zooming to location:', error);
+      // Try alternative approach with direct coordinate manipulation
+      try {
+        const container = document.getElementById('war-room-map');
+        if (container) {
+          const svg = container.querySelector('svg');
+          if (svg && svg.viewBox) {
+            // This is a fallback - might not work perfectly but worth trying
+            console.warn('Attempting fallback zoom method');
+          }
+        }
+      } catch (fallbackError) {
+        console.error('Fallback zoom method also failed:', fallbackError);
+      }
+    }
+  }
+
+  /**
+   * Zoom to a specific node by node ID
+   * @param nodeId - The ID of the node to zoom to
+   */
+  zoomToNode(nodeId: string): void {
+    const nodes = this.nodes();
+    const node = nodes.find((n) => n.id === nodeId);
+    if (node) {
+      this.zoomToLocation(node.coordinates.latitude, node.coordinates.longitude, 4);
+    } else {
+      console.warn(`Node with ID ${nodeId} not found`);
+    }
+  }
+
+  /**
+   * Zoom to a specific entity's location
+   * @param entityId - The entity ID to zoom to
+   * @param zoomScale - Optional zoom scale (default: 12 for more prominent zoom to show marker clearly)
+   *                    ZOOM LEVEL ADJUSTMENT: Change default value here to adjust default zoom
+   *                    Higher number = more zoom (e.g., 10 = medium, 12 = high, 15 = very high)
+   */
+
+
+  /**
+   * Update marker styles to show temporary hover highlighting (cross-component sync)
+   */
+  private updateHoveredMarkerStyles(hovered: FleetSelection | null): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Remove previous hover highlights
+    svg.querySelectorAll('.marker-temp-hover').forEach((el) => {
+      el.classList.remove('marker-temp-hover');
+    });
+
+    if (!hovered) return;
+
+    // Find and highlight hovered marker by searching all nodes
+    const nodes = this.nodes();
+    const hoveredIndex = nodes.findIndex((n) => n.id === hovered.id);
+    if (hoveredIndex >= 0) {
+      const markerCircle = svg.querySelector(`circle[data-index="${hoveredIndex}"]`);
+      const logoImage = svg.querySelector(`#company-logo-image-${hoveredIndex}`);
+      const badge = svg.querySelector(`g.company-badge[data-marker-index="${hoveredIndex}"]`);
+      const pinGroup = svg.querySelector(`#company-pin-group-${hoveredIndex}`);
+
+      if (markerCircle) {
+        markerCircle.classList.add('marker-temp-hover');
+      }
+      if (logoImage) {
+        logoImage.classList.add('marker-temp-hover');
+      }
+      if (badge) {
+        badge.classList.add('marker-temp-hover');
+      }
+      if (pinGroup) {
+        pinGroup.classList.add('marker-temp-hover');
+      }
+    }
+  }
+
+  /**
+   * Highlight a marker by node ID
+   * @param nodeId - The node ID to highlight
+   */
+  private highlightMarker(nodeId: string): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Find the marker for this node
+    const nodes = this.nodes();
+    const nodeIndex = nodes.findIndex((n) => n.id === nodeId);
+    if (nodeIndex === -1) {
+      console.warn(`Node ${nodeId} not found for highlighting`);
+      return;
+    }
+
+    const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index]');
+    const marker = markers[nodeIndex] as SVGCircleElement;
+    const pinGroup = svg.querySelector(`#company-pin-group-${nodeIndex}`) as SVGGElement | null;
+
+    if (pinGroup) {
+      // Immediate visual impact for high-fidelity pin
+      const originalTransform = pinGroup.getAttribute('transform') || '';
+      pinGroup.style.transition = 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+
+      // Brief scale up "pop" effect
+      const baseTransform = originalTransform.split(' scale')[0];
+      const currentScaleMatch = originalTransform.match(/scale\(([^)]+)\)/);
+      const currentScale = currentScaleMatch ? parseFloat(currentScaleMatch[1]) : 1;
+
+      pinGroup.setAttribute('transform', `${baseTransform} scale(${currentScale * 1.5})`);
+
+      setTimeout(() => {
+        pinGroup.setAttribute('transform', originalTransform);
+      }, 500);
+
+      console.log(`Highlighted pin for node: ${nodeId}`);
+    } else if (marker) {
+      // Store original radius
+      const originalRadius = marker.getAttribute('r') || '8';
+
+      // Add a pulsing animation or highlight effect (Option B: Smooth Breathing)
+      marker.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)'; // Smooth ease
+      marker.setAttribute('r', '18'); // Softer pop
+      marker.setAttribute('stroke-width', '6'); // Slightly thinner impact
+      marker.setAttribute('fill', '#ffffff'); // Flash white for high contrast
+      marker.setAttribute('stroke', '#00FF41'); // Tactical green stroke
+
+      // Reset after animation
+      setTimeout(() => {
+        marker.setAttribute('r', originalRadius);
+        marker.setAttribute('stroke-width', '2');
+        marker.setAttribute('stroke', '#ffffff');
+        marker.setAttribute('fill', '#00FF41'); // Back to tactical green
+      }, 800);
+
+      console.log(`Highlighted marker for node: ${nodeId}`);
+    } else {
+      console.warn(`Marker not found for node index ${nodeIndex}`);
+    }
+  }
+
+  /**
+   * Apply selected styles to markers, logos, and labels based on selectedEntity.
+   */
+  private updateSelectedMarkerStyles(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const nodes = this.nodes();
+    const selected = this.selectedEntity();
+    const selectedId = selected?.id || null;
+
+    // Set data attribute for "muted" styling of unselected elements
+    const mapContainer = document.querySelector('.war-room-map-container') as HTMLElement;
+    if (mapContainer) {
+      if (selectedId) {
+        mapContainer.setAttribute('data-has-selection', 'true');
+      } else {
+        mapContainer.removeAttribute('data-has-selection');
+      }
+    }
+
+    const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], circle[class*="jvm-marker"]');
+    const markersGroup = svg.querySelector('#jvm-markers-group') || svg;
+
+    nodes.forEach((node, index) => {
+      let marker = svg.querySelector(`circle[data-index="${index}"]`) as SVGCircleElement | null;
+      if (!marker && index < markers.length) {
+        marker = markers[index] as SVGCircleElement;
+      }
+
+      if (!marker) return;
+
+      const nodeLevel = node.level ?? 'factory';
+      const isSelected = !!selectedId && node.companyId === selectedId && selected?.level === nodeLevel;
+
+      if (isSelected) {
+        marker.classList.add('selected-marker');
+      } else {
+        marker.classList.remove('selected-marker');
+      }
+
+      const logoImage = markersGroup.querySelector(`image[id="company-logo-image-${index}"]`) as SVGImageElement | null;
+      if (logoImage) {
+        if (isSelected) {
+          logoImage.setAttribute('data-selected', 'true');
+        } else {
+          logoImage.removeAttribute('data-selected');
+        }
+      }
+
+      const label = markersGroup.querySelector(`text[data-marker-index="${index}"]`) as SVGTextElement | null;
+      const badge = markersGroup.querySelector(`g.company-badge[data-marker-index="${index}"]`) as SVGGElement | null;
+
+      if (label) {
+        if (isSelected) {
+          label.setAttribute('data-selected', 'true');
+        } else {
+          label.removeAttribute('data-selected');
+        }
+      }
+
+      if (badge) {
+        if (isSelected) {
+          badge.setAttribute('data-selected', 'true');
+          badge.classList.add('selected-marker');
+        } else {
+          badge.removeAttribute('data-selected');
+          badge.classList.remove('selected-marker');
+        }
+      }
+
+      const pinGroup = markersGroup.querySelector(`#company-pin-group-${index}`) as SVGGElement | null;
+      if (pinGroup) {
+        if (isSelected) {
+          pinGroup.classList.add('selected-marker');
+          pinGroup.setAttribute('data-selected', 'true');
+        } else {
+          pinGroup.classList.remove('selected-marker');
+          pinGroup.removeAttribute('data-selected');
+        }
+      }
+    });
+  }
+
+  /**
+   * Toggle fullscreen mode for the map
+   */
+  toggleFullscreen(): void {
+    // Check current fullscreen state first
+    const currentState = this.getFullscreenState();
+
+    if (!currentState) {
+      const container = document.querySelector('.war-room-map-container') as HTMLElement;
+      if (container) {
+        this.enterFullscreen(container);
+      } else {
+        console.warn('Map container not found for fullscreen');
+      }
+    } else {
+      // Exit fullscreen
+      this.exitFullscreen();
+    }
+  }
+
+  /**
+   * Enter fullscreen mode
+   */
+  private enterFullscreen(element?: HTMLElement): void {
+    const container = (element || document.querySelector('.war-room-map-container')) as HTMLElement;
+    if (!container) return;
+
+    // Add fallback class immediately
+    container.classList.add('fullscreen-fallback-active');
+    this.isFullscreen = true;
+
+    try {
+      if (container.requestFullscreen) {
+        container.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message} (${err.name})`);
+          // If native fullscreen fails, we still have the class set for CSS fallback
+        });
+      } else if ((container as any).webkitRequestFullscreen) {
+        (container as any).webkitRequestFullscreen();
+      } else if ((container as any).msRequestFullscreen) {
+        (container as any).msRequestFullscreen();
+      }
+    } catch (e) {
+      console.error('Fullscreen request exception:', e);
+    }
+  }
+
+  /**
+   * Exit fullscreen mode
+   */
+  private exitFullscreen(): void {
+    const container = document.querySelector('.war-room-map-container') as HTMLElement;
+    if (container) {
+      container.classList.remove('fullscreen-fallback-active');
+    }
+
+    this.isFullscreen = false;
+
+    if (document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).msFullscreenElement) {
+      try {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(e => console.warn('Exit fullscreen error:', e));
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        } else if ((document as any).msExitFullscreen) {
+          (document as any).msExitFullscreen();
+        }
+      } catch (e) {
+        console.warn('Exit fullscreen exception:', e);
+      }
+    }
+  }
+
+  /**
+   * Check if currently in fullscreen mode
+   */
+  getFullscreenState(): boolean {
+    // Check actual DOM state first, then fallback to flag
+    const fullscreenElement =
+      document.fullscreenElement ||
+      (document as any).webkitFullscreenElement ||
+      (document as any).msFullscreenElement;
+
+    // Update internal flag to match actual state
+    if (fullscreenElement) {
+      this.isFullscreen = true;
+    } else {
+      this.isFullscreen = false;
+    }
+
+    return !!fullscreenElement;
+  }
+
+  /**
+   * Zoom the map in one step (custom control).
+   * Directly manipulates the SVG viewBox to zoom in.
+   */
+  zoomIn(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Mark that user is manually zooming
+    this.userHasZoomed = true;
+
+    // Try jsVectorMap API first
+    if (this.mapInstance && typeof (this.mapInstance as any).zoomIn === 'function') {
+      try {
+        (this.mapInstance as any).zoomIn();
+        setTimeout(() => {
+          this.updateLabelPositions();
+          this.updateCompanyLogosAndLabelsPositions();
+          this.refreshTooltipPosition();
+        }, 300);
+        return;
+      } catch (e) {
+        console.warn('jsVectorMap zoomIn failed, using manual zoom:', e);
+      }
+    }
+
+    // Manual zoom by manipulating viewBox
+    this.zoomViewBox(svg, 1.5); // Zoom in by 1.5x
+  }
+
+  /**
+   * Zoom the map out one step (custom control).
+   * Directly manipulates the SVG viewBox to zoom out.
+   */
+  zoomOut(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Mark that user is manually zooming
+    this.userHasZoomed = true;
+
+    // Try jsVectorMap API first
+    if (this.mapInstance && typeof (this.mapInstance as any).zoomOut === 'function') {
+      try {
+        (this.mapInstance as any).zoomOut();
+        setTimeout(() => {
+          this.updateLabelPositions();
+          this.updateCompanyLogosAndLabelsPositions();
+          this.refreshTooltipPosition();
+        }, 300);
+        return;
+      } catch (e) {
+        console.warn('jsVectorMap zoomOut failed, using manual zoom:', e);
+      }
+    }
+
+    // Manual zoom by manipulating viewBox
+    this.zoomViewBox(svg, 1 / 1.5); // Zoom out by 1/1.5x
+  }
+
+  /**
+   * Manually zoom the SVG by adjusting the viewBox.
+   * @param svg - The SVG element to zoom
+   * @param factor - Zoom factor (>1 = zoom in, <1 = zoom out)
+   */
+  private zoomViewBox(svg: SVGElement, factor: number): void {
+    const container = document.getElementById('war-room-map');
+    const baseViewBox = container ? this.getResponsiveWorldViewBox(container) : '0 0 950 550';
+    const [baseX, baseY, baseWidth, baseHeight] = baseViewBox.split(' ').map(Number);
+
+    const currentViewBox = svg.getAttribute('viewBox');
+    if (!currentViewBox) {
+      // No viewBox, set default
+      svg.setAttribute('viewBox', baseViewBox);
+      return;
+    }
+
+    const [x, y, width, height] = currentViewBox.split(' ').map(Number);
+
+    // Calculate new viewBox dimensions
+    const newWidth = width / factor;
+    const newHeight = height / factor;
+
+    // Prevent zooming out beyond full world view
+    if (newWidth >= baseWidth || newHeight >= baseHeight) {
+      // Snap to full world view (allow user to see the entire map)
+      const fullWorldViewBox = baseViewBox;
+      svg.setAttribute('viewBox', fullWorldViewBox);
+      this.mapViewBox.set(fullWorldViewBox);
+      this.userHasZoomed = true;
+    } else {
+      // Calculate center point to zoom around
+      const centerX = x + width / 2;
+      const centerY = y + height / 2;
+
+      // Calculate new x, y to keep center point
+      const newX = centerX - newWidth / 2;
+      const newY = centerY - newHeight / 2;
+
+      // Clamp to map bounds
+      const clampedX = Math.max(baseX, Math.min(baseX + baseWidth - newWidth, newX));
+      const clampedY = Math.max(baseY, Math.min(baseY + baseHeight - newHeight, newY));
+
+      // Set new viewBox
+      svg.setAttribute('viewBox', `${clampedX} ${clampedY} ${newWidth} ${newHeight}`);
+
+      // Sync the signal to update transit lines overlay
+      this.syncViewBoxFromMap();
+    }
+
+    // Mark labels as dirty to trigger RAF update
+    this.markLabelsDirty();
+    this.refreshTooltipPosition();
+  }
+
+  /**
+   * Fallback: trigger wheel zoom on the map container when zoomIn/zoomOut API is not available.
+   */
+  private zoomByWheel(direction: -1 | 1): void {
+    const el = document.getElementById('war-room-map');
+    if (!el) return;
+
+    // Mark that user is manually zooming
+    this.userHasZoomed = true;
+
+    const delta = 120 * direction; // negative = zoom in, positive = zoom out
+    el.dispatchEvent(new WheelEvent('wheel', { deltaY: delta, bubbles: true }));
+    setTimeout(() => this.updateLabelPositions(), 300);
+  }
+
+  /**
+   * Reposition zoom buttons to avoid overlap with SHOW METRICS button
+   * This method directly sets inline styles to override library defaults
+   */
+  private repositionZoomButtons(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    // Find the zoom container element
+    const zoomContainer = container.querySelector('.jvm-zoom-container') as HTMLElement;
+    if (zoomContainer) {
+      // Set position directly via inline styles to override library defaults
+      // Top-right, grouped with fullscreen (top: 6px, right: 0.5rem)
+      zoomContainer.style.position = 'absolute';
+      zoomContainer.style.top = '6px';
+      zoomContainer.style.bottom = 'auto';
+      zoomContainer.style.right = '0.5rem';
+      zoomContainer.style.left = 'auto';
+      zoomContainer.style.display = 'flex';
+      zoomContainer.style.flexDirection = 'column';
+      zoomContainer.style.gap = '0.25rem';
+      zoomContainer.style.zIndex = '40';
+      console.log('Zoom buttons repositioned to top-right');
+    } else {
+      // Retry if element not found yet
+      setTimeout(() => this.repositionZoomButtons(), 500);
+    }
+  }
+
+  /**
+   * Update positions of company logos and labels when viewport changes
+   * Makes everything responsive to zoom
+   */
+  private updateCompanyLogosAndLabelsPositions(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const nodes = this.nodes();
+    const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], circle[class*="jvm-marker"]');
+
+    if (markers.length === 0) return;
+
+    const markersGroup = svg.querySelector('#jvm-markers-group') as SVGGElement;
+    if (!markersGroup) return;
+
+    const logosGroup = markersGroup.querySelector('#jvm-logos-group') as SVGGElement | null;
+    if (!logosGroup) return;
+
+    const labelsGroup = svg.querySelector('#jvm-labels-group') as SVGGElement | null;
+
+    // Standardized zoom calculation in both methods for perfect alignment
+    const viewBox = svg.getAttribute('viewBox');
+    let zoomFactor = 1;
+    if (viewBox) {
+      const parts = viewBox.split(' ').map(parseFloat);
+      if (parts.length === 4) {
+        zoomFactor = (950 / parts[2] + 550 / parts[3]) / 2;
+        zoomFactor = Math.max(0.1, Math.min(10, zoomFactor));
+      }
+    }
+
+    // Toggle labels visibility based on zoom factor
+    const LABEL_ZOOM_THRESHOLD = 2.5;
+    if (labelsGroup) {
+      const isVisible = zoomFactor >= LABEL_ZOOM_THRESHOLD;
+      labelsGroup.style.opacity = isVisible ? '1' : '0';
+      labelsGroup.style.visibility = isVisible ? 'visible' : 'hidden';
+      labelsGroup.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+    }
+
+    // NEW: Toggle ALL markers visibility based on zoom factor (User Request: hide on full zoom out)
+    // Removed global hide: we now do per-element toggling inside the loop for "Logo Only" mode
+    if (markersGroup) {
+      markersGroup.style.opacity = '1';
+      markersGroup.style.visibility = 'visible';
+    }
+
+    nodes.forEach((node) => {
+      // Find the correct marker index in the filtered coordinate-valid list
+      const markerIndex = this.getNodeIndex(node);
+      if (markerIndex < 0) return;
+
+      // Find the marker for this node using the synchronized markerIndex
+      let marker = svg.querySelector(`circle[data-index="${markerIndex}"]`) as SVGCircleElement | null;
+      if (!marker && markerIndex < markers.length) {
+        marker = markers[markerIndex] as SVGCircleElement;
+      }
+
+      if (!marker) return;
+
+      const cx = parseFloat(marker.getAttribute('cx') || '0');
+      const cy = parseFloat(marker.getAttribute('cy') || '0');
+      const r = parseFloat(marker.getAttribute('r') || '8');
+
+      // Update logo image position (legacy)
+      const logoImageId = `company-logo-image-${markerIndex}`;
+      const logoImage = logosGroup.querySelector(`image[id="${logoImageId}"]`);
+      if (logoImage) {
+        const imageSize = this.getLogoImageSize(r, zoomFactor, this.getLogoSizeMultiplier(node));
+        logoImage.setAttribute('x', (cx - imageSize / 2).toString());
+        logoImage.setAttribute('y', (cy - imageSize / 2).toString());
+        logoImage.setAttribute('width', imageSize.toString());
+        logoImage.setAttribute('height', imageSize.toString());
+      }
+
+      // --- NEW: Update High-Fidelity Pin Marker Position and Scale ---
+      const pinGroupId = `company-pin-group-${markerIndex}`;
+      const pinGroup = logosGroup.querySelector(`g[id="${pinGroupId}"]`) as SVGGElement | null;
+      if (pinGroup) {
+        const selected = this.selectedEntity();
+        const isSelected = !!selected && selected.id === node.id;
+
+        // LOD thresholds (keep in sync with addCompanyLogosAndLabels)
+        // Milli: Adjust zoom thresholds here (must match addCompanyLogosAndLabels)
+        const LOGO_ONLY_THRESHOLD = 3.9;                                                                  
+        const FULL_DETAIL_THRESHOLD = 0.2;
+        const isLogoOnly = zoomFactor < LOGO_ONLY_THRESHOLD;
+        const isCompactLogo = zoomFactor >= LOGO_ONLY_THRESHOLD && zoomFactor < FULL_DETAIL_THRESHOLD;
+        const isFullDetail = zoomFactor >= FULL_DETAIL_THRESHOLD;
+
+        // Responsive scaling
+        const scale = (1.5 / Math.pow(zoomFactor, 0.45)); // CHANGE THIS: bigger number = larger marker bubble
+        // Milli: Adjust marker size while zooming (must match addCompanyLogosAndLabels)
+        const compactScale = Math.max(0.9, Math.min(1.35, 1.25 / Math.pow(zoomFactor, 0.25))); // CHANGE THIS: bigger number = larger compact logo
+        if (isLogoOnly || isCompactLogo) {
+          pinGroup.setAttribute('transform', `translate(${cx}, ${cy}) scale(${compactScale})`);
+        } else {
+          pinGroup.setAttribute('transform', `translate(${cx}, ${cy}) scale(${scale})`);
+        }
+
+        // LOD class state
+        pinGroup.classList.remove('lod-low', 'lod-medium', 'lod-high');
+        if (zoomFactor < LOGO_ONLY_THRESHOLD) {
+          pinGroup.classList.add('lod-low');
+        } else if (zoomFactor < FULL_DETAIL_THRESHOLD) {
+          pinGroup.classList.add('lod-medium');
+        } else {
+          pinGroup.classList.add('lod-high');
+        }
+
+        // Force full detail if selected (keeps it readable)
+        if (isSelected) pinGroup.classList.add('lod-high');
+
+        // Apply display toggles for elements (so zoom updates work without click)
+        const pinBody = pinGroup.querySelector('.pin-body') as SVGElement | null;
+        const pinHalo = pinGroup.querySelector('.pin-halo') as SVGElement | null;
+        const pinLabel = pinGroup.querySelector('.pin-label') as SVGElement | null;
+        const pinGloss = pinGroup.querySelector('.pin-gloss') as SVGElement | null;
+        const bgMarker = pinGroup.querySelector('.pin-bg-marker') as SVGElement | null;
+        const pinLogo = pinGroup.querySelector('.pin-logo') as SVGImageElement | null;
+
+        if (pinBody) pinBody.style.display = isFullDetail ? '' : 'none';
+        if (pinGloss) pinGloss.style.display = isFullDetail ? '' : 'none';
+        if (pinLabel) {
+          pinLabel.style.display = isFullDetail ? '' : 'none';
+          pinLabel.style.opacity = isFullDetail ? '1' : '0';
+        }
+        if (pinHalo) pinHalo.style.display = isSelected ? '' : 'none';
+        if (bgMarker) bgMarker.style.display = (isLogoOnly || isCompactLogo) ? 'block' : 'none';
+        if (pinLogo) {
+          const logoSource = this.getCompanyLogoSource(node);
+          // Milli: Ensure logo source is always valid on zoom updates
+          if (!pinLogo.getAttribute('href') && logoSource) {
+            this.setPinLogoSource(pinLogo, logoSource);
+          }
+          if (isLogoOnly || isCompactLogo) {
+            const smallSize = 12;
+            pinLogo.setAttribute('x', (-smallSize / 2).toString());
+            pinLogo.setAttribute('y', (-smallSize / 2).toString());
+            pinLogo.setAttribute('width', smallSize.toString());
+            pinLogo.setAttribute('height', smallSize.toString());
+            // Milli: Always show logo, even when zoomed out
+            pinLogo.style.opacity = '1';
+          } else {
+            // Keep current full-detail placement if already set by addCompanyLogosAndLabels
+            pinLogo.style.opacity = '1';
+          }
+        }
+      }
+
+      // Update badge container position if it exists (legacy)
+      const badge = labelsGroup?.querySelector(`g.company-badge[data-marker-index="${markerIndex}"]`) as SVGGElement | null;
+      if (badge) {
+        const badgeWidth = parseFloat(badge.getAttribute('data-badge-width') || '120');
+        const badgeHeight = parseFloat(badge.getAttribute('data-badge-height') || '24');
+        const extraYOffset = 0;
+        const badgeX = cx - badgeWidth / 2;
+        const badgeY = cy + r + 8 + extraYOffset;
+        badge.setAttribute('transform', `translate(${badgeX}, ${badgeY})`);
+        const rect = badge.querySelector('rect.company-badge-bg') as SVGRectElement | null;
+        if (rect) {
+          rect.setAttribute('width', badgeWidth.toString());
+          rect.setAttribute('height', badgeHeight.toString());
+        }
+      }
+    });
+  }
+
+  /**
+   * Delete marker pins
+   */
+  private deletePinMarkers(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const markersGroup = svg.querySelector('#jvm-markers-group');
+    if (!markersGroup) return;
+
+    const logosGroup = markersGroup.querySelector('#jvm-logos-group');
+    if (logosGroup) {
+      logosGroup.querySelectorAll('.pin-marker').forEach((pin) => pin.remove());
+    }
+  }
+
+  /**
+   * Add company logos and labels to the map
+   */
+  private addCompanyLogosAndLabels(): void {
+    // Milli: High-level flow for the high-fidelity pin
+    // Step 1) Find markers + compute zoomFactor (controls LOD).
+    // Step 2) Create SVG layers (shadow -> halo pulse -> bubble -> gloss -> logo -> label).
+    // Step 3) Apply LOD rules (logo-only at low zoom, full bubble at high zoom).
+    // Step 4) Attach hover + click handlers (tooltip + selection).
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const nodes = this.getNodesWithValidCoordinates(this.nodes());
+    const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index], circle[class*="jvm-marker"]');
+
+    if (markers.length === 0) return;
+
+    // Use current scale from viewBox for initial positioning
+    const viewBox = svg.getAttribute('viewBox');
+    let zoomFactor = 1;
+    if (viewBox) {
+      const parts = viewBox.split(' ').map(parseFloat);
+      if (parts.length === 4) {
+        zoomFactor = (950 / parts[2] + 550 / parts[3]) / 2;
+        zoomFactor = Math.max(0.1, Math.min(10, zoomFactor));
+      }
+    }
+
+    const markersGroup = svg.querySelector('#jvm-markers-group') as SVGGElement;
+    if (!markersGroup) return;
+
+    // Keep labels below logos to prevent text covering images
+    let labelsGroup = markersGroup.querySelector('#jvm-labels-group') as SVGGElement | null;
+    if (!labelsGroup) {
+      labelsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      labelsGroup.setAttribute('id', 'jvm-labels-group');
+      labelsGroup.style.opacity = '0';
+      labelsGroup.style.visibility = 'hidden';
+      labelsGroup.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+      markersGroup.appendChild(labelsGroup);
+    }
+
+    // Ensure logos are nested under markers group to inherit the same transforms as markers
+    let logosGroup = markersGroup.querySelector('#jvm-logos-group') as SVGGElement | null;
+    if (!logosGroup) {
+      logosGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      logosGroup.setAttribute('id', 'jvm-logos-group');
+      // Insert at the beginning so logos are behind marker highlight effects but visible
+      markersGroup.insertBefore(logosGroup, markersGroup.firstChild);
+    }
+
+    // --- CLEANUP: Remove orphaned pins ---
+    const currentNodeIds = new Set(nodes.map((n) => n.id));
+    logosGroup.querySelectorAll('.pin-marker').forEach((pin) => {
+      const nodeId = pin.getAttribute('data-node-id');
+      if (nodeId && !currentNodeIds.has(nodeId)) {
+        pin.remove();
+      }
+    });
+
+    // Get or create defs section for gradients/patterns
+    let defs = svg.querySelector('defs') as SVGDefsElement;
+    if (!defs) {
+      defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+      svg.insertBefore(defs, svg.firstChild);
+    }
+
+    // Ensure glossy gradient exists
+    if (!defs.querySelector('#pinGlossGradient')) {
+      const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+      gradient.setAttribute('id', 'pinGlossGradient');
+      gradient.setAttribute('x1', '0%');
+      gradient.setAttribute('y1', '0%');
+      gradient.setAttribute('x2', '0%');
+      gradient.setAttribute('y2', '100%');
+
+      const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop1.setAttribute('offset', '0%');
+      stop1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.4)');
+      gradient.appendChild(stop1);
+
+      const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop2.setAttribute('offset', '50%');
+      stop2.setAttribute('stop-color', 'rgba(255, 255, 255, 0.05)');
+      gradient.appendChild(stop2);
+
+      const stop3 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+      stop3.setAttribute('offset', '100%');
+      stop3.setAttribute('stop-color', 'transparent');
+      gradient.appendChild(stop3);
+
+      defs.appendChild(gradient);
+    }
+
+    // Find nodes with logos
+    nodes.forEach((node) => {
+      const markerIndex = this.getNodeIndex(node);
+      if (markerIndex < 0) return;
+
+      const logoSource = this.getCompanyLogoSource(node);
+
+      if (logoSource) {
+        // Find the corresponding marker circle
+        const markers = svg.querySelectorAll('circle.jvm-marker, circle[data-index]');
+        let marker = svg.querySelector(`circle[data-index="${markerIndex}"]`) as SVGCircleElement | null;
+        if (!marker && markerIndex < markers.length) {
+          marker = markers[markerIndex] as SVGCircleElement;
+        }
+
+        if (marker) {
+          const cx = parseFloat(marker.getAttribute('cx') || '0');
+          const cy = parseFloat(marker.getAttribute('cy') || '0');
+          const r = parseFloat(marker.getAttribute('r') || '8');
+
+          // --- HIGH-FIDELITY PIN MARKER IMPLEMENTATION ---
+          const pinGroupId = `company-pin-group-${markerIndex}`;
+
+          // Deduplicate: If multiple pins exist with this ID, remove them all to start fresh
+          const existingPins = logosGroup.querySelectorAll(`g[id="${pinGroupId}"]`);
+          if (existingPins.length > 1) {
+            console.warn(`Found ${existingPins.length} duplicate pins for ${pinGroupId}, cleaning up...`);
+            existingPins.forEach(pin => pin.remove());
+          }
+
+          let pinGroup = logosGroup.querySelector(`g[id="${pinGroupId}"]`) as SVGGElement | null;
+
+          if (!pinGroup) {
+            pinGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            pinGroup.setAttribute('id', pinGroupId);
+            pinGroup.setAttribute('class', 'pin-marker');
+            pinGroup.setAttribute('data-node-id', node.id);
+            pinGroup.setAttribute('data-marker-index', markerIndex.toString());
+            // Milli: Ensure hover/click land on the pin group (not just on click)
+            pinGroup.style.pointerEvents = 'auto';
+            logosGroup.appendChild(pinGroup);
+
+            // Milli Step 2A: Shadow Base (soft glow on the ground)
+            const shadow = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            shadow.setAttribute('class', 'pin-shadow');
+            shadow.setAttribute('cx', '0');
+            shadow.setAttribute('cy', '6');
+            shadow.setAttribute('r', '10');
+            pinGroup.appendChild(shadow);
+
+            // 0. Background Marker Circle (for logo-only mode)
+            const bgMarker = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            bgMarker.setAttribute('class', 'pin-bg-marker');
+            bgMarker.setAttribute('cx', '0');
+            bgMarker.setAttribute('cy', '0');
+            bgMarker.setAttribute('r', '8');
+            bgMarker.setAttribute('fill', '#00FF41');
+            bgMarker.setAttribute('stroke', '#00FF41');
+            bgMarker.setAttribute('stroke-width', '1');
+            pinGroup.appendChild(bgMarker);
+
+            // Milli Step 2B: Signal Pulse (sonar ring)
+            const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            halo.setAttribute('class', 'pin-halo');
+            halo.setAttribute('cx', '0');
+            halo.setAttribute('cy', '0');
+            halo.setAttribute('r', (r * 3.5).toString());
+            pinGroup.appendChild(halo);
+
+            // Milli Step 2C: Tactical Bubble (glass body)
+            const body = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            body.setAttribute('class', 'pin-body');
+            // Path for bubble with tail pointing down to center
+            const bubblePath = "M 0 0 L -8 -10 H -30 Q -35 -10 -35 -15 V -45 Q -35 -50 -30 -50 H 30 Q 35 -50 35 -45 V -15 Q 35 -10 30 -10 H 8 L 0 0 Z";
+            body.setAttribute('d', bubblePath);
+            pinGroup.appendChild(body);
+
+            // Milli Step 2D: Gloss highlight (top half)
+            const gloss = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            gloss.setAttribute('class', 'pin-gloss');
+            gloss.setAttribute('d', "M -30 -50 H 30 Q 35 -50 35 -45 V -30 L -35 -30 V -45 Q -35 -50 -30 -50 Z");
+            gloss.setAttribute('fill', 'url(#pinGlossGradient)');
+            pinGroup.appendChild(gloss);
+
+            // Milli Step 2E: Logo block (left of label)
+            const pinLogo = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+            pinLogo.setAttribute('class', 'pin-logo');
+            pinLogo.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+            this.setPinLogoSource(pinLogo, logoSource);
+
+            // Milli: Logo fallback cycle (prevents broken logo squares)
+            pinLogo.addEventListener('error', () => {
+              const paths = this.getLogoImagePaths(logoSource);
+              const currentIndex = Number(pinLogo.getAttribute('data-logo-path-index') || '0');
+              const currentPath = pinLogo.getAttribute('href') || '';
+              if (currentPath) {
+                const failures = this.logoFailureCache.get(logoSource) ?? new Set<string>();
+                failures.add(currentPath);
+                this.logoFailureCache.set(logoSource, failures);
+              }
+              const nextPath = this.getNextLogoPath(logoSource, currentIndex);
+              pinLogo.setAttribute('data-logo-path-index', Math.max(0, paths.indexOf(nextPath)).toString());
+              pinLogo.setAttribute('href', nextPath);
+              pinLogo.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', nextPath);
+            });
+            pinGroup.appendChild(pinLogo);
+
+            // Milli Step 2F: Label (company name)
+            const pinLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            pinLabel.setAttribute('class', 'pin-label');
+            pinGroup.appendChild(pinLabel);
+          }
+
+          // Shared display name logic
+          let displayName = (node.company || node.name || 'Company').toUpperCase();
+          if (displayName.includes('NOVA')) displayName = 'NOVA BUS';
+          if (displayName.includes('KARZAN') || displayName.includes('KARSAN')) displayName = 'KARSAN';
+
+          // Shared Position and Size calculations
+          const viewBox = svg.getAttribute('viewBox');
+          let zoomFactor = 1;
+          if (viewBox) {
+            const parts = viewBox.split(' ').map(parseFloat);
+            if (parts.length === 4) {
+              zoomFactor = (950 / parts[2] + 550 / parts[3]) / 2;
+              zoomFactor = Math.max(0.1, Math.min(10, zoomFactor));
+            }
+          }
+
+          // Standardized scale calculation: Grow slightly on zoom but counteract map scale
+          const scale = (1.5 / Math.pow(zoomFactor, 0.45)); // CHANGE THIS: bigger number = larger marker bubble
+
+          // Update Pin Body Shape (Responsive bubble)
+          const bubbleW = Math.max(40, displayName.length * 6 + 40);
+          const bubbleH = 32;
+          const bubbleR = 8;
+          const pinBody = pinGroup.querySelector('.pin-body') as SVGPathElement;
+          if (pinBody) {
+            // Speech bubble path: rounded rect with tail
+            const path = `M ${-bubbleW / 2} ${-bubbleH - 10} 
+                           a ${bubbleR} ${bubbleR} 0 0 1 ${bubbleR} ${-bubbleR} 
+                           h ${bubbleW - 2 * bubbleR} 
+                           a ${bubbleR} ${bubbleR} 0 0 1 ${bubbleR} ${bubbleR} 
+                           v ${bubbleH - 2 * bubbleR} 
+                           a ${bubbleR} ${bubbleR} 0 0 1 ${-bubbleR} ${bubbleR} 
+                           h ${-(bubbleW / 2 - bubbleR - 6)} 
+                           l -6 10 l -6 -10 
+                           h ${-(bubbleW / 2 - bubbleR - 6)} 
+                           a ${bubbleR} ${bubbleR} 0 0 1 ${-bubbleR} ${-bubbleR} 
+                           z`;
+            pinBody.setAttribute('d', path);
+          }
+
+          // Update Logo Position
+          const pinLogo = pinGroup.querySelector('.pin-logo') as SVGImageElement;
+          if (pinLogo) {
+            // Milli: Re-apply logo source to avoid stale/broken images
+            if (!pinLogo.getAttribute('href')) {
+              this.setPinLogoSource(pinLogo, logoSource);
+            }
+            const logoSize = 20;
+            pinLogo.setAttribute('x', (-bubbleW / 2 + 8).toString());
+            pinLogo.setAttribute('y', (-bubbleH - 4).toString());
+            pinLogo.setAttribute('width', logoSize.toString());
+            pinLogo.setAttribute('height', logoSize.toString());
+          }
+
+          // Update Label
+          const pinLabel = pinGroup.querySelector('.pin-label') as SVGTextElement;
+          if (pinLabel) {
+            pinLabel.setAttribute('x', (-bubbleW / 2 + 32).toString());
+            pinLabel.setAttribute('y', (-bubbleH / 2 - 10).toString());
+            pinLabel.setAttribute('dominant-baseline', 'middle');
+            pinLabel.textContent = displayName;
+          }
+
+          
+          // Milli: Adjust zoom thresholds here
+          // - Lower LOGO_ONLY_THRESHOLD to show logos earlier (less zoom).
+          // - Lower FULL_DETAIL_THRESHOLD to show the full bubble earlier.
+          const LOGO_ONLY_THRESHOLD = 1.2; // CHANGE THIS: lower = show logo earlier (less zoom), higher = later
+          const FULL_DETAIL_THRESHOLD = 1.2; // CHANGE THIS: lower = show full bubble earlier, higher = later
+          const isLogoOnly = zoomFactor < LOGO_ONLY_THRESHOLD; // distant: simple dot
+          const isCompactLogo = zoomFactor >= LOGO_ONLY_THRESHOLD && zoomFactor < FULL_DETAIL_THRESHOLD; // close-up: dot + logo
+          const isFullDetail = zoomFactor >= FULL_DETAIL_THRESHOLD; // very close: full bubble
+
+          const selected = this.selectedEntity();
+          const isSelected = !!selected && selected.id === node.id;
+
+          // Milli: Adjust marker size while zooming (smaller -> reduce numbers, bigger -> increase)
+          const compactScale = Math.max(0.9, Math.min(1.35, 1.25 / Math.pow(zoomFactor, 0.25))); // CHANGE THIS: bigger number = larger compact logo
+          if (isLogoOnly) {
+            pinGroup.setAttribute('transform', `translate(${cx}, ${cy}) scale(${compactScale})`);
+          } else if (isCompactLogo) {
+            pinGroup.setAttribute('transform', `translate(${cx}, ${cy}) scale(${compactScale})`);
+          } else {
+            pinGroup.setAttribute('transform', `translate(${cx}, ${cy}) scale(${scale})`);
+          }
+
+          const elementsToToggle = [
+            pinGroup.querySelector('.pin-body'),
+            pinGroup.querySelector('.pin-halo'),
+            pinGroup.querySelector('.pin-label'),
+            pinGroup.querySelector('.pin-gloss')
+          ];
+
+          elementsToToggle.forEach(el => {
+            if (el) {
+              // Body + gloss only in full detail
+              if (el.classList.contains('pin-body') || el.classList.contains('pin-gloss')) {
+                (el as SVGElement).style.display = isFullDetail ? '' : 'none';
+              }
+
+              // Halo only when selected (at any zoom)
+              if (el.classList.contains('pin-halo')) {
+                (el as SVGElement).style.display = isSelected ? '' : 'none';
+              }
+
+              // Label only in full detail
+              if (el.classList.contains('pin-label')) {
+                (el as SVGElement).style.display = isFullDetail ? '' : 'none';
+                (el as SVGElement).style.opacity = isFullDetail ? '1' : '0';
+              }
+            }
+          });
+
+          // Toggle background marker circle
+          const bgMarker = pinGroup.querySelector('.pin-bg-marker') as SVGCircleElement;
+          if (bgMarker) {
+            bgMarker.style.display = isLogoOnly || isCompactLogo ? 'block' : 'none';
+          }
+
+          // Handle Logo Position and Size
+          if (pinLogo) {
+            if (isLogoOnly || isCompactLogo) {
+              // Compact Mode: Center INSIDE the marker
+              const smallSize = 12;
+              pinLogo.setAttribute('x', (-smallSize / 2).toString());
+              pinLogo.setAttribute('y', (-smallSize / 2).toString());
+              pinLogo.setAttribute('width', smallSize.toString());
+              pinLogo.setAttribute('height', smallSize.toString());
+              // Milli: Always show logo, even when zoomed out
+              pinLogo.style.opacity = '1';
+            } else {
+              // Full Pin Mode: Position relative to bubble
+              const logoSize = 20;
+              pinLogo.setAttribute('x', (-bubbleW / 2 + 8).toString());
+              pinLogo.setAttribute('y', (-bubbleH - 4).toString());
+              pinLogo.setAttribute('width', logoSize.toString());
+              pinLogo.setAttribute('height', logoSize.toString());
+              pinLogo.style.opacity = '1';
+            }
+          }
+
+          // Relaxed LOD thresholds
+          pinGroup.classList.remove('lod-low', 'lod-medium', 'lod-high');
+          if (zoomFactor < LOGO_ONLY_THRESHOLD) {
+            pinGroup.classList.add('lod-low');
+          } else if (zoomFactor < FULL_DETAIL_THRESHOLD) {
+            pinGroup.classList.add('lod-medium');
+          } else {
+            pinGroup.classList.add('lod-high');
+          }
+
+          // Force full detail if selected
+          if (isSelected) {
+            pinGroup.classList.add('lod-high');
+          }
+
+
+          // Keep original marker circle visible as a base for the pin
+          // Update opacity based on mode: solid for logo-only (badge style), semi-transparent for full pin
+          if (isLogoOnly) {
+            marker.setAttribute('fill-opacity', '1');
+            marker.setAttribute('stroke-opacity', '1');
+            marker.setAttribute('r', '8');
+            marker.style.visibility = 'visible';
+            marker.style.display = 'block';
+
+            // In SVG, elements rendered later appear on top
+            // Move marker after pinGroup to ensure it's visible behind the logo
+            if (marker.parentNode && pinGroup.parentNode === marker.parentNode) {
+              marker.parentNode.insertBefore(marker, pinGroup);
+            }
+          } else {
+            marker.setAttribute('fill-opacity', '0.4');
+            marker.setAttribute('stroke-opacity', '0.5');
+            marker.setAttribute('r', '8');
+            marker.style.visibility = 'visible';
+            marker.style.display = 'block';
+          }
+
+          // Attach click handlers to pin group for better UX
+          if (!pinGroup.hasAttribute('data-click-attached')) {
+            pinGroup.addEventListener('click', (e) => {
+              e.stopPropagation();
+              this.nodeSelected.emit(node);
+            });
+            pinGroup.setAttribute('data-click-attached', 'true');
+          }
+
+          // Milli Step 4: Hover to reveal detail panel (tooltip)
+          if (!pinGroup.hasAttribute('data-hover-attached')) {
+            pinGroup.addEventListener('mouseenter', (e) => {
+              if (this.destroyed) return;
+              if (this.tooltipTimeoutId) {
+                clearTimeout(this.tooltipTimeoutId);
+                this.tooltipTimeoutId = null;
+              }
+              this.showCompanyTooltipAtElement(node, e.currentTarget as Element, logoSource);
+            });
+            pinGroup.addEventListener('mouseleave', () => {
+              if (this.destroyed) return;
+              if (this.tooltipTimeoutId) {
+                clearTimeout(this.tooltipTimeoutId);
+                this.tooltipTimeoutId = null;
+              }
+              this.clearCompanyTooltip();
+            });
+            pinGroup.setAttribute('data-hover-attached', 'true');
+          }
+
+          // Milli: Fallback hover on the base marker circle so tooltips work without click
+          if (!marker.hasAttribute('data-hover-attached')) {
+            marker.addEventListener('mouseenter', (e) => {
+              if (this.destroyed) return;
+              if (this.tooltipTimeoutId) {
+                clearTimeout(this.tooltipTimeoutId);
+                this.tooltipTimeoutId = null;
+              }
+              this.showCompanyTooltipAtElement(node, e.currentTarget as Element, logoSource);
+            });
+            marker.addEventListener('mouseleave', () => {
+              if (this.destroyed) return;
+              if (this.tooltipTimeoutId) {
+                clearTimeout(this.tooltipTimeoutId);
+                this.tooltipTimeoutId = null;
+              }
+              this.clearCompanyTooltip();
+            });
+            marker.setAttribute('data-hover-attached', 'true');
+          }
+
+          // --- BADGE LOGIC (RESTORED INSIDE LOOP) ---
+          // Badge container (logo + text) below marker - now hidden but kept for LOD or legacy if needed
+          let badge = labelsGroup.querySelector(`g.company-badge[data-marker-index="${markerIndex}"]`) as SVGGElement | null;
+          const badgeHeight = 24;
+          const badgeWidth = Math.min(170, Math.max(90, displayName.length * 7 + 34));
+          const extraYOffset = displayName.toUpperCase() === 'NOVA BUS' ? -12 : 0;
+          const badgeX = cx - badgeWidth / 2;
+          const badgeY = cy + r + 8 + extraYOffset;
+
+          if (!badge) {
+            badge = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            badge.setAttribute('class', 'company-badge');
+            badge.setAttribute('data-marker-index', markerIndex.toString());
+            badge.setAttribute('data-company-name', displayName);
+            badge.style.pointerEvents = 'all';
+            labelsGroup.appendChild(badge);
+
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('class', 'company-badge-bg');
+            rect.setAttribute('rx', '4');
+            rect.setAttribute('ry', '4');
+            badge.appendChild(rect);
+
+            const badgeLogo = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+            badgeLogo.setAttribute('class', 'company-badge-logo');
+            const badgePaths = this.getLogoImagePaths(logoSource);
+            const badgePrimaryPath = badgePaths[0];
+            badgeLogo.setAttribute('href', badgePrimaryPath);
+            badgeLogo.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', badgePrimaryPath);
+            badgeLogo.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+            let badgePathIndex = 0;
+            badgeLogo.addEventListener('error', () => {
+              if (badgePathIndex < badgePaths.length - 1) {
+                badgePathIndex += 1;
+                const nextPath = badgePaths[badgePathIndex];
+                badgeLogo.setAttribute('href', nextPath);
+                badgeLogo.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', nextPath);
+              } else {
+                const fallbackPath = '/assets/images/svgs/user.svg';
+                badgeLogo.setAttribute('href', fallbackPath);
+                badgeLogo.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', fallbackPath);
+              }
+            });
+            badge.appendChild(badgeLogo);
+
+            const badgeText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            badgeText.setAttribute('class', 'company-badge-text');
+            badge.appendChild(badgeText);
+          }
+
+          badge.setAttribute('transform', `translate(${badgeX}, ${badgeY})`);
+          badge.setAttribute('data-badge-width', badgeWidth.toString());
+          badge.setAttribute('data-badge-height', badgeHeight.toString());
+
+          const rect = badge.querySelector('rect.company-badge-bg') as SVGRectElement | null;
+          if (rect) {
+            rect.setAttribute('width', badgeWidth.toString());
+            rect.setAttribute('height', badgeHeight.toString());
+          }
+
+          const badgeLogo = badge.querySelector('image.company-badge-logo') as SVGImageElement | null;
+          if (badgeLogo) {
+            badgeLogo.setAttribute('x', '6');
+            badgeLogo.setAttribute('y', '4');
+            badgeLogo.setAttribute('width', '16');
+            badgeLogo.setAttribute('height', '16');
+            const badgePaths = this.getLogoImagePaths(logoSource);
+            const badgePrimaryPath = badgePaths[0];
+            badgeLogo.setAttribute('href', badgePrimaryPath);
+            badgeLogo.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', badgePrimaryPath);
+          }
+
+          const badgeText = badge.querySelector('text.company-badge-text') as SVGTextElement | null;
+          if (badgeText) {
+            badgeText.setAttribute('x', '28');
+            badgeText.setAttribute('y', '12');
+            badgeText.setAttribute('dominant-baseline', 'middle');
+            badgeText.setAttribute('text-anchor', 'start');
+            badgeText.textContent = displayName;
+          }
+
+          // Legacy Tooltip Handlers for Badge
+          if (!badge.hasAttribute('data-hover-handler')) {
+            badge.setAttribute('data-hover-handler', 'true');
+            const handleMouseEnter: EventListener = (event) => {
+              if (this.destroyed) return;
+              if (this.tooltipTimeoutId) {
+                clearTimeout(this.tooltipTimeoutId);
+                this.tooltipTimeoutId = null;
+              }
+              this.showCompanyTooltipAtElement(node, event.currentTarget as Element, logoSource);
+            };
+            const handleMouseLeave: EventListener = () => {
+              if (this.destroyed) return;
+              if (this.tooltipTimeoutId) {
+                clearTimeout(this.tooltipTimeoutId);
+                this.tooltipTimeoutId = null;
+              }
+              this.clearCompanyTooltip();
+            };
+            const handleMouseMove: EventListener = (event) => {
+              if (this.destroyed || !this.hoveredCompanyTooltip()) return;
+              this.showCompanyTooltipAtElement(node, event.currentTarget as Element, logoSource);
+            };
+            badge.addEventListener('mouseenter', handleMouseEnter, true);
+            badge.addEventListener('mouseleave', handleMouseLeave, true);
+            badge.addEventListener('mousemove', handleMouseMove, true);
+          }
+
+          if (!badge.hasAttribute('data-click-handler')) {
+            badge.setAttribute('data-click-handler', 'true');
+            badge.addEventListener('click', (event) => {
+              event.stopPropagation();
+              this.nodeSelected.emit(node);
+            });
+          }
+
+          // Note: Hide badge if we are using the new high-fidelity pin
+          badge.style.display = 'none';
+        }
+      }
+    });
+
+    this.updateSelectedMarkerStyles();
+  }
+
+  /**
+   * Attach hover event handlers to company logo images for tooltip display
+   */
+  private attachLogoHoverHandlers(
+    logoImage: SVGImageElement,
+    node: WarRoomNode,
+    logoSource: string,
+    markerIndex: number
+  ): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Mouse enter handler
+    const handleMouseEnter: EventListener = (event) => {
+      if (this.destroyed) return;
+
+      if (this.tooltipTimeoutId) {
+        clearTimeout(this.tooltipTimeoutId);
+        this.tooltipTimeoutId = null;
+      }
+
+      const mouseEvent = event as MouseEvent;
+      this.showCompanyTooltipAtElement(node, mouseEvent.currentTarget as Element, logoSource);
+    };
+
+    // Mouse leave handler
+    const handleMouseLeave: EventListener = () => {
+      if (this.destroyed) return;
+
+      // Clear timeout if tooltip hasn't shown yet
+      if (this.tooltipTimeoutId) {
+        clearTimeout(this.tooltipTimeoutId);
+        this.tooltipTimeoutId = null;
+      }
+
+      // Hide tooltip immediately
+      this.clearCompanyTooltip();
+    };
+
+    // Mouse move handler to update position
+    const handleMouseMove: EventListener = (event) => {
+      if (this.destroyed || !this.hoveredCompanyTooltip()) return;
+      const mouseEvent = event as MouseEvent;
+      this.showCompanyTooltipAtElement(node, mouseEvent.currentTarget as Element, logoSource);
+    };
+
+    // Attach event listeners
+    logoImage.addEventListener('mouseenter', handleMouseEnter);
+    logoImage.addEventListener('mouseleave', handleMouseLeave);
+    logoImage.addEventListener('mousemove', handleMouseMove);
+
+    if (!logoImage.hasAttribute('data-logo-click-handler')) {
+      logoImage.addEventListener('click', (event: MouseEvent) => {
+        event.stopPropagation();
+        event.preventDefault();
+        this.clearCompanyTooltip();
+        this.nodeSelected.emit(node);
+        this.hideMarkerPopup();
+      }, true);
+      logoImage.setAttribute('data-logo-click-handler', 'true');
+    }
+  }
+
+  /**
+   * Setup fullscreen change listeners
+   */
+  private setupFullscreenListeners(): void {
+    const fullscreenChangeEvents = [
+      'fullscreenchange',
+      'webkitfullscreenchange',
+      'msfullscreenchange'
+    ];
+
+    // Create bound handler
+    this.boundFullscreenHandler = () => {
+      if (this.destroyed) return;
+
+      const wasFullscreen = this.isFullscreen;
+      // Update flag based on actual DOM state
+      const currentState = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).msFullscreenElement
+      );
+      this.isFullscreen = currentState;
+      const mapContainer = document.querySelector('.war-room-map-container') as HTMLElement;
+      const mapDiv = document.getElementById('war-room-map');
+      const mapContainerDiv = document.querySelector('.map-container') as HTMLElement;
+
+      if (this.isFullscreen && !wasFullscreen) {
+        // Get current theme colors
+        const theme = this.currentTheme();
+        const colors = this.colorSchemes[theme as 'light' | 'dark'] || this.colorSchemes.dark;
+
+        // Entering fullscreen - ensure container fills screen
+        if (mapContainer) {
+          mapContainer.style.width = '100vw';
+          mapContainer.style.height = '100vh';
+          mapContainer.style.minHeight = '100vh';
+          mapContainer.style.maxHeight = '100vh';
+          mapContainer.style.backgroundColor = colors.backgroundColor;
+          mapContainer.style.position = 'fixed';
+          mapContainer.style.top = '0';
+          mapContainer.style.left = '0';
+          mapContainer.style.right = '0';
+          mapContainer.style.bottom = '0';
+        }
+
+        if (mapContainerDiv) {
+          mapContainerDiv.style.width = '100%';
+          mapContainerDiv.style.height = '100%';
+          mapContainerDiv.style.minHeight = '100vh';
+          mapContainerDiv.style.maxHeight = '100vh';
+          mapContainerDiv.style.backgroundColor = colors.backgroundColor;
+        }
+
+        if (mapDiv) {
+          mapDiv.style.width = '100%';
+          mapDiv.style.height = '100%';
+          mapDiv.style.minHeight = '100vh';
+          mapDiv.style.maxHeight = '100vh';
+          mapDiv.style.backgroundColor = colors.backgroundColor;
+        }
+
+        // Ensure body/html use theme-appropriate background in fullscreen
+        document.body.style.backgroundColor = colors.backgroundColor;
+        document.documentElement.style.backgroundColor = colors.backgroundColor;
+      } else if (!this.isFullscreen && wasFullscreen) {
+        // Exiting fullscreen - reset styles
+        if (mapContainer) {
+          mapContainer.style.width = '';
+          mapContainer.style.height = '';
+          mapContainer.style.minHeight = '';
+          mapContainer.style.maxHeight = '';
+          mapContainer.style.position = '';
+          mapContainer.style.top = '';
+          mapContainer.style.left = '';
+          mapContainer.style.right = '';
+          mapContainer.style.bottom = '';
+        }
+
+        if (mapContainerDiv) {
+          mapContainerDiv.style.width = '';
+          mapContainerDiv.style.height = '';
+          mapContainerDiv.style.minHeight = '';
+          mapContainerDiv.style.maxHeight = '';
+        }
+
+        if (mapDiv) {
+          mapDiv.style.width = '';
+          mapDiv.style.height = '';
+          mapDiv.style.minHeight = '';
+          mapDiv.style.maxHeight = '';
+        }
+
+        // Reset body/html background
+        document.body.style.backgroundColor = '';
+        document.documentElement.style.backgroundColor = '';
+      }
+
+      // Resize map when fullscreen state changes
+      setTimeout(() => {
+        if (!this.destroyed) {
+          this.handleResize('fullscreen', true);
+        }
+      }, 300);
+    };
+
+    // Add listeners with bound handler
+    fullscreenChangeEvents.forEach((eventName) => {
+      document.addEventListener(eventName, this.boundFullscreenHandler!);
+    });
+  }
+
+  /**
+   * Update map colors based on current theme
+   * @param theme - Current theme ('light' or 'dark')
+   */
+  private updateMapColors(theme: 'light' | 'dark'): void {
+    if (!this.mapInstance) return;
+
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const colors = this.colorSchemes[theme] || this.colorSchemes.dark;
+    const svg = container.querySelector('svg');
+
+    if (svg) {
+      // Update map background color
+      container.style.backgroundColor = colors.backgroundColor;
+
+      // Update all region paths
+      const regionPaths = svg.querySelectorAll('#jvm-regions-group path') as NodeListOf<SVGPathElement>;
+      regionPaths.forEach((pathElement) => {
+        pathElement.setAttribute('fill', colors.regionFill);
+        if ('regionFillOpacity' in colors) {
+          pathElement.setAttribute('fill-opacity', colors.regionFillOpacity.toString());
+        }
+        pathElement.setAttribute('stroke', colors.regionStroke);
+      });
+
+      // Update map container background if it exists
+      const mapContainer = container.closest('.map-container') as HTMLElement;
+      if (mapContainer) {
+        mapContainer.style.backgroundColor = colors.backgroundColor;
+      }
+
+      // Update jvm-container background if it exists
+      const jvmContainer = container.querySelector('.jvm-container') as HTMLElement;
+      if (jvmContainer) {
+        jvmContainer.style.backgroundColor = colors.backgroundColor;
+      }
+    }
+
+    // Update map instance background if the API supports it
+    if (this.mapInstance && typeof this.mapInstance.setBackgroundColor === 'function') {
+      this.mapInstance.setBackgroundColor(colors.backgroundColor);
+    }
+  }
+
+  private applySvgSizing(container: HTMLElement, svg: SVGElement): void {
+    // Set preserveAspectRatio to show entire map and maintain aspect ratio
+    // xMidYMid meet ensures the entire map is visible and centered within container
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    // Force responsive sizing via CSS
+    // Use 100% for both width and height - preserveAspectRatio will handle fitting
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.maxWidth = '100%';
+    svg.style.maxHeight = '100%';
+    svg.style.display = 'block';
+    svg.style.position = 'relative';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.margin = '0';
+    svg.style.padding = '0';
+    svg.style.verticalAlign = 'top'; // Align to top to prevent negative positioning
+
+    // Ensure jvm-container is also properly sized and positioned
+    const jvmContainer = container.querySelector('.jvm-container') as HTMLElement;
+    if (jvmContainer) {
+      jvmContainer.style.width = '100%';
+      jvmContainer.style.height = '100%';
+      jvmContainer.style.position = 'relative'; // Required for absolute positioned SVG
+      jvmContainer.style.overflow = 'hidden';
+      jvmContainer.style.top = '0';
+      jvmContainer.style.left = '0';
+      jvmContainer.style.margin = '0';
+      jvmContainer.style.padding = '0';
+    }
+  }
+
+  /**
+   * Ensure SVG is responsive and shows entire map
+   * Only resets to full world view on initial load, not when user has zoomed
+   */
+  /**
+   * Ensure SVG is responsive and shows entire map
+   * Only resets to full world view on initial load, not when user has zoomed
+   */
+  private ensureSvgResponsive(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Remove fixed width/height attributes that prevent responsiveness
+    svg.removeAttribute('width');
+    svg.removeAttribute('height');
+
+    // Ensure viewBox is set (required for responsive SVG)
+    // Full world map viewBox: "0 0 950 550" shows entire world
+    const fullWorldViewBox = this.getResponsiveWorldViewBox(container);
+    const currentViewBox = svg.getAttribute('viewBox');
+
+    // Only reset to full world view if:
+    // 1. No viewBox is set (initial load)
+    // 2. User hasn't manually zoomed AND (we're on initial load OR we're initializing)
+    if (!currentViewBox) {
+      // No viewBox set, set it to full world (initial load)
+      svg.setAttribute('viewBox', fullWorldViewBox);
+    } else if (!this.userHasZoomed && !this.pendingZoomCompanyId) {
+      // Only auto-reset if user hasn't zoomed and no pending zoom
+      // Force reset if we're still initializing or if viewBox is close to default
+      const [vbX, vbY, vbWidth, vbHeight] = currentViewBox.split(' ').map(Number);
+      const [targetX, targetY, targetWidth, targetHeight] = fullWorldViewBox.split(' ').map(Number);
+
+      // If we are initializing, be aggressive about resetting
+      if (this.isInitializing) {
+        if (currentViewBox !== fullWorldViewBox) {
+          svg.setAttribute('viewBox', fullWorldViewBox);
+        }
+      } else if (
+        Math.abs(vbWidth - targetWidth) < 5 &&
+        Math.abs(vbHeight - targetHeight) < 5 &&
+        currentViewBox !== fullWorldViewBox
+      ) {
+        // Very close to full world but not exact - fix it (likely library artifact)
+        svg.setAttribute('viewBox', fullWorldViewBox);
+      }
+    }
+    // If user has zoomed, don't interfere with their zoom level
+
+    this.applySvgSizing(container, svg);
+
+    // Keep default zoom in sync while user hasn't manually zoomed.
+    if (!this.userHasZoomed && !this.pendingZoomCompanyId) {
+      this.applyDefaultZoom();
+    }
+
+    console.log('SVG made responsive:', {
+      viewBox: svg.getAttribute('viewBox'),
+      preserveAspectRatio: svg.getAttribute('preserveAspectRatio'),
+      containerSize: {
+        width: container.getBoundingClientRect().width,
+        height: container.getBoundingClientRect().height
+      },
+      svgSize: {
+        width: svg.getBoundingClientRect().width,
+        height: svg.getBoundingClientRect().height
+      }
+    });
+  }
+
+  /**
+   * Derive a viewBox string that keeps the full world centered in the SVG.
+   * Respects a cached value while the container keeps the same dimensions.
+   * This helper is called whenever we need the authoritative viewBox (initial load/reset).
+   */
+  private getResponsiveWorldViewBox(container: HTMLElement): string {
+    const baseWidth = 950;
+    const baseHeight = 550;
+    const rect = container.getBoundingClientRect();
+    const cached = this.initialViewportMetrics;
+
+    if (!rect.width || !rect.height) {
+      return cached?.viewBox ?? `0 0 ${baseWidth} ${baseHeight}`;
+    }
+
+    if (
+      cached &&
+      Math.abs(cached.container.width - rect.width) < 0.5 &&
+      Math.abs(cached.container.height - rect.height) < 0.5
+    ) {
+      return cached.viewBox;
+    }
+
+    const viewBox = this.calculateFullWorldViewBox(rect);
+    this.cacheViewportMetrics(viewBox, rect.width, rect.height);
+    return viewBox;
+  }
+
+  /**
+   * Keep track of the measurement/viewBox pair for future resets and
+   * synchronize the signal that the overlays use.
+   */
+  private cacheViewportMetrics(viewBox: string, width: number, height: number): void {
+    this.initialViewportMetrics = {
+      viewBox,
+      container: { width, height },
+    };
+    this.cachedMapDimensions = { width, height };
+
+    const parsed = viewBox.split(' ').map(Number);
+    if (parsed.length === 4 && parsed.every((value) => Number.isFinite(value))) {
+      const [x, y, viewWidth, viewHeight] = parsed;
+      this.cachedViewBox = { x, y, width: viewWidth, height: viewHeight };
+    }
+
+    this.mapViewBox.set(viewBox);
+  }
+
+  /**
+   * Update only the base viewport metrics without forcing the current viewBox signal.
+   * This keeps zoom/pan state intact while still refreshing the base world bounds.
+   */
+  private updateBaseViewportMetrics(viewBox: string, width: number, height: number): void {
+    this.initialViewportMetrics = {
+      viewBox,
+      container: { width, height },
+    };
+    this.cachedMapDimensions = { width, height };
+  }
+
+  /**
+   * Scale the base world viewBox to the container’s aspect ratio while
+   * ensuring the width/height never drop below the base sizes.
+   */
+  private calculateFullWorldViewBox(rect: DOMRect): string {
+    // RESPONSIVE TUNING:
+    // If the map looks cropped or too padded on large screens, adjust the
+    // baseWidth/baseHeight or the aspect-ratio padding logic below.
+    // jsVectorMap world SVG uses a 950x550 viewBox.
+    // Keep base dimensions consistent everywhere to avoid shifting on large screens.
+    const baseWidth = 2000
+    const baseHeight = 2900
+    const containerAspect = rect.width / rect.height;
+    const baseAspect = baseWidth / baseHeight;
+
+    let width = baseWidth;
+    let height = baseHeight;
+
+    if (containerAspect > baseAspect) {
+      width = baseWidth * (containerAspect / baseAspect);
+    } else if (containerAspect < baseAspect) {
+      height = baseHeight * (baseAspect / containerAspect);
+    }
+
+    width = Math.max(width, baseWidth);
+    height = Math.max(height, baseHeight);
+
+    // FIX: center the base 950x550 world map inside the expanded viewBox.
+    // Without this offset, extra space is added only to the right/bottom,
+    // which makes the map appear shifted (not centered) inside the panel.
+    const offsetX = (width - baseWidth) / 2;
+    const offsetY = (height - baseHeight) / 2;
+    const viewBoxX = -offsetX;
+    const viewBoxY = -offsetY;
+
+    return `${viewBoxX.toFixed(2)} ${viewBoxY.toFixed(2)} ${width.toFixed(2)} ${height.toFixed(2)}`;
+  }
+
+  /**
+   * Cache the very first container measurement and viewBox so we can
+   * render the world-centered view before jsVectorMap updates anything.
+   */
+  private ensureInitialViewportMetrics(container: HTMLElement, rect: DOMRect): void {
+    if (this.initialViewportMetrics || rect.width === 0 || rect.height === 0) {
+      return;
+    }
+
+    const viewBox = this.calculateFullWorldViewBox(rect);
+    this.cacheViewportMetrics(viewBox, rect.width, rect.height);
+  }
+
+  /**
+   * Setup resize handler to keep SVG responsive on window resize
+   */
+  private setupResizeHandler(): void {
+    if (this.boundResizeHandler) {
+      return; // Already set up
+    }
+
+    this.boundResizeHandler = () => {
+      if (this.destroyed) return;
+      this.scheduleResizeUpdate('window');
+    };
+
+    window.addEventListener('resize', this.boundResizeHandler);
+  }
+
+  /**
+   * Reset map to full world view (zoom out to show entire map)
+   * Only resets if user hasn't manually zoomed
+   */
+  private resetMapToFullWorldView(): void {
+    // Don't reset if user has manually zoomed
+    if (this.userHasZoomed) {
+      console.log('Skipping resetMapToFullWorldView - user has manually zoomed');
+      return;
+    }
+
+    const container = document.getElementById('war-room-map');
+    if (!container) {
+      console.warn('resetMapToFullWorldView: Container not found');
+      return;
+    }
+
+    const svg = container.querySelector('svg');
+    if (!svg) {
+      console.warn('resetMapToFullWorldView: SVG not found');
+      return;
+    }
+
+    // Set viewBox to full world map dimensions (responsive to container)
+    // This ensures the entire world map is visible
+    const fullWorldViewBox = this.getResponsiveWorldViewBox(container);
+    const currentViewBox = svg.getAttribute('viewBox');
+
+    console.log('resetMapToFullWorldView: Current viewBox:', currentViewBox, 'Target:', fullWorldViewBox);
+
+    // Force reset to full world view (only on initial load)
+    console.log('Forcing reset to full world view');
+    svg.setAttribute('viewBox', fullWorldViewBox);
+
+    // Ensure signal is also updated
+    this.mapViewBox.set(fullWorldViewBox);
+
+    // Force viewBox multiple times to ensure it sticks (map library might override it)
+    // Only if user hasn't manually zoomed
+    const forceViewBox = () => {
+      if (this.destroyed || this.userHasZoomed) return;
+      if (svg && svg.parentNode) {
+        const checkViewBox = svg.getAttribute('viewBox');
+        if (checkViewBox !== fullWorldViewBox) {
+          console.log('ViewBox was changed to:', checkViewBox, '- forcing back to full world view');
+          svg.setAttribute('viewBox', fullWorldViewBox);
+        }
+      }
+    };
+
+    // Force multiple times to override any library changes (only on initial load)
+    if (!this.userHasZoomed) {
+      setTimeout(forceViewBox, 50);
+      setTimeout(forceViewBox, 200);
+      setTimeout(forceViewBox, 500);
+      setTimeout(forceViewBox, 1000);
+    }
+  }
+
+  /**
+   * Apply the default zoom level on initial load or when resetting to default.
+   * Default is full-world view (no zoom-in) for consistent, responsive framing.
+   */
+  private applyDefaultZoom(): void {
+    if (this.userHasZoomed) {
+      console.log('Skipping applyDefaultZoom - user has manually zoomed');
+      return;
+    }
+
+    const container = document.getElementById('war-room-map');
+    if (!container) {
+      console.warn('applyDefaultZoom: Container not found');
+      return;
+    }
+
+    const svg = container.querySelector('svg');
+    if (!svg) {
+      console.warn('applyDefaultZoom: SVG not found');
+      return;
+    }
+
+    const baseViewBox = this.getResponsiveWorldViewBox(container);
+    const [x, y, width, height] = baseViewBox.split(' ').map(Number);
+    const rect = container.getBoundingClientRect();
+    const scaleX = (rect.width * this.defaultZoomFill) / 950;
+    const scaleY = (rect.height * this.defaultZoomFill) / 550;
+    const scale = Math.max(this.defaultZoomMin, Math.min(this.defaultZoomMax, Math.min(scaleX, scaleY)));
+
+    const newWidth = width / scale;
+    const newHeight = height / scale;
+    const newX = x + (width - newWidth) / 2;
+    const newY = y + (height - newHeight) / 2;
+
+    const zoomedViewBox = `${newX.toFixed(2)} ${newY.toFixed(2)} ${newWidth.toFixed(2)} ${newHeight.toFixed(2)}`;
+    svg.setAttribute('viewBox', zoomedViewBox);
+    this.mapViewBox.set(zoomedViewBox);
+
+    const mapAny = this.mapInstance as any;
+    if (mapAny) {
+      try {
+        if (typeof mapAny.updateSize === 'function') {
+          mapAny.updateSize();
+        }
+      } catch (e) {
+        console.warn('applyDefaultZoom updateSize failed:', e);
+      }
+      try {
+        if (typeof mapAny.setFocus === 'function') {
+          mapAny.setFocus({
+            lat: this.defaultZoomCenter.lat,
+            lng: this.defaultZoomCenter.lng,
+            scale,
+            animate: false,
+          });
+        }
+      } catch (e) {
+        console.warn('applyDefaultZoom setFocus failed:', e);
+      }
+      try {
+        if (typeof mapAny.setZoom === 'function') {
+          mapAny.setZoom(scale);
+        }
+      } catch (e) {
+        console.warn('applyDefaultZoom setZoom failed:', e);
+      }
+    }
+
+    this.markLabelsDirty();
+    this.refreshTooltipPosition();
+  }
+
+  /**
+   * Zoom to a specific entity by its ID
+   */
+  // CHANGE THIS: default camera zoom when selecting a marker (higher = closer)
+  public zoomToEntity(entityId: string, scale: number = 2.5): void {
+    const node = this.nodes().find(n => n.id === entityId);
+    if (!node) {
+      console.warn('zoomToEntity: Node not found', entityId);
+      return;
+    }
+
+    // If we have map instance with setFocus support
+    if (this.mapInstance && typeof this.mapInstance.setFocus === 'function' && node.coordinates) {
+      this.mapInstance.setFocus({
+        lat: node.coordinates.latitude,
+        lng: node.coordinates.longitude,
+        scale: scale,
+        animate: true
+      });
+      this.userHasZoomed = true;
+    } else {
+      console.log('zoomToEntity: using fallback or skipping as mapInstance not ready');
+    }
+  }
+
+  /**
+   * Setup viewBox monitoring (for debugging/logging, not auto-reset)
+   * This helps track viewBox changes but doesn't auto-reset to allow user zoom control
+   */
+  private setupViewBoxObserver(): void {
+    if (this.viewBoxObserver) {
+      return; // Already set up
+    }
+
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    const fullWorldViewBox = this.getResponsiveWorldViewBox(container);
+
+    // Just observe and log, don't auto-reset (allows user to zoom in if they want)
+    this.viewBoxObserver = new MutationObserver((mutations) => {
+      if (this.destroyed) return;
+
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'viewBox') {
+          const target = mutation.target as SVGElement;
+          if (target.tagName === 'svg') {
+            const currentViewBox = target.getAttribute('viewBox');
+            if (currentViewBox) {
+              // Update our reactive viewBox signal to keep overlays in sync
+              this.mapViewBox.set(currentViewBox);
+
+              const [vbX, vbY, vbWidth, vbHeight] = currentViewBox.split(' ').map(Number);
+              // Log viewBox changes for debugging
+              if (currentViewBox !== fullWorldViewBox) {
+                console.log('ViewBox changed:', currentViewBox, 'Zoom level:', (950 / vbWidth).toFixed(2) + 'x');
+              }
+            }
+          }
+        }
+      });
+    });
+
+    this.viewBoxObserver.observe(svg, {
+      attributes: true,
+      attributeFilter: ['viewBox']
+    });
+
+    console.log('ViewBox observer set up for monitoring');
+  }
+
+  /**
+   * Setup wheel/scroll event handler for zoom functionality
+   */
+  private setupWheelZoomHandler(): void {
+    if (this.boundWheelHandler) {
+      return; // Already set up
+    }
+
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    this.boundWheelHandler = (e: WheelEvent) => {
+      if (this.destroyed) return;
+
+      // Only handle wheel events on the map container
+      if (e.target !== container && !container.contains(e.target as Node)) {
+        return;
+      }
+
+      // Mark that user is manually zooming
+      this.userHasZoomed = true;
+
+      // Prevent default scroll behavior
+      e.preventDefault();
+      e.stopPropagation();
+
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+
+      const baseViewBox = this.getResponsiveWorldViewBox(container);
+      const [baseX, baseY, baseWidth, baseHeight] = baseViewBox.split(' ').map(Number);
+
+      // Determine zoom direction
+      // deltaY > 0 = scroll down = zoom out
+      // deltaY < 0 = scroll up = zoom in
+      const zoomFactor = e.deltaY > 0 ? 1 / 1.1 : 1.1; // 10% zoom per scroll step
+
+      // Get mouse position relative to SVG for zooming around cursor point
+      const rect = svg.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      // Get current viewBox
+      let currentViewBox = svg.getAttribute('viewBox');
+      if (!currentViewBox) {
+        svg.setAttribute('viewBox', baseViewBox);
+        currentViewBox = baseViewBox;
+      }
+
+      const [x, y, width, height] = currentViewBox.split(' ').map(Number);
+
+      // Calculate new viewBox dimensions
+      const newWidth = width / zoomFactor;
+      const newHeight = height / zoomFactor;
+
+      // Prevent zooming out beyond full world view
+      if (newWidth >= baseWidth || newHeight >= baseHeight) {
+        // Snap to full world view (allow user to see the entire map)
+        const fullWorldViewBox = baseViewBox;
+        svg.setAttribute('viewBox', fullWorldViewBox);
+        this.mapViewBox.set(fullWorldViewBox);
+        this.userHasZoomed = true;
+        return;
+      }
+
+      // Calculate mouse position in viewBox coordinates
+      const mouseXInViewBox = x + (mouseX / rect.width) * width;
+      const mouseYInViewBox = y + (mouseY / rect.height) * height;
+
+      // Calculate new x, y to keep mouse position fixed
+      const newX = mouseXInViewBox - (mouseX / rect.width) * newWidth;
+      const newY = mouseYInViewBox - (mouseY / rect.height) * newHeight;
+
+      // Clamp to map bounds
+      const clampedX = Math.max(baseX, Math.min(baseX + baseWidth - newWidth, newX));
+      const clampedY = Math.max(baseY, Math.min(baseY + baseHeight - newHeight, newY));
+
+      // Set new viewBox
+      svg.setAttribute('viewBox', `${clampedX} ${clampedY} ${newWidth} ${newHeight}`);
+
+      // Update positions after zoom
+      setTimeout(() => {
+        this.updateLabelPositions();
+        this.updateCompanyLogosAndLabelsPositions();
+        this.refreshTooltipPosition();
+      }, 50);
+    };
+
+    // Add wheel event listener with passive: false to allow preventDefault
+    container.addEventListener('wheel', this.boundWheelHandler, { passive: false });
+    console.log('Wheel zoom handler set up');
+  }
+
+  /**
+   * Keep logo/image overlays synced while jsVectorMap handles drag panning.
+   * The library updates marker positions on drag without emitting viewport change events,
+   * so we mark labels dirty during drag to keep overlays stuck to markers.
+   */
+  private setupPanSyncHandlers(): void {
+    if (this.boundPanSyncMouseDownHandler || this.boundPanSyncMouseMoveHandler || this.boundPanSyncMouseUpHandler) {
+      return; // Already set up
+    }
+
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    this.boundPanSyncMouseDownHandler = (e: MouseEvent) => {
+      if (e.button !== 0) return;
+
+      const target = e.target as HTMLElement;
+      if (
+        target.closest('circle.jvm-marker') ||
+        target.closest('image.company-logo-image') ||
+        target.closest('text.company-label') ||
+        target.closest('.marker-popup') ||
+        target.closest('.map-control-btn')
+      ) {
+        return;
+      }
+
+      this.isDragging = true;
+      this.userHasZoomed = true;
+      this.markLabelsDirty();
+    };
+
+    this.boundPanSyncMouseMoveHandler = () => {
+      if (!this.isDragging) return;
+      this.markLabelsDirty();
+    };
+
+    this.boundPanSyncMouseUpHandler = () => {
+      if (!this.isDragging) return;
+      this.isDragging = false;
+      this.markLabelsDirty();
+    };
+
+    container.addEventListener('mousedown', this.boundPanSyncMouseDownHandler);
+    document.addEventListener('mousemove', this.boundPanSyncMouseMoveHandler);
+    document.addEventListener('mouseup', this.boundPanSyncMouseUpHandler);
+    console.log('Pan sync handlers set up');
+  }
+
+  /**
+   * Setup map drag/pan handler for manual panning
+   */
+  private setupMapDragHandler(): void {
+    const container = document.getElementById('war-room-map');
+    if (!container) return;
+
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+
+    // Create bound handlers
+    this.boundDragMouseMoveHandler = (e: MouseEvent) => {
+      if (!this.isDragging) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const currentViewBox = svg.getAttribute('viewBox');
+      if (!currentViewBox) return;
+
+      const [x, y, width, height] = currentViewBox.split(' ').map(Number);
+      const fullWorldWidth = 950;
+      const fullWorldHeight = 550;
+
+      // Calculate mouse delta
+      const deltaX = (this.dragStartX - e.clientX) * (width / svg.clientWidth);
+      const deltaY = (this.dragStartY - e.clientY) * (height / svg.clientHeight);
+
+      // Calculate new viewBox position
+      let newX = this.dragStartViewBoxX + deltaX;
+      let newY = this.dragStartViewBoxY + deltaY;
+
+      // Clamp to map bounds
+      newX = Math.max(0, Math.min(fullWorldWidth - width, newX));
+      newY = Math.max(0, Math.min(fullWorldHeight - height, newY));
+
+      // Update viewBox
+      svg.setAttribute('viewBox', `${newX} ${newY} ${width} ${height}`);
+
+      // Mark labels as dirty to trigger RAF update
+      this.markLabelsDirty();
+    };
+
+    this.boundDragMouseUpHandler = (e: MouseEvent) => {
+      if (!this.isDragging) return;
+
+      this.isDragging = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+
+      // Mark labels as dirty for final update
+      this.markLabelsDirty();
+
+      if (this.boundDragMouseMoveHandler) {
+        document.removeEventListener('mousemove', this.boundDragMouseMoveHandler);
+      }
+      if (this.boundDragMouseUpHandler) {
+        document.removeEventListener('mouseup', this.boundDragMouseUpHandler);
+      }
+    };
+
+    // Add mousedown handler to SVG
+    svg.addEventListener('mousedown', (e: MouseEvent) => {
+      // Don't start drag if clicking on a marker, popup, or control button
+      const target = e.target as HTMLElement;
+      if (
+        target.closest('circle.jvm-marker') ||
+        target.closest('.marker-popup') ||
+        target.closest('.map-control-btn') ||
+        target.closest('image.company-logo-image') ||
+        target.closest('text.company-label')
+      ) {
+        return;
+      }
+
+      // Don't start drag if right-click
+      if (e.button !== 0) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const currentViewBox = svg.getAttribute('viewBox');
+      if (!currentViewBox) return;
+
+      const [x, y] = currentViewBox.split(' ').map(Number);
+
+      this.isDragging = true;
+      this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
+      this.dragStartViewBoxX = x;
+      this.dragStartViewBoxY = y;
+      this.userHasZoomed = true;
+
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+
+      // Add global mouse move and up handlers
+      document.addEventListener('mousemove', this.boundDragMouseMoveHandler!);
+      document.addEventListener('mouseup', this.boundDragMouseUpHandler!);
+    });
+
+    console.log('Map drag handler set up');
+  }
+}

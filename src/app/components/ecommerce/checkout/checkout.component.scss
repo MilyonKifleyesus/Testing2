@@ -1,0 +1,22 @@
+::ng-deep {
+    .product-checkout{
+
+        #ngb-nav-0-panel,#ngb-nav-1-panel,#ngb-nav-2-panel,#ngb-nav-3-panel,#ngb-nav-4-panel{
+            padding: 0;
+        }
+        #delivery-tab-pane {
+            #ngb-nav-5-panel,#ngb-nav-6-panel,#ngb-nav-7-panel {
+                padding: 0;
+            }
+        }
+    }
+    .ng-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
+        box-shadow:none;
+    }
+    .ng-clear-wrapper {
+        display: none;
+    }
+    .tab-style-2 .nav-item .nav-link.active:before {
+        height: 0.15rem !important;
+    }
+}

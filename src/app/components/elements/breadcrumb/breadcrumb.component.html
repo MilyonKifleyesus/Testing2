@@ -1,0 +1,109 @@
+<app-page-header [title]="'Breadcrumb'" [title1]="['Elements']" [activeitem]="'Breadcrumb'"></app-page-header>
+  <!--ROW-START-->
+<div class="row">
+    <div class="col-xl-6">
+      <app-showcode-card [title]="'Example'" [prism]="prsimCodeData.breadcrumbTS">
+        <spk-breadcrumb >
+          <li class="breadcrumb-item active" aria-current="page">Home</li>
+        </spk-breadcrumb>
+          <spk-breadcrumb  >
+            <li class="breadcrumb-item">
+              <a href="javascript:void(0);">Home</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Library</li>
+            </spk-breadcrumb>
+            <spk-breadcrumb [olClass]="'mb-1'" >
+            <li class="breadcrumb-item">
+              <a href="javascript:void(0);">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="javascript:void(0);">Library</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Data</li>
+            </spk-breadcrumb>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="'Example1'" [prism]="prsimCodeData.breadcrumbTS1">
+            <spk-breadcrumb [olClass]="'breadcrumb-example1'" >
+            <li class="breadcrumb-item active" aria-current="page">Home</li>
+            </spk-breadcrumb>
+            <spk-breadcrumb [olClass]="'breadcrumb-example1'" >
+            <li class="breadcrumb-item">
+              <a href="javascript:void(0);">Home</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Library</li>
+            </spk-breadcrumb>
+            <spk-breadcrumb [olClass]="'breadcrumb-example1 mb-0'" >
+              <li class="breadcrumb-item">
+                <a href="javascript:void(0);">Home</a>
+              </li>
+              <li class="breadcrumb-item">
+                <a href="javascript:void(0);">Library</a>
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">Data</li>
+              </spk-breadcrumb>
+    
+      </app-showcode-card>
+    </div>
+   
+    <div class="col-xl-6">
+      <app-showcode-card [title]="'Breadcrumb Style-1'" [prism]="prsimCodeData.breadcrumbTS4">
+            <spk-breadcrumb [olClass]="' breadcrumb-style1 mb-0'">
+            <li class="breadcrumb-item">
+              <a href="javascript:void(0);">Home</a>
+            </li>
+            <li class="breadcrumb-item">
+              <a href="javascript:void(0);">Library</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Data</li>
+            </spk-breadcrumb>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="'Breadcrumb Style-2'" [prism]="prsimCodeData.breadcrumbTS5">
+            <spk-breadcrumb [olClass]="' breadcrumb-style2 mb-0'"  >
+              <li class="breadcrumb-item">
+                <a href="javascript:void(0);"><i class="ti ti-home-2 me-1 fs-15 d-inline-flex"></i>Home</a>
+              </li>
+              <li class="breadcrumb-item">
+                <a href="javascript:void(0);"><i class="ti ti-apps me-1 fs-15 d-inline-flex"></i>About</a>
+              </li>
+              <li class="breadcrumb-item active" aria-current="page">Services</li>
+            </spk-breadcrumb>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' Dividers'" [prism]="prsimCodeData.breadcrumbTS2">
+            <spk-breadcrumb [olClass]="'mb-0'" [ngStyle]="divider" >
+            <li class="breadcrumb-item">
+              <a href="javascript:void(0);">Home</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Library</li>
+            </spk-breadcrumb>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="'Embedded SVG icon'" [prism]="prsimCodeData.breadcrumbTS3">
+            <spk-breadcrumb [olClass]="' mb-0'" [ngStyle]="breadcrumbStyle" >
+            <li class="breadcrumb-item">
+              <a href="javascript:void(0);">Home</a>
+            </li>
+            <li class="breadcrumb-item active embedded-breadcrumb" aria-current="page">
+              Library
+            </li>
+            </spk-breadcrumb>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-12">
+        <app-showcode-card [title]="'Background colors'" [prism]="prsimCodeData.breadcrumbTS7">
+            <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb" class="bg-light p-2 br-3">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Library</li>
+                </ol>
+            </nav>
+            </app-showcode-card>
+    </div>
+  </div>
+  <!--ROW-END-->

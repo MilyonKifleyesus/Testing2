@@ -1,0 +1,50 @@
+<app-page-header [title]="' Settings '" [title1]="['Pages']" [activeitem]="' Settings '"></app-page-header>
+
+       <!-- Start::row-1 -->
+       <div class="row row-sm">
+        <div class="col-lg-4 col-xl-3">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title fs-18"><label class="main-content-label fs-15">Settings</label></h3>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="main-content-left main-content-left-mail">
+                        <div class="main-mail-menu">
+                            <nav class="nav main-nav-column">
+                                <a class="nav-link thumb active" href="javascript:void(0)"><i class="fe fe-user"></i>	 Account </a>
+                                <a class="nav-link thumb" href="javascript:void(0)"><i class="fe fe-lock"></i> Privacy & Security</a>
+                                <a class="nav-link thumb" href="javascript:void(0)"><i class="fe fe-edit-2"></i> General</a>
+                                <a class="nav-link thumb" href="javascript:void(0)"><i class="fe fe-info"></i> Help & Support</a>
+                                <a class="nav-link thumb" href="javascript:void(0)"><i class="fe fe-mail"></i> Emails</a>
+                                <a class="nav-link thumb" href="javascript:void(0)"><i class="fe fe-flag"></i> Language & Region</a>
+                                <a class="nav-link thumb" href="javascript:void(0)"><i class="fe fe-bell"></i> Notifications</a>
+                                <a class="nav-link thumb" href="javascript:void(0)"><i class="fe fe-settings"></i> Blog</a>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer px-4 rounded-0 d-grid">
+                    <button class="btn btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-8 col-xl-9">
+            <div class="row row-sm">
+                @for(card of cards;track $index){
+                    <div class="col-xl-6">
+                        <spk-settings    [icon]="card.icon"
+                        [title]="card.title"
+                        [description]="card.description"
+                        [switchId]="card.switchId"
+                        [isChecked]="card.isChecked">
+
+                        </spk-settings>
+                    </div>
+                }
+             
+            </div>
+        </div>
+    </div>
+    <!--End::row-1 -->

@@ -1,0 +1,155 @@
+<app-page-header [title]="'Apex Line Charts'" [activeitem]="'Apex Line Charts'" [title1]="['Apex  Charts']"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Line Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="chart" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Line Chart With Data Labels</div>
+            </div>
+            <div class="card-body">
+
+                <div id="line-chart-datalabels" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions1"></spk-apex-charts>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Zoomable Time Series</div>
+            </div>
+            <div class="card-body">
+
+                <div id="line-chart-datalabels" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions11"></spk-apex-charts>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Line With Annotations</div>
+            </div>
+            <div class="card-body">
+
+                <div id="annotation-chart" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions3"></spk-apex-charts>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Brush Chart</div>
+            </div>
+            <div class="box-body">
+                <div id="brush-chart1" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions4"></spk-apex-charts>
+                </div>
+                <div id="brush-chart">
+                    <spk-apex-charts  [chartOptions]="chartOptions5"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">StepLine Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="stepline-chart" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions6"></spk-apex-charts>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Gradient Line Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="gradient-chart" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions7"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Missing/Null Values Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="null-chart" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions8"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Real Time Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="dynamic-chart" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions9"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Dashed Line Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="dashed-chart" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chartOptions10"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Syncing Charts</div>
+            </div>
+            <div class="card-body">
+                <div id="chart-line" class="chart-container">
+                    <spk-apex-charts  [chartOptions]="chart1options"></spk-apex-charts>
+                </div>
+                <div id="chart-line2">
+                    <spk-apex-charts  [chartOptions]="chart2options"></spk-apex-charts>
+
+                </div>
+                <div id="chart-area">
+                    <spk-apex-charts  [chartOptions]="chart3options"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

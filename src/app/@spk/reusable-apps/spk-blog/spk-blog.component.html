@@ -1,0 +1,14 @@
+
+      <div class="card custom-card">
+        <a routerLink="/apps/blog/blog-details">
+          <img class="card-img-top w-100 blog-img" [src]="card.image" alt="">
+        </a>
+        <div class="card-body">
+          <h5 class="main-content-label mb-3 fs-16">{{ card.title }}</h5>
+          <p class="card-text">{{ card.description }}</p>
+          <a class="btn btn-sm ripple btn-primary" href="javascript:void(0);">
+            Read More<i class="fe fe-arrow-right ms-1 align-middle fs-13"></i>
+          </a>
+        </div>
+      </div>
+  

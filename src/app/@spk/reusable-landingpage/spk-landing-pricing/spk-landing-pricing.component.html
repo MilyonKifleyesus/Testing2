@@ -1,0 +1,40 @@
+
+              <div class="card pricing-card {{plan.cardClass}}" [class.border-primary]="plan.type === 'Advanced'">
+                <div class=" d-block text-justified  {{plan.headerClass}}">
+                  <p class="fs-18 fw-medium mb-1">{{ plan.type }}
+                    <span *ngIf="plan.tag" class="{{plan.tagClass}}">
+                      {{ plan.tag }}
+                    </span>
+                  </p>
+                  <p class="text-justify fw-medium mb-1">
+                    <span class="fs-30 me-2">$</span><span class="fs-30 me-1">{{ plan.price }}</span>
+                    <span class="fs-25">
+                      <span class="op-0-5 text-muted text-20">/</span>{{ plan.frequency }}
+                    </span>
+                  </p>
+                  <p class="fs-13 mb-1">
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure quos debitis aliquam .</p>
+                  <p class="fs-13 mb-1 {{plan.textClass}}">Billed monthly on regular basis!</p>
+                </div>
+                <div class="card-body pt-2">
+                  <ul class="text-justify pricing-body ps-0 {{plan.ulClass}}">
+                    @for(feature of plan.features;track $index){
+                      <li class="{{feature.liClass}}">
+                        <i
+                          class="mdi {{feature.available}}"
+                          [class.mdi-checkbox-marked-circle-outline]="feature.available"
+                          [class.mdi-close-circle-outline]="!feature.available"
+                          [ngClass]="feature.available ? plan.textClass : 'text-gray'"
+                          class="p-2 fs-16">
+                        </i>
+                        <strong>{{ feature.name }}</strong>{{feature.text}}
+                      </li>
+                    }
+                  </ul>
+                </div>
+                <div class="  text-center border-top-0 d-grid {{plan.cardFooterClass}}">
+                  <button class="btn btn-lg" [ngClass]="plan.buttonClass">
+                    <span class="ms-4 me-4">Select</span>
+                  </button>
+                </div>
+              </div>

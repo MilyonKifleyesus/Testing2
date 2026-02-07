@@ -1,0 +1,162 @@
+::ng-deep {
+    .mobileIcon {
+        display: none;
+    }
+
+    @media screen and (min-width: 0px) and (max-width: 991.9px) {
+        .mobileIcon {
+            display: block;
+        }
+
+        .deskIcon {
+            display: none;
+        }
+    }
+
+    .dark-theme {
+
+        .main-profile-menu .dropdown-item:hover,
+        .main-profile-menu .dropdown-item:focus {
+            background-color: #3f3f58 !important;
+        }
+
+        .flag-dropdown .dropdown-item {
+            color: #eee !important;
+        }
+    }
+
+    /* Header logo styling to fit images in div */
+    .header-logo {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        padding: 0.5rem 0;
+
+        img {
+            height: 100%;
+            width: auto;
+            max-width: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .toggle-logo,
+        .toggle-dark,
+        .toggle-white {
+            max-height: 2.5rem;
+            height: auto;
+        }
+
+        .desktop-logo,
+        .desktop-dark,
+        .desktop-white {
+            max-height: 3rem;
+            height: auto;
+        }
+    }
+}
+
+::ng-deep {
+    app-header {
+        ng-select {
+            border-radius: 6px 0 0 6px !important;
+        }
+        .ng-clear-wrapper {
+            display: none;
+        }
+    }
+
+    .rtl {
+        app-header {
+            ng-select {
+                border-radius: 0px 6px 6px 0 !important;
+            }
+
+            .ng-select .ng-select-container .ng-value-container {
+                align-items: center;
+                padding-right: 10px;
+                padding-left: initial !important;
+            }
+
+            .main-header-notification .dropdown-menu,
+            .main-profile-menu .dropdown-menu {
+                right: auto;
+                left: -10px !important;
+            }
+        }
+    }
+
+    .header-dark {
+        app-header {
+
+            // ng-select
+            .ng-select .ng-select-container {
+                background-color: var(--custom-white) !important;
+                z-index: 1 !important;
+
+            }
+
+            .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected,
+            .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected.ng-option-marked,
+            .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked {
+                    background-color: var(--default-background) !important;
+                    color: var(--text-muted) !important;
+            }
+
+            .ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+                background-color: #252542 !important;
+                color: #ccc;
+                padding: 8px 10px;
+            }
+
+            .ng-dropdown-panel {
+                background-color: #0e0e23;
+                border: 1px solid #ffffff3b !important;
+            }
+        }
+    }
+
+    .color-dark {
+        app-header {
+
+            // ng-select
+            .ng-select .ng-select-container {
+                background-color: transparent !important;
+            }
+
+            .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected,
+            .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-selected.ng-option-marked,
+            .ng-dropdown-panel .ng-dropdown-panel-items .ng-option.ng-option-marked {
+                background-color: #323256 !important;
+                color: #ffffff !important;
+            }
+
+            .ng-dropdown-panel .ng-dropdown-panel-items .ng-option {
+                background-color: #252542 !important;
+                color: #ccc;
+                padding: 8px 10px;
+            }
+
+            .ng-dropdown-panel {
+                background-color: #0e0e23;
+                border: 1px solid #ffffff3b !important;
+            }
+        }
+    }
+    .color-menu{
+        app-header{
+            .ng-select .ng-select-container{
+                background-color: transparent;
+            }
+        }
+    }
+}
+
+/* --- FIX: Only one logo in header --- */
+::ng-deep .header-logo img {
+    display: none;
+}
+::ng-deep .header-logo .desktop-logo {
+    display: block;
+}
+/* --- END FIX --- */

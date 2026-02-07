@@ -1,0 +1,30 @@
+<div class="card custom-card">
+    <div class="card-header border-bottom-0">
+      <div>
+        <label class="main-content-label mb-2">{{ title }}</label>
+        <span class="d-block fs-12 mb-2 text-muted">{{ subtitle }}</span>
+      </div>
+    </div>
+    <div class="card-body pt-2 mt-0">
+      <div class="list-group border projects-list">
+        @for(project of projects;track $index){
+
+            <a
+              href="javascript:void(0);"
+              class="list-group-item list-group-item-action flex-column border-end-0 border-start-0 align-items-start"
+              [class.border-top-0]="project === projects[0]"
+              [class.border-bottom-0]="project === projects[projects.length - 1]">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1 fw-medium">{{ project.name }}</h6>
+                <small [class]="'text-' + project.statusColor">
+                  <i [class]="'fa ' + project.statusIcon + ' me-1'"></i>{{ project.timeAgo }}
+                </small>
+              </div>
+              <p class="mb-0 text-muted mb-0 fs-12">Started: {{ project.startDate }}</p>
+              <small class="text-muted">{{ project.description }}</small>
+            </a>
+        }
+      </div>
+    </div>
+  </div>
+  

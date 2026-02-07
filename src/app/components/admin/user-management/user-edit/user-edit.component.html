@@ -1,0 +1,113 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">{{ userId ? 'Edit User' : 'New User' }}</h1>
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a [routerLink]="['/admin']">Home</a></li>
+          <li class="breadcrumb-item"><a [routerLink]="['/admin/users']">Users</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ userId ? 'Edit' : 'New' }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card custom-card">
+        <div class="card-header">
+          <h6 class="card-title mb-0">User Information</h6>
+        </div>
+        <div class="card-body">
+          <form>
+            <div class="row gy-4">
+              <!-- Personal Information Section -->
+              <div class="col-12">
+                <h6 class="fw-semibold mb-3">
+                  <i class="ti ti-user me-2"></i>Personal Information
+                </h6>
+              </div>
+
+              <div class="col-xl-6">
+                <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" [(ngModel)]="user.name" name="name" placeholder="Enter full name" required>
+              </div>
+
+              <div class="col-xl-6">
+                <label class="form-label">Username <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" [(ngModel)]="user.username" name="username" placeholder="Enter username" required>
+              </div>
+
+              <div class="col-xl-6">
+                <label class="form-label">Email Address <span class="text-danger">*</span></label>
+                <input type="email" class="form-control" [(ngModel)]="user.email" name="email" placeholder="Enter email address" required>
+              </div>
+
+              <div class="col-xl-6">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" [(ngModel)]="user.phone" name="phone" placeholder="Enter phone number">
+              </div>
+
+              <div class="col-xl-12">
+                <label class="form-label">Address</label>
+                <textarea class="form-control" [(ngModel)]="user.address" name="address" rows="3" placeholder="Enter address"></textarea>
+              </div>
+
+              <!-- Account Information Section -->
+              <div class="col-12 mt-4">
+                <hr>
+                <h6 class="fw-semibold mb-3 mt-3">
+                  <i class="ti ti-shield-check me-2"></i>Account Information
+                </h6>
+              </div>
+
+              <div class="col-xl-4">
+                <label class="form-label">Role <span class="text-danger">*</span></label>
+                <select class="form-select" [(ngModel)]="user.role" name="role" required>
+                  <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+                </select>
+              </div>
+
+              <div class="col-xl-4">
+                <label class="form-label">Status <span class="text-danger">*</span></label>
+                <select class="form-select" [(ngModel)]="user.status" name="status" required>
+                  <option *ngFor="let status of statuses" [value]="status">{{ status | titlecase }}</option>
+                </select>
+              </div>
+
+              <div class="col-xl-4">
+                <label class="form-label">Client</label>
+                <select class="form-select" [(ngModel)]="user.client" name="client">
+                  <option *ngFor="let client of clients" [value]="client">{{ client || 'None' }}</option>
+                </select>
+                <small class="text-muted">For Client User role only</small>
+              </div>
+
+              <div class="col-xl-4">
+                <label class="form-label">Manufacturer</label>
+                <select class="form-select" [(ngModel)]="user.manufacturer" name="manufacturer">
+                  <option *ngFor="let manufacturer of manufacturers" [value]="manufacturer">{{ manufacturer || 'None' }}</option>
+                </select>
+                <small class="text-muted">Optional</small>
+              </div>
+
+              <!-- Actions -->
+              <div class="col-12 mt-4">
+                <hr>
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                  <button type="button" class="btn btn-light" (click)="cancel()">
+                    <i class="ti ti-x me-1"></i>Cancel
+                  </button>
+                  <button type="submit" class="btn btn-primary" (click)="saveUser()">
+                    <i class="ti ti-device-floppy me-1"></i>Save User
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

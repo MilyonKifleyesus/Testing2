@@ -1,0 +1,91 @@
+<app-page-header [title]="'File Uploads'" [title1]="['Form Elements']" [activeitem]="'File Uploads'"></app-page-header>
+
+  <!-- Start:: row-1 -->
+  <div class="row row-sm">
+    <div class="col-xl-6">
+        <app-showcode-card [title]="'Bootstrap File Input'" [prism]="prismCode.fileuploads1">
+            <div class="mb-3">
+                <label for="formFile" class="form-label">Default file input example</label>
+                <input class="form-control" type="file" id="formFile">
+            </div>
+            <div class="mb-3">
+                <label for="formFileMultiple" class="form-label">Multiple files input
+                    example</label>
+                <input class="form-control" type="file" id="formFileMultiple" multiple="">
+            </div>
+            <div class="mb-3">
+                <label for="formFileDisabled" class="form-label">Disabled file input
+                    example</label>
+                <input class="form-control" type="file" id="formFileDisabled" disabled="">
+            </div>
+            <div class="mb-3">
+                <label for="formFileSm" class="form-label">Small file input example</label>
+                <input class="form-control form-control-sm" id="formFileSm" type="file">
+            </div>
+            <div>
+                <label for="formFileLg" class="form-label">Large file input example</label>
+                <input class="form-control form-control-lg" id="formFileLg" type="file">
+            </div>
+            </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+        <h6 class="mb-3">Filepond:</h6>
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            Multiple Upload
+                        </div>
+                    </div>
+                    <div class="card-body">
+                     
+                        <file-pond #myPond [options]="pondOptions" class="multiple-filepond" [files]="pondFiles"
+                        (oninit)="pondHandleInit()" (onaddfile)="pondHandleAddFile($event)"
+                        (onactivatefile)="pondHandleActivateFile($event)">
+                    </file-pond>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-12">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            Single Upload
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <file-pond #myPond [options]="singlepondOptions" class="single-fileupload" [files]="pondFiles"
+                        (oninit)="pondHandleInit()" (onaddfile)="pondHandleAddFile($event)"
+                        (onactivatefile)="pondHandleActivateFile($event)">
+                      </file-pond>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-1 -->
+
+<!-- Start:: row-2 -->
+<div class="row row-sm">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Dropzone
+                </div>
+            </div>
+            <div class="card-body">
+                @if(type === 'component'){
+
+                    <dropzone  class="dropzone-container flex" [config]="config"
+                    [disabled]="disabled" [message]="'Click or drag images here to upload'"
+                    (init)="onUploadInit($event)" (error)="onUploadError($event)"
+                    (success)="onUploadSuccess($event)"></dropzone>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-2 -->

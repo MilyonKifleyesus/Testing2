@@ -1,0 +1,124 @@
+<app-page-header [title]="'Mail Inbox'" [title1]="['Apps']" [activeitem]="'Mail Inbox'"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    <div class="col-xl-3 col-lg-4">
+        <div class="card custom-card mail-container task-container overflow-hidden">
+            <div class="">
+                <div class="p-4 border-bottom d-grid">
+                    <a class="btn btn-primary btn-compose" routerLink="/apps/mail/mail-compose">Compose</a>
+                </div>
+                <div class="card-body tab-list-items">
+                    <div class="main-content-left main-content-left-mail">
+                        <div class="main-mail-menu">
+                            <nav class="nav main-nav-column mg-b-20">
+                                @for(item of mainMenu;track $index){
+                                <a class="nav-link" [class.active]="item.isActive" href="javascript:void(0);">
+                                    <i [class]="item.icon"></i> {{ item.label }} <span>{{ item.count }}</span>
+                                </a>
+                                }
+                            </nav>
+                            <!-- Labels -->
+                            <label class="main-content-label main-content-label-sm">Label</label>
+                            <nav class="nav main-nav-column mg-b-20">
+                                @for(label of labels;track $index){
+
+                                <a class="nav-link" href="javascript:void(0);">
+                                    <i [class]="label.icon"></i> {{ label.label }} <span>{{ label.count }}</span>
+                                </a>
+                                }
+                            </nav>
+                            <!-- Tags -->
+                            <label class="main-content-label main-content-label-sm">Tags</label>
+                            <nav class="nav main-nav-column">
+                                @for(tag of tags;track $index){
+
+                                <a class="nav-link" href="javascript:void(0);">
+                                    <i [class]="tag.icon"></i> {{ tag.label }} <span>{{ tag.count }}</span>
+                                </a>
+                                }
+                            </nav>
+                        </div><!-- main-mail-menu -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-9 col-lg-8  main-content-body-mail1">
+        <div class="card custom-card mail-container task-container overflow-hidden">
+            <div class="inbox-body p-4">
+                <div class="mail-option d-sm-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="chk-all border-0">
+                            <div class="btn-group file-drop me-2" ngbDropdown>
+                                <a data-bs-toggle="dropdown" ngbDropdownToggle href="javascript:void(0);"
+                                    class="btn mini all" aria-expanded="false">
+                                    All
+                                    <i class="fe fe-chevron-down"></i>
+                                </a>
+                                <ul class="dropdown-menu" ngbDropdownMenu>
+                                    <li ngbDropdownItem><a href="javascript:void(0);"> None</a></li>
+                                    <li ngbDropdownItem><a href="javascript:void(0);"> Read</a></li>
+                                    <li ngbDropdownItem><a href="javascript:void(0);"> Unread</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="btn-group me-2">
+                            <a href="javascript:void(0);" class="btn mini tooltips">
+                                <i class="fe fe-refresh-cw"></i>
+                            </a>
+                        </div>
+                        <div class="btn-group hidden-phone file-drop" ngbDropdown>
+                            <a data-bs-toggle="dropdown" ngbDropdownToggle href="javascript:void(0);"
+                                class="btn mini blue" aria-expanded="false">
+                                More
+                                <i class="fe fe-chevron-down"></i>
+                            </a>
+                            <ul class="dropdown-menu" ngbDropdownMenu>
+                                <li ngbDropdownItem><a href="javascript:void(0);"><i class="fe fe-edit me-2"></i> Mark
+                                        as Read</a></li>
+                                <li ngbDropdownItem><a href="javascript:void(0);"><i class="fe fe fe-slash me-2"></i>
+                                        Spam</a></li>
+                                <li class="divider"></li>
+                                <li ngbDropdownItem><a href="javascript:void(0);"><i class="fe fe-trash me-2"></i>
+                                        Delete</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <ul class="unstyled inbox-pagination ps-0 mt-2 mt-sm-0">
+                        <li><span>1-50 of 234</span></li>
+                        <li>
+                            <a class="btn np-btn" href="javascript:void(0);"><i
+                                    class="fe fe-chevron-right pagination-right"></i></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="table-responsive">
+                    <spk-reusable-tables [tableClass]="'table-inbox text-md-nowrap table-hover text-nowrap'">
+                        @for( email of emails;track $index){
+                        <tr [class]="email.rowClass">
+                            <td class="inbox-small-cells">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" [(ngModel)]="email.isChecked">
+                                    <span class="custom-control-label"></span>
+                                </div>
+                            </td>
+                            <td class="inbox-small-cells">
+                                <i [class]="email.starClass"></i>
+                            </td>
+                            <td class="inbox-small-cells">
+                                <i [class]="email.bookmarkClass"></i>
+                            </td>
+                            <td class="view-message dont-show fw-medium">{{ email.sender }}</td>
+                            <td class="view-message">{{ email.subject }}</td>
+                            <td class="view-message text-end fw-medium">{{ email.date }}</td>
+                        </tr>
+                        }
+                    </spk-reusable-tables>
+                </div>
+            </div>
+            <!-- mail-content -->
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

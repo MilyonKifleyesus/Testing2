@@ -1,0 +1,106 @@
+<app-page-header [title]="'Notification'" [title1]="['Advanced Ui']" [activeitem]="'Notification'"></app-page-header>
+
+  
+  <!-- Start::row-1 -->
+  <div class="row row-sm">
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Notification</div>
+            </div>
+            <div class="card-body text-center defult-notification">
+               
+                        <button type="button" class="btn btn-primary" id="basic" (click)="showDefault()">Basic Notification</button>
+                    
+                    </div>
+                
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Info Notification</div>
+            </div>
+            <div class="card-body text-center">
+               
+                        <button type="button" class="btn btn-info awn-toast awn-toast-info"  id="info" (click)="showInfo()">Info Notification</button>
+                 
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Success Notification</div>
+            </div>
+            <div class="card-body text-center">
+               
+                        <button type="button" class="btn btn-success" id="success" (click)="showSuccess()">Success Notification</button>
+                  
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Warning Notification</div>
+            </div>
+            <div class="card-body text-center">
+               
+                        <button type="button" class="btn btn-warning" id="warning" (click)=" ShowWarning()">Warning Notification</button>
+                  
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Error Notification</div>
+            </div>
+            <div class="card-body text-center">
+               
+                        <button type="button" class="btn btn-danger" id="error"(click)=" showError()" >Error Notification</button>
+                      
+                 
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Confirmation Notification</div>
+            </div>
+            <div class="card-body text-center">
+               
+                        <button type="button" class="btn btn-primary" id="confirm" (click)="Info()">Notification</button>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Async Block With Error Notification</div>
+            </div>
+            <div class="card-body text-center">
+               
+                        <button type="button" class="btn btn-danger "  id="async" (click)=" showError()">Notification</button>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Async Block With Success Notification</div>
+            </div>
+            <div class="card-body text-center">
+            
+                        <button type="button" class="btn btn-success"  id="async-block" (click)="showSuccess()">Notification</button>
+                 
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End::row-1 -->
+        

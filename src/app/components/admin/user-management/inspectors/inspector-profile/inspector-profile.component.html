@@ -1,0 +1,368 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">Inspector Profile</h1>
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
+          <li class="breadcrumb-item"><a routerLink="/admin/users/inspectors">Inspectors</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{inspector.fullName}}</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="ms-auto pageheader-btn">
+      <button class="btn btn-secondary btn-wave btn-sm" (click)="goBack()">
+        <i class="ti ti-arrow-left me-1"></i>Back
+      </button>
+    </div>
+  </div>
+
+  <!-- Profile Header with Avatar -->
+  <div class="row mb-4">
+    <div class="col-xl-12">
+      <div class="card custom-card">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+              <div class="inspector-avatar-large" [style.background]="avatarBg">
+                <span>{{getInitials(inspector.fullName)}}</span>
+              </div>
+              <div>
+                <h3 class="mb-1">{{inspector.fullName}}</h3>
+                <p class="text-muted mb-0">{{inspector.shortName}} • {{inspector.location}}</p>
+                <div class="rating-stars mt-2">
+                  <i *ngFor="let filled of getStars(inspector.rating)"
+                     [class]="filled ? 'ti ti-star-filled text-warning' : 'ti ti-star text-muted'"></i>
+                  <span class="ms-2 text-muted">{{inspector.rating}}.0 Rating</span>
+                </div>
+              </div>
+            </div>
+            <div class="text-end">
+              <span class="badge" [ngClass]="getStatusBadgeClass(inspector.status)">
+                {{inspector.status | titlecase}}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="row">
+    <!-- Left Column - Form -->
+    <div class="col-xl-8">
+      <!-- Personal Information Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-user me-2"></i>Personal Information
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Full Name -->
+            <div class="col-md-6">
+              <label class="form-label">Full Name</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="inspector.fullName"
+                [readonly]="!editMode">
+            </div>
+
+            <!-- Short Name -->
+            <div class="col-md-6">
+              <label class="form-label">Short Name</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="inspector.shortName"
+                [readonly]="!editMode">
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label class="form-label">Email Address</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                [(ngModel)]="inspector.email"
+                [readonly]="!editMode">
+            </div>
+
+            <!-- Phone Number -->
+            <div class="col-md-6">
+              <label class="form-label">Phone Number</label>
+              <input 
+                type="tel" 
+                class="form-control" 
+                [(ngModel)]="inspector.phone"
+                [readonly]="!editMode">
+            </div>
+
+            <!-- Location -->
+            <div class="col-md-6">
+              <label class="form-label">Location</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="inspector.location"
+                [readonly]="!editMode">
+            </div>
+
+            <!-- Badge ID -->
+            <div class="col-md-6">
+              <label class="form-label">Badge ID</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                [(ngModel)]="inspector.badgeId"
+                [readonly]="!editMode">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Work Statistics Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-chart-bar me-2"></i>Work Statistics
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="stat-item">
+                <div class="stat-label">Buses Inspected</div>
+                <div class="stat-value">{{inspector.busesInspected}}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="stat-item">
+                <div class="stat-label">Buses Assigned</div>
+                <div class="stat-value">{{inspector.busesAssigned}}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="stat-item">
+                <div class="stat-label">Road Tests</div>
+                <div class="stat-value">{{inspector.tests.road}}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="stat-item">
+                <div class="stat-label">Water Tests</div>
+                <div class="stat-value">{{inspector.tests.water}}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="stat-item">
+                <div class="stat-label">Total Snags</div>
+                <div class="stat-value">{{inspector.snags.total}}</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="stat-item">
+                <div class="stat-label">Safety Critical</div>
+                <div class="stat-value text-danger">{{inspector.snags.safetyCritical}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience & Skills Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-certificate me-2"></i>Experience & Skills
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Years of Experience -->
+            <div class="col-md-6">
+              <label class="form-label">Years of Experience</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="inspector.yearsExperience"
+                [readonly]="!editMode"
+                min="0">
+            </div>
+
+            <!-- Specialization -->
+            <div class="col-md-6">
+              <label class="form-label">Specialization</label>
+              <select class="form-select" [(ngModel)]="inspector.specialization" [disabled]="!editMode">
+                <option value="">Select Specialization</option>
+                <option value="Engine">Engine & Powertrain</option>
+                <option value="Brakes">Brakes & Suspension</option>
+                <option value="Electrical">Electrical Systems</option>
+                <option value="HVAC">HVAC & Interior</option>
+                <option value="Body">Body & Exterior</option>
+                <option value="General">General Inspection</option>
+              </select>
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+              <label class="form-label">Notes</label>
+              <textarea 
+                class="form-control" 
+                rows="3"
+                [(ngModel)]="inspector.notes"
+                [readonly]="!editMode"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Work Assignments Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-briefcase me-2"></i>Work Assignments
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Primary Client -->
+            <div class="col-md-6">
+              <label class="form-label">Primary Client</label>
+              <select class="form-select" [(ngModel)]="inspector.primaryClient" [disabled]="!editMode">
+                <option value="">Select Client</option>
+                <option value="TTC">TTC</option>
+                <option value="GO Transit">GO Transit</option>
+                <option value="MiWay">MiWay</option>
+                <option value="Brampton Transit">Brampton Transit</option>
+              </select>
+            </div>
+
+            <!-- Service Area -->
+            <div class="col-md-6">
+              <label class="form-label">Service Area</label>
+              <select class="form-select" [(ngModel)]="inspector.serviceArea" [disabled]="!editMode">
+                <option value="">Select Service Area</option>
+                <option value="North">North</option>
+                <option value="South">South</option>
+                <option value="East">East</option>
+                <option value="West">West</option>
+                <option value="Central">Central</option>
+              </select>
+            </div>
+
+            <!-- Shift Preference -->
+            <div class="col-md-6">
+              <label class="form-label">Shift Preference</label>
+              <select class="form-select" [(ngModel)]="inspector.shiftPreference" [disabled]="!editMode">
+                <option value="">Select Shift</option>
+                <option value="Morning">Morning (6 AM - 2 PM)</option>
+                <option value="Afternoon">Afternoon (2 PM - 10 PM)</option>
+                <option value="Night">Night (10 PM - 6 AM)</option>
+                <option value="Flexible">Flexible</option>
+              </select>
+            </div>
+
+            <!-- Max Inspections per Day -->
+            <div class="col-md-6">
+              <label class="form-label">Max Inspections/Day</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                [(ngModel)]="inspector.maxInspectionsPerDay"
+                [readonly]="!editMode"
+                min="1">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Summary & Actions -->
+    <div class="col-xl-4">
+      <!-- Account Status Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-info-circle me-2"></i>Account Settings
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" [(ngModel)]="inspector.status" [disabled]="!editMode">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" [(ngModel)]="inspector.role" [disabled]="!editMode">
+              <option value="">Select Role</option>
+              <option value="Inspector">Inspector</option>
+              <option value="Senior Inspector">Senior Inspector</option>
+              <option value="Team Lead">Team Lead</option>
+            </select>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="allowOvertime" [(ngModel)]="inspector.allowOvertime" [disabled]="!editMode">
+            <label class="form-check-label" for="allowOvertime">Allow Overtime</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="sendNotifications" [(ngModel)]="inspector.sendNotifications" [disabled]="!editMode">
+            <label class="form-check-label" for="sendNotifications">Send Notifications</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Snags Summary Card -->
+      <div class="card custom-card summary-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-alert-triangle me-2"></i>Snags Overview
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="snag-stat-item">
+            <div class="snag-count">{{inspector.snags.total}}</div>
+            <div class="snag-label">Total Snags</div>
+          </div>
+          <div class="snag-stat-item safety-critical mt-3">
+            <div class="snag-count-danger">{{inspector.snags.safetyCritical}}</div>
+            <div class="snag-label-safety">Safety Critical</div>
+          </div>
+          <div class="snag-areas mt-3">
+            <label class="form-label mb-2">Areas Covered</label>
+            <p class="text-muted small">{{inspector.snags.byArea}}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-grid gap-2">
+        <button *ngIf="!editMode" class="btn btn-primary btn-lg" (click)="toggleEditMode()">
+          <i class="ti ti-edit me-2"></i>Edit Profile
+        </button>
+        <div *ngIf="editMode" class="d-flex gap-2">
+          <button class="btn btn-primary btn-lg flex-grow-1" (click)="saveProfile()">
+            <i class="ti ti-check me-2"></i>Save
+          </button>
+          <button class="btn btn-outline-secondary btn-lg flex-grow-1" (click)="toggleEditMode()">
+            <i class="ti ti-x me-2"></i>Cancel
+          </button>
+        </div>
+        <button class="btn btn-outline-secondary btn-lg" (click)="goBack()">
+          <i class="ti ti-arrow-left me-2"></i>Back to List
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

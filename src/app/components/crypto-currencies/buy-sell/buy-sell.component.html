@@ -1,0 +1,266 @@
+<app-page-header [title]="'Buy & Sell'" [title1]="['Crypto Currencies']" [activeitem]="'Buy & Sell'"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    <div class="col-md-12">
+        <div class="card custom-card overflow-hidden">
+            <div class="card-header d-flex justify-content-between pb-3 border-bottom">
+                <h4 class="d-flex mb-0">Bitcoin<span class="text-muted fs-13 ms-2 my-auto fw-medium">BTC</span></h4>
+                <button class="btn btn-primary">Buy Bitcoin</button>
+            </div>
+            <div class="card-body">
+                <div class="d-sm-flex mb-0">
+                    <div class="">
+                        <p class="fs-13 text-muted mb-2">Bitcoin [BTC] Price Chart</p>
+                        <h3>$3468.42<span class="text-success fs-15 ms-2"><i class="fas fas fa-dollar-sign"></i>
+                                23.5</span></h3>
+                    </div>
+                    <div class="ms-auto">
+                        <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav nav-tabs crypto-btc-usd border-0"
+                            id="charts" role="tablist">
+                            <li [ngbNavItem]="1" class="nav-item border-0">
+                                <a ngbNavLink class="nav-link border-0 " data-bs-toggle="tab" href="#chart-tab"
+                                    role="tab" aria-controls="chart-tab" aria-selected="true">1m</a>
+                                <ng-template ngbNavContent>
+                                    <div class="tab-pane fade show active p-0" id="chart-tab" role="tabpanel"
+                                        aria-labelledby="chart-tab">
+                                        <div class="chart-wrapper">
+                                            <div id="chart-bitcoin" class="">
+                                                <spk-apex-charts [chartOptions]="chartOptions"></spk-apex-charts>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </li>
+                            <li [ngbNavItem]="2" class="nav-item border-0 ">
+                                <a ngbNavLink class="nav-link border-0 " data-bs-toggle="tab" href="#chart2-tab"
+                                    role="tab" aria-controls="chart2-tab" aria-selected="false">1h</a>
+                                <ng-template ngbNavContent>
+                                    <div class="tab-pane fade show active p-0" id="chart-tab" role="tabpanel"
+                                        aria-labelledby="chart-tab">
+                                        <div class="chart-wrapper">
+                                            <div id="chart-bitcoin" class="">
+                                                <spk-apex-charts [chartOptions]="chartOptions1"></spk-apex-charts>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </li>
+                            <li [ngbNavItem]="3" class="nav-item border-0">
+                                <a ngbNavLink class="nav-link border-0 " data-bs-toggle="tab" href="#chart3-tab"
+                                    role="tab" aria-controls="chart3-tab" aria-selected="false">1d</a>
+                                <ng-template ngbNavContent>
+                                    <div class="tab-pane fade show active p-0" id="chart-tab" role="tabpanel"
+                                        aria-labelledby="chart-tab">
+                                        <div class="chart-wrapper">
+                                            <div id="chart-bitcoin" class="">
+                                                <spk-apex-charts [chartOptions]="chartOptions2"></spk-apex-charts>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-9 col-xl-10 col-md-8 p-0">
+                        <div class="tab-content" id="myTabContent" [ngbNavOutlet]="nav"></div>
+                    </div>
+                    <div class="col-lg-3 col-xl-2 col-md-4">
+                        <div class="card bg-light custom-card">
+                            <div class="card-body">
+                                <span class="text-muted fs-13"><b>BNB</b> / BUSD</span>
+                                <h5 class="my-1">29.83267</h5>
+                                <span class="text-danger">-0.04%</span>
+                            </div>
+                        </div>
+                        <div class="card bg-light custom-card">
+                            <div class="card-body">
+                                <span class="text-muted fs-13"><b>ETH</b> / BUSD</span>
+                                <h5 class="my-1">34.25356</h5>
+                                <span class="text-success">+0.03%</span>
+                            </div>
+                        </div>
+                        <div class="card bg-light custom-card mb-0">
+                            <div class="card-body">
+                                <span class="text-muted fs-13"><b>EOS</b> / BUSD</span>
+                                <h5 class="my-1">22.32315</h5>
+                                <span class="text-danger">-0.02%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-xl-12 col-xxl-6 col-md-12">
+        <div class="card custom-card crypto-buysell-card">
+            <div class="card-body">
+                <div class="card-header border-bottom-0 ps-0 pt-0">
+                    <label class="main-content-label my-auto">Buy Currency</label>
+                </div>
+                <div class="d-flex mt-3 mb-3">
+                    <div class="">
+                        <p class="fs-16 text-muted mb-2">1 USDT is roughly</p>
+                        <h3>5.47<span class="text-success fs-15 ms-2">CNY</span></h3>
+                    </div>
+                    <div class="ms-auto my-auto">
+                        <span class="">Claim <span class="fw-semibold text-success">20</span> Free Bitcoin</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" class="form-control input-lg wd-80p border-end-0" value="Spend 32 - 6500">
+                        <spk-ng-select [options]="Coins" [mainClass]="'border-start-0 icons_select2 br-0 p-0'"
+                            [clearable]="true" [multi]="true" [searchable]="true" [placeholder]="'BTC'"
+                            [additionalProperties]="{}">
+                        </spk-ng-select>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="input-group">
+                        <input type="text" class="form-control input-lg wd-80p border-end-0" value="Buy">
+                        <spk-ng-select [options]="Coins1" [mainClass]="'border-start-0 icons_select2 br-0 p-0'"
+                            [clearable]="true" [multi]="true" [searchable]="true" [placeholder]="'USD'"
+                            [additionalProperties]="{}">
+                        </spk-ng-select>
+
+                    </div>
+                </div>
+                <div class="form-group fs-14">
+                    <input class="form-control input-lg" type="text" placeholder="498fd7c42932070ff3ec30">
+                </div>
+                <label class="main-content-label mt-4 mb-4">Select payment method</label>
+                <form class="payment-form form">
+                    <div class="payment-type d-flex">
+                        <input type="radio" name="radio3" id="credit" value="credit" checked><label
+                            class="credit-label payment-cards four ms-0 col" for="credit"><span
+                                class="d-none d-md-block">New card</span><img src="./assets/images/payments/png/4.png"
+                                alt="visa"></label>
+                        <input type="radio" name="radio3" id="debit" value="debit"><label
+                            class="debit-label payment-cards four col" for="debit"><span class="d-none d-md-block">Debit
+                                Card</span><img src="./assets/images/payments/png/2.png" alt="Debitcard"></label>
+                        <input type="radio" name="radio3" id="paypal" value="paypal"><label
+                            class="paypal-label payment-cards four col" for="paypal"><span
+                                class="d-none d-md-block">Paypal</span><img src="./assets/images/payments/png/3.png"
+                                alt="paypal"></label>
+                        <input type="radio" name="radio3" id="amex" value="amex"><label
+                            class="amex-label payment-cards four col" for="amex"><span
+                                class="d-none d-md-block">Amex</span><img src="./assets/images/payments/png/1.png"
+                                alt="amexg1096"></label>
+                    </div>
+                    <div class="d-grid">
+                        <a href="javascript:void(0);" class="btn btn-primary btn-lg mt-4">Buy Now</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-xl-12 col-xxl-6 col-md-12">
+        <div class="card custom-card crypto-buysell-card">
+            <div class="card-body">
+                <div class="card-header border-bottom-0 ps-0 pt-0">
+                    <label class="main-content-label my-auto">Sell Currency</label>
+                </div>
+                <div class="form-group">
+                    <label class="fw-medium fs-16 mt-3 mb-2">Sell From</label>
+                    <div class="p-3 border d-flex">
+                        <div class="d-flex"><span class="crypto-icon bg-primary-transparent me-3"><i
+                                    class="cf cf-btc text-primary"></i></span><span
+                                class="my-auto fs-18 fw-medium">Bitcoin BTC</span></div>
+                        <div class="d-flex ms-auto">
+                            <div class="card-item-stat d-none d-md-block">
+                                <h4 class="fw-medium mb-0 fs-15">0.374648545 BTC</h4>
+                                <small class="fs-13 float-end text-end text-muted">$5,634.65</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="fw-medium fs-16 mt-2 mb-2">Deposit to</label>
+                    <div class="p-3 border d-flex">
+                        <span class="crypto-icon bg-primary-transparent"><i
+                                class="fa fa-bank text-primarywd-ht-"></i></span>
+                        <div class="my-auto ms-3">
+                            <div class="d-flex my-auto fs-16 fw-medium">Banking</div>
+                            <small class="fs-13 text-muted">Checking</small>
+                        </div>
+                    </div>
+                </div>
+                <label class="fw-medium fs-16 mt-2 mb-2">Amount</label>
+                <hr class="my-2">
+                <div class="d-flex mt-3 mb-3">
+                    <p class="fs-16 mb-0 text-muted">Weekly bank limit</p>
+                    <div class="ms-auto my-auto">
+                        <span class="fs-16 text-muted">$10,000.00 remaining</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group col-xl-5 col-lg-12 col-md-12 mb-0">
+                        <div class="input-group">
+                            <input type="text" class="form-control border-end-0 input-lg wd-80p" value="0.041323">
+                            <spk-ng-select [options]="Coins1" [mainClass]="'border-start-0 icons_select2 br-0 p-0'"
+                                [clearable]="true" [multi]="true" [searchable]="true" [placeholder]="'USD'"
+                                [additionalProperties]="{}">
+                            </spk-ng-select>
+                        </div>
+                    </div>
+                    <div class="form-group col-xl-2 text-center col-lg-12 col-md-12 my-auto">
+                        <i class="pe-7s-repeat my-3 mt-xl-0 mb-xl-0 fs-26"></i>
+                    </div>
+                    <div class="form-group col-xl-5 col-lg-12 col-md-12 mb-0">
+                        <div class="input-group">
+                            <input type="text" class="form-control input-lg wd-80p border-end-0" value="500">
+                            <spk-ng-select [options]="Coins" [mainClass]="'border-start-0 icons_select2 br-0 p-0'"
+                                [clearable]="true" [multi]="true" [searchable]="true" [placeholder]="'BTC'"
+                                [additionalProperties]="{}">
+                            </spk-ng-select>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-grid">
+                    <a href="javascript:void(0);" class="btn btn-primary btn-lg mt-4">Sell Bitcoin</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->
+<!-- Start::row-2 -->
+<div class="row row-sm">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header border-bottom-0 pb-0">
+                <label class="main-content-label my-auto pt-2">Recent Buying & selling Orders</label>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <spk-reusable-tables [columns]="cryptoColumns"
+                        [tableClass]="'card-table text-nowrap table-bordered border-top border'">
+                        @for(transaction of transactions;track $index){
+                        <tr>
+                            <td>{{ transaction.id }}</td>
+                            <td [class]="transaction.typeClass">{{ transaction.type }}</td>
+                            <td><i class="cc BTC-alt text-warning"></i> {{ transaction.amount1 }}</td>
+                            <td><i class="cc BTC-alt text-warning"></i> {{ transaction.amount2 }}</td>
+                            <td>{{ transaction.price }}</td>
+                            <td>{{ transaction.value }}</td>
+                            <td>{{ transaction.fee }}</td>
+                            <td>
+                                <span [class]="'badge bg-pill ' + transaction.statusClass">
+                                    {{ transaction.status }}
+                                </span>
+                            </td>
+                            <td>{{ transaction.date }}</td>
+                        </tr>
+                        }
+                    </spk-reusable-tables>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Start::row-2 -->

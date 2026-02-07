@@ -1,0 +1,440 @@
+<app-page-header
+  [title]="' Product-Details'"
+  [title1]="['Ecommerce']"
+  [activeitem]="' Product-Details'"
+></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+  <div class="col-lg-12 col-md-12">
+    <div class="card custom-card productdesc">
+      <div class="card-body h-100">
+        <div class="row">
+          <div class="col-xl-6 col-lg-12 col-md-12">
+            <div class="row">
+              <div class="col-3 col-sm-2">
+                <div class="clearfix carousel-slider">
+                  <div id="thumbcarousel" class="carousel slide" data-bs-interval="false" >
+                    <div class="carousel-inner">
+                      <ul ngbNav #nav="ngbNav" class="carousel-item p-0 d-flex d-xl-block productdetails">
+                        <li [ngbNavItem]="1" class="p-0 mb-3" data-bs-slide-to="0" data-bs-target="#Slider" >
+                            <a class="p-0" ngbNavLink >
+                                <img alt="img" class="img-fluid w-100 d-block" src="./assets/images/pngs/24.png">
+                            </a>
+                            <ng-template ngbNavContent>
+                                <img src="./assets/images/pngs/24.png" alt="img" class="img-fluid w-100 d-block">
+                            </ng-template>
+                        </li>
+                        <li [ngbNavItem]="2" class="p-0 mb-3" data-bs-slide-to="1" data-bs-target="#Slider">
+                            <a class="p-0" ngbNavLink>
+                                <img alt="img" class="img-fluid w-100 d-block" src="./assets/images/pngs/26.png">
+                            </a>
+                            <ng-template ngbNavContent>
+                            <img src="./assets/images/pngs/26.png" alt="img" class="img-fluid w-100 d-block">
+                          </ng-template>
+                        </li>
+                        <li [ngbNavItem]="3" class="p-0 mb-3" data-bs-slide-to="2" data-bs-target="#Slider">
+                            <a class="p-0" ngbNavLink>
+                                <img alt="img" class="img-fluid w-100 d-block" src="./assets/images/pngs/25.png">
+                            </a>
+                            <ng-template ngbNavContent>
+                                <img src="./assets/images/pngs/25.png" alt="img" class="img-fluid w-100 d-block">
+                            </ng-template>
+                        </li>
+                        <li [ngbNavItem]="4" class="p-0" data-bs-slide-to="2" data-bs-target="#Slider">
+                            <a class="p-0" ngbNavLink>
+                                <img alt="img" class="img-fluid w-100 d-block" src="./assets/images/pngs/23.png">
+                            </a>
+                            <ng-template ngbNavContent>
+                                <img src="./assets/images/pngs/23.png" alt="img" class="img-fluid w-100 d-block">
+                            </ng-template>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7 offset-md-1 col-sm-9 col-8">
+                <div class="product-carousel">
+                  <div
+                    id="carousel"
+                    class="carousel slide"
+                    data-bs-ride="false"
+                  >
+                    <div
+                      class="carousel slide carousel-inner"
+                      data-bs-ride="false"
+                      id="Slider"
+                      [ngbNavOutlet]="nav"
+                    ></div>
+                    <div class="text-center mt-4 mb-4 btn-list">
+                      <a
+                        routerLink="/ecommerce/cart"
+                        class="btn ripple btn-primary d-inline-flex align-items-center"
+                        ><i class="fe fe-shopping-cart me-1"> </i> Add to
+                        cart</a
+                      >
+                      <a
+                        routerLink="/ecommerce/checkout"
+                        class="btn ripple btn-secondary d-inline-flex align-items-center"
+                        ><i class="fe fe-credit-card me-1"> </i> Buy Now</a
+                      >
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-6 col-lg-12 col-md-12">
+            <div class="mt-4 mb-4">
+              <h4 class="mt-1 mb-3">Touch Screen Waterproof Smartwatch</h4>
+
+              <p class="text-muted float-start me-3">
+                <span class="fe fe-star text-warning me-1"></span>
+                <span class="fe fe-star text-warning me-1"></span>
+                <span class="fe fe-star text-warning me-1"></span>
+                <span class="fe fe-star text-warning me-1"></span>
+                <span class="fe fe-star me-1"></span>
+              </p>
+              <p class="text-muted mb-4">( 135 Customers Review )</p>
+              <h6 class="text-success text-uppercase">20 % Off</h6>
+              <h5 class="mb-2">
+                Price :
+                <span class="text-muted me-2"><del>$499 USD</del></span>
+                <b class=""> $299 USD</b>
+              </h5>
+              <p class="fs-13 text-muted">
+                FREE SHIPPING on above Purchase of <b>$359</b>
+              </p>
+              <h6 class="mt-4 fs-16">Description</h6>
+              <p>
+                At vero eos et accusamus et iusto odio dignissimos ducimus qui
+                blanditiis praesentium voluptatum deleniti atque corrupti quos
+                dolores et quas molestias excepturi sint occaecati cupiditate
+                non provident, similique sunt in culpa qui officia deserunt
+                mollitia animi, id est laborum et dolorum fuga.
+              </p>
+              <p>
+                On the other hand, we denounce with righteous indignation and
+                dislike men who are so beguiled and demoralized .
+              </p>
+              <p>
+                But I must explain to you how all this mistaken idea of
+                denouncing pleasure and praising pain was born and I will give
+                you a complete account of the system.
+              </p>
+            </div>
+            <div class="d-flex mt-2">
+              <div class="mt-2 sizes">Quantity:</div>
+              <div class="d-flex ms-2">
+                <div class="form-group productdetails-quantity">
+                  <spk-ng-select
+                    [options]="Quantity"
+                    [id]="'select-countries17'"
+                    [selectClass]="' '"
+                    [clearable]="true"
+                    [searchable]="true"
+                    [placeholder]="'1'"
+                    [hideSelected]="true"
+                    [additionalProperties]="{}"
+                  >
+                  </spk-ng-select>
+                </div>
+              </div>
+            </div>
+            <div class="colors d-flex me-3 mt-2">
+              <span class="mt-2">colors:</span>
+              <div class="d-flex gutters-xs ms-4">
+                <div class="me-2">
+                  <label class="colorinput">
+                    <input
+                      name="color"
+                      type="radio"
+                      value="azure"
+                      class="colorinput-input"
+                      checked=""
+                    />
+                    <span class="colorinput-color bg-info"></span>
+                  </label>
+                </div>
+                <div class="me-2">
+                  <label class="colorinput">
+                    <input
+                      name="color"
+                      type="radio"
+                      value="indigo"
+                      class="colorinput-input"
+                    />
+                    <span class="colorinput-color bg-secondary"></span>
+                  </label>
+                </div>
+                <div class="me-2">
+                  <label class="colorinput">
+                    <input
+                      name="color"
+                      type="radio"
+                      value="purple"
+                      class="colorinput-input"
+                    />
+                    <span class="colorinput-color bg-danger"></span>
+                  </label>
+                </div>
+                <div class="me-2">
+                  <label class="colorinput">
+                    <input
+                      name="color"
+                      type="radio"
+                      value="pink"
+                      class="colorinput-input"
+                    />
+                    <span class="colorinput-color bg-pink"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4">
+          <h5 class="mb-3">Specifications :</h5>
+          <div class="">
+            <div class="row">
+              <div class="col-xl-12">
+                <div class="table-responsive">
+                  <spk-reusable-tables
+                    [tableClass]="'mb-0 border table-bordered text-nowrap'"
+                  >
+                    @for(detail of productDetails;track $index){
+
+                    <tr>
+                      <th scope="row">{{ detail.key }}</th>
+                      <td>{{ detail.value }}</td>
+                    </tr>
+                    }
+                  </spk-reusable-tables>
+                </div>
+              </div>
+              <div class="col-xl-12 mt-4">
+                <div class="card">
+                  <div>
+                    <div class="d-flex p-3 align-items-center flex-wrap gap-2">
+                      <h5 class="float-start main-content-label mb-0 mt-2">
+                        All Ratings and Reviews
+                      </h5>
+                      <a
+                        href="javascript:void(0);"
+                        class="btn btn-outline-primary btn-sm"
+                        >Top Rated</a
+                      >
+                    </div>
+                    <div class="media mt-0 p-4 border-bottom border-top flex-wrap gap-2">
+                      <div class="d-flex me-3">
+                        <a href="javascript:void(0);"
+                          ><img
+                            class="media-image avatar avatar-md rounded-circle"
+                            alt="64x64"
+                            src="./assets/images/faces/8.jpg"
+                          />
+                        </a>
+                      </div>
+                      <div class="media-body">
+                        <h5 class="mt-0 mb-1 fw-medium fs-16">
+                          Bruce Tran
+                          <span
+                            class="fs-14 ms-0"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title=""
+                            data-bs-original-title="verified"
+                            ><i class="fa fa-check-circle-o text-success"></i
+                          ></span>
+                        </h5>
+                        <span class="text-muted fs-13">Tue, 20 Mar 2020</span>
+                        <div class="text-warning mt-1">
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star me-1"></i>
+                        </div>
+                        <p class="font-13 mb-2 mt-2">
+                          Lorem Ipsum available, quis Neque porro quisquam est,
+                          qui dolorem ipsum quia dolor sit amet, consectetur,
+                          adipisci velit, sed quia non numquam eius modi tempora
+                          incidunt ut labore et nostrud exercitation ullamco
+                          laboris commodo consequat.
+                        </p>
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="badge bg-primary">Helpful</span></a
+                        >
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="">Comment</span></a
+                        >
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="">Report</span></a
+                        >
+                      </div>
+                    </div>
+                    <div class="media mt-0 p-4 border-bottom flex-wrap gap-2">
+                      <div class="d-flex me-3">
+                        <a href="javascript:void(0);"
+                          ><img
+                            class="media-image avatar avatar-md rounded-circle"
+                            alt="64x64"
+                            src="./assets/images/faces/3.jpg"
+                          />
+                        </a>
+                      </div>
+                      <div class="media-body">
+                        <h5 class="mt-0 mb-1 fw-medium fs-16">
+                          Mina Harpe
+                          <span
+                            class="fs-14 ms-0"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title=""
+                            data-bs-original-title="verified"
+                            ><i class="fa fa-check-circle-o text-success"></i
+                          ></span>
+                        </h5>
+                        <span class="text-muted fs-13">Tue, 20 Mar 2020</span>
+                        <div class="text-warning mt-1">
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star me-1"></i>
+                        </div>
+                        <p class="font-13 mb-2 mt-2">
+                          Lorem Ipsum available, quis Neque porro quisquam est,
+                          qui dolorem ipsum quia dolor sit amet, consectetur,
+                          adipisci velit, sed quia non numquam eius modi tempora
+                          incidunt ut labore et nostrud exercitation ullamco
+                          laboris commodo consequat.
+                        </p>
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="badge bg-primary">Helpful</span></a
+                        >
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="">Comment</span></a
+                        >
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="">Report</span></a
+                        >
+                      </div>
+                    </div>
+                    <div class="media mt-0 p-4 border-bottom flex-wrap gap-2">
+                      <div class="d-flex me-3">
+                        <a href="javascript:void(0);"
+                          ><img
+                            class="media-image avatar avatar-md rounded-circle"
+                            alt="64x64"
+                            src="./assets/images/faces/5.jpg"
+                          />
+                        </a>
+                      </div>
+                      <div class="media-body">
+                        <h5 class="mt-0 mb-1 fw-medium fs-16">
+                          Maria Quinn
+                          <span
+                            class="fs-14 ms-0"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="top"
+                            title=""
+                            data-bs-original-title="verified"
+                            ><i class="fa fa-check-circle-o text-success"></i
+                          ></span>
+                        </h5>
+                        <span class="text-muted fs-13">Tue, 20 Mar 2020</span>
+                        <div class="text-warning mt-1">
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star active me-1"></i>
+                          <i class="bx bxs-star text-light me-1"></i>
+                        </div>
+                        <p class="font-13 mb-2 mt-2">
+                          Lorem Ipsum available, quis Neque porro quisquam est,
+                          qui dolorem ipsum quia dolor sit amet, consectetur,
+                          adipisci velit, sed quia non numquam eius modi tempora
+                          incidunt ut labore et nostrud exercitation ullamco
+                          laboris commodo consequat.
+                        </p>
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="badge bg-primary">Helpful</span></a
+                        >
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="">Comment</span></a
+                        >
+                        <a href="javascript:void(0);" class="me-2"
+                          ><span class="">Report</span></a
+                        >
+                      </div>
+                    </div>
+                    <div class="d-grid">
+                      <a
+                        class="text-center w-100 p-3 fw-medium"
+                        href="javascript:void(0);"
+                        >See All Reviews</a
+                      >
+                    </div>
+                  </div>
+                  <div class="border-top px-4 pb-2 pt-4">
+                    <h5 class="mb-4">Leave Comment</h5>
+                    <div class="mb-1">
+                      <div class="row">
+                        <div class="form-group col-md-6">
+                          <div class="mb-3 fw-medium">Your Name</div>
+                          <input
+                            class="form-control"
+                            placeholder="Your Name"
+                            type="text"
+                          />
+                        </div>
+                        <div class="form-group col-md-6">
+                          <div class="mb-3 fw-medium">Email Address</div>
+                          <input
+                            class="form-control"
+                            placeholder="Email Address"
+                            type="text"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <span class="star-rating">
+                      <a href="javascript:void(0);"
+                        ><i class="icofont-ui-rating icofont-2x"></i
+                      ></a>
+                      <a href="javascript:void(0);"
+                        ><i class="icofont-ui-rating icofont-2x"></i
+                      ></a>
+                      <a href="javascript:void(0);"
+                        ><i class="icofont-ui-rating icofont-2x"></i
+                      ></a>
+                      <a href="javascript:void(0);"
+                        ><i class="icofont-ui-rating icofont-2x"></i
+                      ></a>
+                      <a href="javascript:void(0);"
+                        ><i class="icofont-ui-rating icofont-2x"></i
+                      ></a>
+                    </span>
+                    <form>
+                      <div class="form-group">
+                        <div class="mb-3 fw-medium">Your Comment</div>
+                        <textarea class="form-control"></textarea>
+                      </div>
+                      <div class="form-group">
+                        <button class="btn btn-primary mt-3 mb-0" type="button">
+                          Post your review
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--End::row-1 -->

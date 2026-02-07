@@ -1,0 +1,59 @@
+<app-page-header [title]="'Transactions'" [title1]="['Crypto Currencies']"[activeitem]="'Transactions'"></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    <div class="col-md-12 col-lg-12 col-xl-12">
+        <div class="card custom-card transcation-crypto">
+            <div class="card-header border-bottom-0">
+                <div>
+                    <div class="card-title">Transaction History</div>
+                    <p class="d-block fs-12 mb-0 mt-2 text-muted">Transaction History it shows you who sent the
+                        transaction, how much has been sent, its destination and the fees that were paid for it.</p>
+                </div>
+                <div class="ms-auto">
+                    <div class="contact-search3 me-3">
+                        <button type="button" class="btn border-0"><i class="fe fe-search fw-semibold text-muted"
+                                aria-hidden="true"></i></button>
+                        <input type="text" class="form-control h-6" id="typehead1" placeholder="Search here..."
+                            autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <spk-reusable-tables [columns]="transactionColumns" [tableClass]="'text-nowrap border'">
+                        @for(transaction of transactions;track $index){
+                        <tr>
+                            <td>
+                                <span class="crypto-icon bg-primary-transparent me-3 my-auto">
+                                    <i class="fe" [class]="transaction.arrowClass + ' text-primary'"></i>
+                                </span>
+                            </td>
+                            <td class="fw-semibold">{{ transaction.id }}</td>
+                            <td>{{ transaction.date }}</td>
+                            <td>{{ transaction.customer }}</td>
+                            <td class="my-auto">
+                                <img [src]="transaction.avatar" class="avatar avatar-sm me-2" alt="" />
+                                <span class="my-auto">{{ transaction.partner }}</span>
+                            </td>
+                            <td class="fw-medium">
+                                <img [src]="transaction.currencyIcon" class="wd-30 hd-30 me-2" alt="" />
+                                {{ transaction.currency }}
+                            </td>
+                            <td [class]="transaction.amountClass + ' fw-semibold'">
+                                {{ transaction.amount }}
+                            </td>
+                            <td>
+                                <span [class]="transaction.statusClass + ' fw-medium'">
+                                    {{ transaction.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        }
+                    </spk-reusable-tables>
+                </div>
+            </div>
+        </div>
+        <!-- Row End -->
+    </div>
+</div>
+<!--End::row-1 -->

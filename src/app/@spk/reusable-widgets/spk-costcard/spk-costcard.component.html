@@ -1,0 +1,18 @@
+
+    <div class="card-body iconfont text-center">
+      <h6>{{ title }}</h6>
+      <h3 class="mt-1">{{ value }}</h3>
+      <p class="text-muted">
+        <span [class]="'text-' + trendColor">
+          <i [class]="'fa ' + iconClass + ' me-1'"></i>{{ trendValue }}
+        </span>
+        in this year
+      </p>
+      <div class="progress progress-sm mb-0 progress-animate">
+        <div
+          class="progress-bar progress-bar-striped progress-bar-animated"
+          [class]="'bg-' + progressColor"
+          [style.width]="progressWidth + '%'"></div>
+      </div>
+    </div>
+  

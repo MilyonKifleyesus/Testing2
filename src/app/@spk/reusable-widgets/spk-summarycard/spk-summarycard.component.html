@@ -1,0 +1,17 @@
+
+    <div class="card custom-card">
+      <div class="card-body">
+        <div class="card-{{customCard}}">
+          <label class="main-content-label mb-3 pt-1">{{ title }}</label>
+          <h2 class="text-end">
+            <i [class]="'icon-size ' + iconClass + ' float-start text-primary fs-27'"></i>
+            <span class="fw-bold">{{ value }}</span>
+          </h2>
+          <p class="mb-0 text-muted">
+            {{ subtitle }}
+            <span class="float-end">{{ extraValue }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  

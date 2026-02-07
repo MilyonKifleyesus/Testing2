@@ -1,0 +1,163 @@
+<app-page-header [title]="'Input Masks'" [title1]="['Form Elements']" [activeitem]="'Input Masks'"></app-page-header>
+
+                <!-- Start:: row-1 -->
+                <div class="row row-sm">
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Date Format-1
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input [formControl]="dateFC" class="form-control date-format" [inputMask]="dateInputMask"
+                                placeholder="dd-mm-yyyy" />
+                              
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Date Format-2
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input [formControl]="dateFC" class="form-control date-format1" [inputMask]="dateInputMask1"
+                                placeholder="mm-dd-yyyy" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Date Format-3
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input [formControl]="dateFC" class="form-control date-format2" [inputMask]="dateInputMask2"
+                                placeholder="mm-yy" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End:: row-1 -->
+
+                <!-- Start:: row-2 -->
+                <div class="row row-sm">
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Number Formatting
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input [inputMask]="currencyInputMask" class="form-control number-format" placeholder="Number Here" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Time Format-1
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input class="form-control time-format-1" placeholder="hh:mm:ss" mask="00:00:00">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Time Format-2
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input class="form-control time-format-2" placeholder="hh:mm" mask="00:00">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End:: row-2 -->
+
+                <!-- Start:: row-3 -->
+                <div class="row row-sm">
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Formatting Into Blocks
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input class="form-control formatting-blocks" placeholder="ABCD EFG HIJ KLMN" mask="AAAA AAA AAA AAAA"
+                    [dropSpecialCharacters]="false" [(ngModel)]="formattedValue3" (input)="toUpperCase($event, 'formattedValue3')" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Delimiter
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input class="form-control delimiter" placeholder="ABC.DEF.GHi" mask="AAA.AAA.AAA"
+                                [dropSpecialCharacters]="false" [(ngModel)]="formattedValue1" (input)="toUpperCase($event, 'formattedValue1')" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Delimiters
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input class="form-control delimiter" placeholder="ABC/DEF/GHi-JK" mask="AAA/AAA/AAA-AA"
+                                [dropSpecialCharacters]="false" [(ngModel)]="formattedValue2" (input)="toUpperCase($event, 'formattedValue2')" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End:: row-3 -->
+
+                <!-- Start:: row-4 -->
+                <div class="row row-sm">
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Prefix
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input class="form-control prefix-element" placeholder="Prefix-"   [(ngModel)]="formattedValue"
+                                mask="AAAAAA-AAAA-AAAA-AAAA"   (input)="toUpperCase($event, 'formattedValue')"
+                                #inputField />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="card custom-card">
+                            <div class="card-header">
+                                <div class="card-title">
+                                    Phone Number Formatting
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <input class="form-control phone-number" [formControl]="phoneFC" [inputMask]="phoneInputMask"
+                                placeholder="US(+1)" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End:: row-4 -->

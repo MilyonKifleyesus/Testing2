@@ -1,0 +1,212 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">User Details</h1>
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a [routerLink]="['/admin']">Home</a></li>
+          <li class="breadcrumb-item"><a [routerLink]="['/admin/users']">Users</a></li>
+          <li class="breadcrumb-item active" aria-current="page">View User</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary btn-wave" (click)="editUser()">
+        <i class="ti ti-edit me-1"></i>Edit User
+      </button>
+      <div class="btn-group">
+        <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="ti ti-dots-vertical me-1"></i>More
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" (click)="resetPassword()" href="javascript:void(0);"><i class="ti ti-lock me-2"></i>Reset Password</a></li>
+          <li *ngIf="user?.status === 'active'"><a class="dropdown-item" (click)="suspendUser()" href="javascript:void(0);"><i class="ti ti-ban me-2"></i>Suspend User</a></li>
+          <li *ngIf="user?.status === 'suspended'"><a class="dropdown-item" (click)="activateUser()" href="javascript:void(0);"><i class="ti ti-check me-2"></i>Activate User</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" (click)="deleteUser()" href="javascript:void(0);"><i class="ti ti-trash me-2"></i>Delete User</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" *ngIf="user">
+    <!-- Left Sidebar - User Info Card -->
+    <div class="col-xl-3">
+      <div class="card custom-card">
+        <div class="card-body text-center p-4">
+          <!-- Avatar -->
+          <div class="mb-3">
+            <div class="avatar avatar-xxl avatar-rounded mx-auto">
+              <div class="avatar-title rounded-circle bg-primary-gradient text-white fs-1 fw-bold">
+                {{ getUserInitials(user.name) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Name & Role -->
+          <h5 class="fw-semibold mb-1">{{ user.name }}</h5>
+          <p class="text-muted mb-2">{{ user.username }}</p>
+          <span class="badge" [ngClass]="getRoleClass(user.role)">{{ user.role }}</span>
+          <span class="badge ms-2" [ngClass]="getStatusClass(user.status)">{{ user.status | titlecase }}</span>
+
+          <hr class="my-3">
+
+          <!-- Quick Info -->
+          <div class="text-start">
+            <div class="mb-3">
+              <p class="mb-1 text-muted fs-12">Email</p>
+              <p class="mb-0 fw-semibold fs-14">{{ user.email }}</p>
+            </div>
+            <div class="mb-3">
+              <p class="mb-1 text-muted fs-12">Phone</p>
+              <p class="mb-0 fw-semibold fs-14">{{ user.phone || 'Not provided' }}</p>
+            </div>
+            <div class="mb-3">
+              <p class="mb-1 text-muted fs-12">User ID</p>
+              <p class="mb-0 fw-semibold fs-14">#{{ user.id }}</p>
+            </div>
+            <div *ngIf="user.client" class="mb-3">
+              <p class="mb-1 text-muted fs-12">Client</p>
+              <p class="mb-0"><span class="badge bg-info-transparent">{{ user.client }}</span></p>
+            </div>
+            <div *ngIf="user.manufacturer" class="mb-3">
+              <p class="mb-1 text-muted fs-12">Manufacturer</p>
+              <p class="mb-0"><span class="badge bg-secondary-transparent">{{ user.manufacturer }}</span></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Content Area -->
+    <div class="col-xl-9">
+      <!-- Tabs -->
+      <div class="card custom-card">
+        <div class="card-body p-0">
+          <ul class="nav nav-tabs px-3 pt-3" role="tablist">
+            <li class="nav-item" *ngFor="let tab of tabs">
+              <a class="nav-link" 
+                 [class.active]="activeTab === tab.key" 
+                 href="javascript:void(0);" 
+                 (click)="setTab(tab.key)">
+                <i [class]="'ti ' + tab.icon + ' me-1'"></i>{{ tab.label }}
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Profile Tab -->
+      <div class="card custom-card" *ngIf="activeTab === 'profile'">
+        <div class="card-header">
+          <h6 class="card-title mb-0">Profile Information</h6>
+        </div>
+        <div class="card-body">
+          <div class="row gy-3">
+            <div class="col-xl-6">
+              <label class="form-label fw-semibold text-muted fs-12">Full Name</label>
+              <p class="fw-semibold fs-15">{{ user.name }}</p>
+            </div>
+            <div class="col-xl-6">
+              <label class="form-label fw-semibold text-muted fs-12">Username</label>
+              <p class="fw-semibold fs-15">{{ user.username }}</p>
+            </div>
+            <div class="col-xl-6">
+              <label class="form-label fw-semibold text-muted fs-12">Email Address</label>
+              <p class="fw-semibold fs-15">{{ user.email }}</p>
+            </div>
+            <div class="col-xl-6">
+              <label class="form-label fw-semibold text-muted fs-12">Phone Number</label>
+              <p class="fw-semibold fs-15">{{ user.phone || 'Not provided' }}</p>
+            </div>
+            <div class="col-xl-12">
+              <label class="form-label fw-semibold text-muted fs-12">Address</label>
+              <p class="fw-semibold fs-15">{{ user.address || 'Not provided' }}</p>
+            </div>
+            <div class="col-xl-6">
+              <label class="form-label fw-semibold text-muted fs-12">Created Date</label>
+              <p class="fw-semibold fs-15">{{ user.createdDate }}</p>
+            </div>
+            <div class="col-xl-6">
+              <label class="form-label fw-semibold text-muted fs-12">Last Login</label>
+              <p class="fw-semibold fs-15">{{ user.lastLogin || 'Never' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permissions Tab -->
+      <div class="card custom-card" *ngIf="activeTab === 'permissions'">
+        <div class="card-header">
+          <h6 class="card-title mb-0">User Permissions</h6>
+        </div>
+        <div class="card-body">
+          <div class="alert alert-primary" role="alert">
+            <i class="ti ti-info-circle me-2"></i>
+            This user has <strong>{{ user.permissions.length }}</strong> permissions assigned based on their role: <strong>{{ user.role }}</strong>
+          </div>
+
+          <div class="row g-3 mt-2">
+            <div class="col-lg-4 col-md-6" *ngFor="let permission of user.permissions">
+              <div class="d-flex align-items-center p-3 border rounded">
+                <div class="me-2">
+                  <span class="avatar avatar-sm avatar-rounded bg-success-transparent">
+                    <i class="ti ti-check fs-16"></i>
+                  </span>
+                </div>
+                <div class="flex-fill">
+                  <p class="mb-0 fw-semibold fs-14">{{ permission }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Log Tab -->
+      <div class="card custom-card" *ngIf="activeTab === 'activity'">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="card-title mb-0">Recent Activity</h6>
+          <span class="badge bg-primary-transparent">{{ activityLogs.length }} activities</span>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>Date & Time</th>
+                  <th>Action</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let log of activityLogs">
+                  <td>
+                    <span class="text-muted fs-13">{{ log.date }}</span>
+                  </td>
+                  <td>
+                    <span class="badge" [ngClass]="getActivityClass(log.type)">
+                      <i [class]="'ti ' + getActivityIcon(log.type) + ' me-1'"></i>
+                      {{ log.action }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="fs-13">{{ log.details }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading/Error State -->
+  <div *ngIf="!user" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+</div>

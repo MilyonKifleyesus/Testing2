@@ -1,0 +1,772 @@
+<app-page-header [title]="' Profile '" [title1]="['Pages']" [activeitem]="' Profile '"></app-page-header>
+
+  <!-- Start::row-1 -->
+  <div class="row square row-sm">
+    <div class="col-lg-12 col-md-12">
+        <div class="card custom-card">
+            <div class="card-body">
+                <div class="panel profile-cover">
+                    <div class="profile-cover__img">
+                        <img src="./assets/images/faces/1.jpg" alt="img">
+                        <h3 class="h3">Sonia Taylor</h3>
+                    </div>
+                    <div class="btn-profile">
+                        <button class="btn rounded-10 btn-danger me-2">
+                            <i class="fa fa-plus me-1"></i>
+                            <span>Follow</span>
+                        </button>
+                        <button class="btn rounded-10 btn-success">
+                            <i class="fa fa-comment me-1"></i>
+                            <span>Message</span>
+                        </button>
+                    </div>
+                    <div class="profile-cover__action bg-img"></div>
+                    <div class="profile-cover__info">
+                        <ul class="nav">
+                            <li><strong>26</strong>Projects</li>
+                            <li><strong>33</strong>Followers</li>
+                            <li><strong>136</strong>Following</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="profile-tab tab-menu-heading">
+                    <nav ngbNav #nav="ngbNav" class="nav main-nav-line p-3 tabs-menu profile-nav-line">
+                        <ng-container ngbNavItem>
+                            <a href="javascript:;"class="nav-link" ngbNavLink>About</a>
+                            <ng-template ngbNavContent>
+                                <div class="main-content-body tab-pane p-4 border-top-0 active" id="about">
+                                    <div class="card-body p-0 border p-0 rounded-10">
+                                        <div class="p-4">
+                                            <h4 class="fs-15 text-uppercase mb-3">BIOdata</h4>
+                                            <p class="m-b-5">Hi I'm Petey Cruiser,has been the industry's standard dummy
+                                                text ever since the 1500s, when an unknown printer took a galley of
+                                                type. Donec pede justo, fringilla vel, aliquet nec, vulputate eget,
+                                                arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo.
+                                                Nullam dictum felis eu pede mollis pretium. Integer tincidunt.Cras
+                                                dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend
+                                                tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac,
+                                                enim.</p>
+                                            <div class="m-t-30">
+                                                <h4 class="fs-15 text-uppercase mt-3">Experience</h4>
+                                                <div class=" p-t-10">
+                                                    <h5 class="text-primary m-b-5 fs-14">Lead designer / Developer</h5>
+                                                    <p class="">websitename.com</p>
+                                                    <p><b>2010-2015</b></p>
+                                                    <p class="text-muted fs-13 m-b-0">Lorem Ipsum is simply dummy text
+                                                        of the printing and typesetting industry. Lorem Ipsum has been
+                                                        the industry's standard dummy text ever since the 1500s, when an
+                                                        unknown printer took a galley of type and scrambled it to make a
+                                                        type specimen book.</p>
+                                                </div>
+
+                                                <div class="">
+                                                    <h5 class="text-primary m-b-5 fs-14">Senior Graphic Designer</h5>
+                                                    <p class="">coderthemes.com</p>
+                                                    <p><b>2007-2009</b></p>
+                                                    <p class="text-muted fs-13 mb-0">Lorem Ipsum is simply dummy text of
+                                                        the printing and typesetting industry. Lorem Ipsum has been the
+                                                        industry's standard dummy text ever since the 1500s, when an
+                                                        unknown printer took a galley of type and scrambled it to make a
+                                                        type specimen book.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="border-top"></div>
+                                        <div class="p-4">
+                                            <label class="main-content-label fs-13 mg-b-20">Contact</label>
+                                            <div class="d-sm-flex gap-2">
+                                                <div class="mg-sm-r-20 mg-b-10">
+                                                    <div class="main-profile-contact-list">
+                                                        <div class="media">
+                                                            <div class="media-icon bg-primary-transparent text-primary">
+                                                                <i class="bi bi-telephone-forward"></i>
+                                                            </div>
+                                                            <div class="media-body"> <span>Mobile</span>
+                                                                <div> +245 354 654 </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mg-sm-r-20 mg-b-10">
+                                                    <div class="main-profile-contact-list">
+                                                        <div class="media">
+                                                            <div class="media-icon bg-success-transparent text-success">
+                                                                <i class="bi bi-lightning-charge"></i>
+                                                            </div>
+                                                            <div class="media-body"> <span>Slack</span>
+                                                                <div> &#64;spruko.w </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="">
+                                                    <div class="main-profile-contact-list">
+                                                        <div class="media">
+                                                            <div class="media-icon bg-info-transparent text-info"> <i
+                                                                    class="bi bi-geo-alt"></i> </div>
+                                                            <div class="media-body"> <span>Current Address</span>
+                                                                <div> San Francisco, CA </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="border-top"></div>
+                                        <div class="p-4">
+                                            <label class="main-content-label fs-13 mg-b-20">Social</label>
+                                            <div class="d-md-flex flex-wrap gap-2">
+                                                <div class="mg-md-r-20 mg-b-10">
+                                                    <div class="main-profile-social-list">
+                                                        <div class="media">
+                                                            <div class="media-icon bg-primary-transparent text-primary">
+                                                                <i class="icon ion-logo-github"></i>
+                                                            </div>
+                                                            <div class="media-body"> <span>Github</span> <a
+                                                                    href="javascript:;">github.com / spruko</a> </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mg-md-r-20 mg-b-10">
+                                                    <div class="main-profile-social-list">
+                                                        <div class="media">
+                                                            <div class="media-icon bg-success-transparent text-success">
+                                                                <i class="ri  ri-twitter-x-line"></i>
+                                                            </div>
+                                                            <div class="media-body"> <span>Twitter</span> <a
+                                                                    href="javascript:;">twitter.com / spruko.me</a> </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mg-md-r-20 mg-b-10">
+                                                    <div class="main-profile-social-list">
+                                                        <div class="media">
+                                                            <div class="media-icon bg-info-transparent text-info"> <i
+                                                                    class="bi bi-linkedin"></i> </div>
+                                                            <div class="media-body"> <span>Linkedin</span> <a
+                                                                    href="javascript:;">linkedin.com / in / spruko</a>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mg-md-r-20 mg-b-10">
+                                                    <div class="main-profile-social-list">
+                                                        <div class="media">
+                                                            <div class="media-icon bg-danger-transparent text-danger">
+                                                                <i class="bi bi-link-45deg"></i>
+                                                            </div>
+                                                            <div class="media-body"> <span>My Portfolio</span> <a
+                                                                    href="javascript:;">spruko.com /</a> </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-container>
+                        <ng-container ngbNavItem>
+                            <a href="javascript:;" class="nav-link" ngbNavLink>Edit Profile</a>
+                            <ng-template ngbNavContent>
+                                <div class="main-content-body tab-pane p-4 border-top-0" id="edit">
+                                    <div class="card-body border">
+                                        <div class="mb-4 main-content-label">Personal Information</div>
+                                        <form class="form-horizontal">
+                                            <div class="mb-4 main-content-label">Name</div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">User Name</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="User Name"
+                                                            value="Mack Adamia">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">First Name</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="First Name"
+                                                            value="Mack Adamia">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">last Name</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="Last Name"
+                                                            value="Mack Adamia">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Nick Name</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="Nick Name"
+                                                            value="Spruha">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Designation</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control"
+                                                            placeholder="Designation" value="Web Designer">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-4 main-content-label">Contact Info</div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Email<i>(required)</i></label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="Email"
+                                                            value="info&#64;Spruha.in">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Website</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="Website"
+                                                            value="&#64;spruko.w">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Phone</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control"
+                                                            placeholder="phone number" value="+245 354 654">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Address</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <textarea class="form-control" name="example-textarea-input"
+                                                            rows="2" placeholder="Address">San Francisco, CA</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-4 main-content-label">Social Info</div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Twitter</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="twitter"
+                                                            value="twitter.com/spruko.me">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Facebook</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="facebook"
+                                                            value="https://www.facebook.com/Spruha">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Google+</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="google"
+                                                            value="spruko.com">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Linked in</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="linkedin"
+                                                            value="linkedin.com/in/spruko">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Github</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="github"
+                                                            value="github.com/sprukos">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-4 main-content-label">About Yourself</div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Biographical Info</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <textarea class="form-control" name="example-textarea-input"
+                                                            rows="4"
+                                                            placeholder="">pleasure rationally encounter but because pursue consequences that are extremely painful.occur in which toil and pain can procure him some great pleasure..</textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-4 main-content-label">Email Preferences</div>
+                                            <div class="form-group mb-0">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Verified User</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <div class="custom-controls-stacked">
+                                                            <div class="form-check"> <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault1" checked=""> <label class="form-check-label" for="flexCheckDefault1"> Accept to receive post or page notification emails </label> </div>
+                                                            <div class="form-check"> <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault2" checked=""> <label class="form-check-label" for="flexCheckDefault2"> Accept to receive email sent to multiple recipients </label> </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-container>
+                        <ng-container ngbNavItem>
+                            <a href="javascript:;" class="nav-link" ngbNavLink>Timeline</a>
+                            <ng-template ngbNavContent>
+                                <div class="main-content-body  tab-pane border-top-0 p-0" id="timeline">
+                                    <div class="p-4">
+                                        <div class="main-content-body main-content-body-profile">
+                                            <div class="main-profile-body p-0">
+                                                <div class="row row-sm">
+                                                    <div class="col-12">
+                                                        <div class="card mg-b-20 border">
+                                                            <div class="card-header p-4 d-block">
+                                                                <div class="media">
+                                                                    <div class="media-user me-2">
+                                                                        <div class="main-img-user avatar-md"><img alt="" class="rounded-circle" src="./assets/images/faces/6.jpg"></div>
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <h6 class="mb-0 mg-t-2 ms-2">Mintrona Pechon Pechon</h6><span class="text-primary ms-2">just now</span> </div>
+                                                                    <div class="ms-auto">
+                                                                        <div class="dropdown show file-drop" ngbDropdown> <a class="new option-dots2" ngbDropdownToggle data-bs-toggle="dropdown" href="JavaScript:void(0);"><i class="fas fa-ellipsis-v"></i></a>
+                                                                            <div class="dropdown-menu dropdown-menu-end shadow" ngbDropdownMenu> 
+                                                                                <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Edit Post</a>
+                                                                                 <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Delete Post</a> 
+                                                                                 <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Personal Settings</a> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <p class="mg-t-0">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.</p>
+                                                                <div class="row row-sm">
+                                                                    <div class="col"> <img alt="img" class="wd-200 me-4 br-4" src="./assets/images/media/media-4.jpg"> <img alt="img" class="wd-200 br-4 mt-2 mt-sm-0" src="./assets/images/media/media-5.jpg"> </div>
+                                                                </div>
+                                                                <div class="media mg-t-15 profile-footer">
+                                                                    <div class="media-user me-2">
+                                                                        <div class="avatar-list-stacked">
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/1.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/3.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/2.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/10.jpg" alt="img">
+                                                                            </span>
+                                                                            <a class="avatar avatar-sm bg-primary avatar-rounded text-fixed-white" href="javascript:void(0);">
+                                                                                +8
+                                                                            </a>
+                                                                        </div>
+                                                                        <!-- demo-avatar-group -->
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <h6 class="mb-0 mg-t-10">28 people like your photo</h6> </div>
+                                                                    <div class="ms-auto mt-1 mt-sm-0">
+                                                                        <div class="dropdown show" > <a class="new" href="JavaScript:void(0);"><i class="far fa-heart me-3"></i></a> <a class="new" href="JavaScript:void(0);"><i class="far fa-comment me-3"></i></a> <a class="new" href="JavaScript:void(0);"><i class="far fa-share-square"></i></a> </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card mg-b-20 border">
+                                                            <div class="card-header p-4 d-block">
+                                                                <div class="media">
+                                                                    <div class="media-user me-2">
+                                                                        <div class="main-img-user avatar-md"><img alt="" class="rounded-circle" src="./assets/images/faces/6.jpg"></div>
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <h6 class="mb-0 ms-2 mg-t-3">Mintrona Pechon Pechon</h6><span class="text-muted ms-2">Sep 26 2019, 10:14am</span> </div>
+                                                                    <div class="ms-auto">
+                                                                        <div class="dropdown show file-drop" ngbDropdown> <a class="new option-dots2" ngbDropdownToggle data-bs-toggle="dropdown" href="JavaScript:void(0);"><i class="fas fa-ellipsis-v"></i></a>
+                                                                            <div class="dropdown-menu dropdown-menu-end shadow" ngbDropdownMenu> 
+                                                                                <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Edit Post</a>
+                                                                                 <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Delete Post</a> 
+                                                                                 <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Personal Settings</a> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="card-body h-100">
+                                                                <p class="mg-t-0">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.</p>
+                                                                <div class="row row-sm">
+                                                                    <div class="col"> <img alt="img" class="wd-200 mt-2 mt-sm-0 me-4 br-4" src="./assets/images/media/media-9.jpg"> <img alt="img" class="wd-200 mt-2 mt-sm-0 br-4" src="./assets/images/media/media-12.jpg"> </div>
+                                                                </div>
+                                                                <div class="media mg-t-15 profile-footer">
+                                                                    <div class="media-user me-2">
+                                                                        <div class="avatar-list-stacked">
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/1.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/3.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/2.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/10.jpg" alt="img">
+                                                                            </span>
+                                                                            <a class="avatar avatar-sm bg-primary avatar-rounded text-fixed-white" href="javascript:void(0);">
+                                                                                +8
+                                                                            </a>
+                                                                        </div>
+                                                                        <!-- demo-avatar-group -->
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <h6 class="mb-0 mg-t-10">28 people like your photo</h6> </div>
+                                                                    <div class="ms-auto mt-1 mt-sm-0">
+                                                                        <div class="dropdown show"> <a class="new" href="JavaScript:void(0);"><i class="far fa-heart me-3"></i></a> <a class="new" href="JavaScript:void(0);"><i class="far fa-comment me-3"></i></a> <a class="new" href="JavaScript:void(0);"><i class="far fa-share-square"></i></a> </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card mg-b-20 border">
+                                                            <div class="card-header p-4 d-block">
+                                                                <div class="media">
+                                                                    <div class="media-user me-2">
+                                                                        <div class="main-img-user avatar-md"><img alt="" class="rounded-circle" src="./assets/images/faces/6.jpg"></div>
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <h6 class="mb-0 ms-2 mg-t-3">Mintrona Pechon Pechon</h6><span class="text-muted ms-2">Sep 26 2019, 10:14am</span> </div>
+                                                                    <div class="ms-auto">
+                                                                        <div class="dropdown show file-drop" ngbDropdown> <a class="new option-dots2" ngbDropdownToggle data-bs-toggle="dropdown" href="JavaScript:void(0);"><i class="fas fa-ellipsis-v"></i></a>
+                                                                            <div class="dropdown-menu dropdown-menu-end shadow" ngbDropdownMenu> 
+                                                                                <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Edit Post</a>
+                                                                                 <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Delete Post</a> 
+                                                                                 <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Personal Settings</a> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="card-body h-100">
+                                                                <p class="mg-t-0">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.</p>
+                                                                <div class="media mg-t-15 profile-footer">
+                                                                    <div class="media-user me-2">
+                                                                        <div class="avatar-list-stacked">
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/1.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/3.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/2.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/10.jpg" alt="img">
+                                                                            </span>
+                                                                            <a class="avatar avatar-sm bg-primary avatar-rounded text-fixed-white" href="javascript:void(0);">
+                                                                                +8
+                                                                            </a>
+                                                                        </div>
+                                                                        <!-- demo-avatar-group -->
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <h6 class="mb-0 mg-t-10">28 people like your photo</h6> </div>
+                                                                    <div class="ms-auto mt-1 mt-sm-0">
+                                                                        <div class="dropdown show"> <a class="new" href="JavaScript:void(0);"><i class="far fa-heart me-3"></i></a> <a class="new" href="JavaScript:void(0);"><i class="far fa-comment me-3"></i></a> <a class="new" href="JavaScript:void(0);"><i class="far fa-share-square"></i></a> </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="card border">
+                                                            <div class="card-header p-4 d-block">
+                                                                <div class="media">
+                                                                    <div class="media-user me-2">
+                                                                        <div class="main-img-user avatar-md"><img alt="" class="rounded-circle" src="./assets/images/faces/2.jpg"></div>
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <h6 class="mb-0 ms-2 mg-t-3">Mintrona Pechon Pechon</h6><span class="text-muted ms-2">Sep 26 2019, 10:14am</span> </div>
+                                                                    <div class="ms-auto">
+                                                                        <div class="dropdown show file-drop" ngbDropdown> <a class="new option-dots2" ngbDropdownToggle data-bs-toggle="dropdown" href="JavaScript:void(0);"><i class="fas fa-ellipsis-v"></i></a>
+                                                                            <div class="dropdown-menu dropdown-menu-end shadow" ngbDropdownMenu> 
+                                                                                <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Edit Post</a>
+                                                                                 <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Delete Post</a> 
+                                                                                 <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Personal Settings</a> </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="card-body h-100">
+                                                                <p class="mg-t-0">There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.</p>
+                                                                <div class="row row-sm">
+                                                                    <div class="col"> <img alt="img" class="wd-200 me-3 br-4 mt-2 mt-sm-0" src="./assets/images/media/media-9.jpg"> <img alt="img" class="wd-200 br-4 mt-2 mt-sm-0" src="./assets/images/media/media-17.jpg"> </div>
+                                                                </div>
+                                                                <div class="media mg-t-15 profile-footer">
+                                                                    <div class="media-user me-2">
+                                                                        <div class="avatar-list-stacked">
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/1.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/3.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/2.jpg" alt="img">
+                                                                            </span>
+                                                                            <span class="avatar avatar-sm avatar-rounded">
+                                                                                <img src="./assets/images/faces/10.jpg" alt="img">
+                                                                            </span>
+                                                                            <a class="avatar avatar-sm bg-primary avatar-rounded text-fixed-white" href="javascript:void(0);">
+                                                                                +8
+                                                                            </a>
+                                                                        </div>
+                                                                        <!-- demo-avatar-group -->
+                                                                    </div>
+                                                                    <div class="media-body">
+                                                                        <h6 class="mb-0 mg-t-10">28 people like your photo</h6> </div>
+                                                                    <div class="ms-auto mt-1 mt-sm-0">
+                                                                        <div class="dropdown show"> <a class="new" href="JavaScript:void(0);"><i class="far fa-heart me-3"></i></a> <a class="new" href="JavaScript:void(0);"><i class="far fa-comment me-3"></i></a> <a class="new" href="JavaScript:void(0);"><i class="far fa-share-square"></i></a> </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <!-- main-profile-body -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-container>
+                        <ng-container ngbNavItem>
+                            <a href="javascript:;" class="nav-link"  ngbNavLink>Gallery</a>
+                            <ng-template ngbNavContent>
+                                <div class="main-content-body p-4  tab-pane " id="gallery">
+                                    <div class="card-body border">
+                                            <spk-gallery [mainClass]="'row'"  [imageData]="imageData" ></spk-gallery>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-container>
+                        <ng-container ngbNavItem>
+                            <a href="javascript:;" class="nav-link" ngbNavLink>Friends</a>
+                            <ng-template ngbNavContent>
+                                <div class="main-content-body tab-pane border-0 p-0" id="friends">
+                                    <div class="card-body border-0 pd-b-10">
+                                        <!-- row -->
+                                        <div class="row row-sm">
+                                            @for(user of users;track $index){
+                                                <div class="col-sm-12 col-md-6 col-lg-6 col-xl-3">
+                                                    <spk-profile 
+                                                    [avatar]="user.avatar" 
+                                                    [name]="user.name" 
+                                                    [title]="user.title" 
+                                                    [description]="user.description"></spk-profile>
+                                                    </div>
+                                            }
+                                    
+                                        </div>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </ng-container>
+                        <ng-container ngbNavItem>
+                            <a href="javascript:;" ngbNavLink>Account Settings</a>
+                            <ng-template ngbNavContent>
+                                <div class="main-content-body tab-pane p-4 border-top-0" id="settings">
+                                    <div class="card-body border" data-select2-id="12">
+                                        <form class="form-horizontal" data-select2-id="11">
+                                            <div class="mb-4 main-content-label">Account</div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">User Name</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="User Name" value="Sonia Taylor"> </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Email</label>
+                                                    </div>
+                                                    <div class="col-md-9">
+                                                        <input type="text" class="form-control" placeholder="Email" value="info@SoniaTaylor.in"> </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group " data-select2-id="108">
+                                                <div class="row" data-select2-id="107">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Language</label>
+                                                    </div>
+                                                    <div class="col-md-9" data-select2-id="106">
+                                                        <spk-ng-select 
+                                                        [options]="languages"
+                                                        [mainClass]="'form-control'"
+                                                        [clearable]="true"
+                                                        [multi]="true"
+                                                        [searchable]="true"
+                                                        [placeholder]="'Us English'"
+                                                        [additionalProperties]="{}"
+                                                        (change)="handleSelectChange($event)">
+                                                        </spk-ng-select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group " data-select2-id="10">
+                                                <div class="row" data-select2-id="9">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Timezone</label>
+                                                    </div>
+                                                    <div class="col-md-9" data-select2-id="8">
+                                                        <spk-ng-select 
+                                                        [options]="timeZone"
+                                                        [mainClass]="'form-control'"
+                                                        [clearable]="true"
+                                                        [multi]="true"
+                                                        [searchable]="true"
+                                                        [placeholder]="'Select TimeZone'"
+                                                        [additionalProperties]="{}"
+                                                        (change)="handleSelectChange($event)">
+                                                        </spk-ng-select>
+                                                      
+                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group ">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-3 col">
+                                                        <label class="form-label">Verification</label>
+                                                    </div>
+                                                    <div class="col-md-9 col">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefaul1">
+                                                            <label class="form-check-label" for="flexCheckDefaul1">
+                                                                Email
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefaul2" checked>
+                                                            <label class="form-check-label" for="flexCheckDefaul2">
+                                                                SMS
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefaul3">
+                                                            <label class="form-check-label" for="flexCheckDefaul3">
+                                                                Phone
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mb-4 main-content-label">Secuirity Settings</div>
+                                            <div class="form-group mb-0">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-2">
+                                                        <label class="form-label">Login Verification</label>
+                                                    </div>
+                                                    <div class="col-md-10">
+                                                       <a class="" href="javascript:void(0);">Set up Verification</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group mb-0">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-2">
+                                                        <label class="form-label">Password Verification</label>
+                                                    </div>
+                                                    <div class="col-md-10">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefaul4">
+                                                            <label class="form-check-label" for="flexCheckDefaul4">
+                                                                Require Personal Details
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group mb-0">
+                                                <div class="row row-sm">
+                                                    <div class="col-md-2"> </div>
+                                                    <div class="col-md-10 d-inline-flex"> 
+                                                        <a class="me-4" href="javascript:void(0);">Deactivate Account</a> <a class="" href="javascript:void(0);">Change Password</a> 
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                               
+                            </ng-template>
+                        </ng-container>
+                    </nav>
+                 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row -->
+<div class="row row-sm">
+    <div class="col-lg-12 col-md-12">
+        <div class="card custom-card main-content-body-profile ">
+            <div class="tab-content">
+                <div [ngbNavOutlet]="nav"></div>
+
+               
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Row -->

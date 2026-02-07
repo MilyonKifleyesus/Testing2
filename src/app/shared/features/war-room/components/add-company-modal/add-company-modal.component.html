@@ -1,0 +1,236 @@
+@if (isVisible()) {
+<div class="modal-overlay" (click)="onBackdropClick($event)" role="dialog" aria-modal="true"
+  aria-labelledby="modal-title">
+  <div class="modal-container" (click)="stopPropagation($event)" [attr.aria-busy]="isSubmitting()">
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <div class="modal-title-section">
+        <h1 class="modal-title" id="modal-title">ADD SUBSIDIARY + FACTORY</h1>
+        <p class="modal-subtitle">FLEET REGISTRATION MODULE // SUBSIDIARY BOOTSTRAP</p>
+      </div>
+      <button class="modal-close-btn" type="button" (click)="onClose()" aria-label="Close modal"
+        [disabled]="isSubmitting()">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      @if (submissionState() === 'SUCCESS') {
+      <div class="success-view">
+        <div class="success-icon-container">
+          <span class="material-symbols-outlined success-icon">check_circle</span>
+        </div>
+        <h2 class="success-title">SYSTEM SYNC COMPLETE</h2>
+        <p class="success-description">
+          {{ successMessage() || (companyName() + ' has been registered and synced to the tactical map. Initial
+          connectivity established with primary hubs.') }}
+        </p>
+        <div class="success-details">
+          <div class="detail-row">
+            <span class="detail-label">Locations:</span>
+            <span class="detail-value">{{ 1 + subLocations().length }} Sites</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value status-active">ACTIVE</span>
+          </div>
+        </div>
+      </div>
+      } @else {
+      <!-- Error Message -->
+      @if (errorMessage()) {
+      <div class="error-message">
+        <span class="material-symbols-outlined me-2 fs-18">warning</span>
+        {{ errorMessage() }}
+      </div>
+      }
+
+      <!-- Connection Grid: Desktop 2-column / Mobile stacked -->
+      <div class="connection-grid">
+        <!-- Company to Connect Section -->
+        <div class="connection-section" [class.disabled]="isSubmitting()">
+          <div class="section-header">
+            <span class="section-title">COMPANY TO CONNECT</span>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="target-company-name">
+              COMPANY TO CONNECT
+            </label>
+            <input type="text" id="target-company-name" class="form-input" placeholder="ENTER TARGET COMPANY NAME..."
+              [value]="companyName()" (input)="companyName.set($any($event.target).value)"
+              [disabled]="isSubmitting()" />
+
+            <div class="mt-2 d-flex align-items-center">
+              <label class="sub-location-status-toggle">
+                <input type="checkbox" [checked]="companyStatus() === 'ACTIVE'"
+                  (change)="companyStatus.set($any($event.target).checked ? 'ACTIVE' : 'PAUSED')"
+                  [disabled]="isSubmitting()" />
+                <span class="toggle-track"></span>
+                <span class="toggle-label">{{ companyStatus() }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="target-location">
+              PRIMARY LOCATION
+            </label>
+            <input type="text" id="target-location" class="form-input" placeholder="City, Province or Coordinates"
+              [value]="location()" (input)="location.set($any($event.target).value)" [disabled]="isSubmitting()" />
+          </div>
+        </div>
+
+        <!-- Your Company Section -->
+        <div class="connection-section your-company-section" [class.disabled]="isSubmitting()">
+          <div class="section-header">
+            <span class="section-title">YOUR COMPANY (CONNECTION SOURCE)</span>
+          </div>
+          <p class="section-helper">
+            Provide your company name and location so we can connect it to the target company.
+          </p>
+
+          <div class="form-field">
+            <label class="form-label" for="source-company-name">
+              YOUR COMPANY
+            </label>
+            <input type="text" id="source-company-name" class="form-input" placeholder="ENTER YOUR COMPANY NAME..."
+              [value]="sourceCompanyName()" (input)="sourceCompanyName.set($any($event.target).value)"
+              [disabled]="isSubmitting()" />
+          </div>
+
+          <div class="form-field">
+            <label class="form-label" for="source-location">
+              YOUR COMPANY LOCATION
+            </label>
+            <input type="text" id="source-location" class="form-input" placeholder="City, Province or Coordinates"
+              [value]="sourceLocation()" (input)="sourceLocation.set($any($event.target).value)"
+              [disabled]="isSubmitting()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub-Locations Card -->
+      <div class="sub-locations-card" [class.disabled]="isSubmitting()">
+        <div class="sub-locations-header">
+          <span class="sub-locations-title">LOCATION</span>
+          <span class="sub-locations-count">{{ subLocations().length }}</span>
+        </div>
+
+        <div class="sub-locations-list">
+          @for (location of subLocations(); track $index) {
+          <div class="sub-location-row">
+            <div class="sub-location-left">
+              <span class="status-dot" [class]="getSubLocationStatusClass(location.status)"></span>
+              <div class="sub-location-text">
+                <span class="sub-location-name">{{ location.name }}</span>
+                <span class="sub-location-location">{{ location.location }}</span>
+              </div>
+            </div>
+            <div class="sub-location-actions">
+              <span class="sub-location-status-label" [class]="getSubLocationStatusClass(location.status)">
+                {{ getSubLocationStatusLabel(location.status) }}
+              </span>
+              <label class="sub-location-toggle">
+                <input type="checkbox" [checked]="location.status === 'ACTIVE'" [disabled]="isSubmitting()"
+                  (change)="toggleSubLocationStatus($index, $any($event.target).checked)" />
+                <span class="toggle-track"></span>
+              </label>
+              <button type="button" class="icon-btn" aria-label="Remove location" (click)="removeSubLocation($index)"
+                [disabled]="isSubmitting()">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+
+        <div class="sub-location-form">
+          <div class="sub-location-fields">
+            <input type="text" class="form-input sub-location-input" placeholder="Sub-location or site name"
+              [value]="subLocationName()" (input)="subLocationName.set($any($event.target).value)"
+              [disabled]="isSubmitting()" />
+            <input type="text" class="form-input sub-location-input" placeholder="City, Province or Coordinates"
+              [value]="subLocationLocation()" (input)="subLocationLocation.set($any($event.target).value)"
+              [disabled]="isSubmitting()" />
+          </div>
+          <div class="sub-location-footer">
+            <label class="sub-location-status-toggle">
+              <input type="checkbox" [checked]="subLocationIsActive()"
+                (change)="subLocationIsActive.set($any($event.target).checked)" [disabled]="isSubmitting()" />
+              <span class="toggle-track"></span>
+              <span class="toggle-label">{{ subLocationIsActive() ? 'ACTIVE' : 'PAUSED' }}</span>
+            </label>
+            <div class="sub-location-buttons">
+              <button type="button" class="btn-compact" (click)="addSubLocation()"
+                [disabled]="!canAddSubLocation() || isSubmitting()">
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description Field -->
+      <div class="form-field" [class.disabled]="isSubmitting()">
+        <label class="form-label" for="company-description">
+          SUBSIDIARY DESCRIPTION
+        </label>
+        <textarea id="company-description" class="form-input form-textarea" placeholder="ENTER COMPANY DESCRIPTION..."
+          [value]="description()" (input)="description.set($any($event.target).value)"
+          [disabled]="isSubmitting()"></textarea>
+      </div>
+
+      <!-- Company Logo Field -->
+      <div class="form-field" [class.disabled]="isSubmitting()">
+        <label class="form-label" for="company-logo">
+          SUBSIDIARY LOGO
+        </label>
+        <div class="logo-upload-area" [class.has-logo]="logoPreview()" [class.disabled]="isSubmitting()">
+          @if (logoPreview()) {
+          <div class="logo-preview">
+            <img [src]="logoPreview()" alt="Logo preview" />
+            <button type="button" class="remove-logo-btn" (click)="removeLogo()" aria-label="Remove logo"
+              [disabled]="isSubmitting()">
+              <span class="material-symbols-outlined">close</span>
+            </button>
+          </div>
+          } @else {
+          <input type="file" id="company-logo" class="logo-file-input"
+            accept=".svg,.png,.jpg,.jpeg,.gif,.webp,image/svg+xml,image/png,image/jpeg,image/gif,image/webp"
+            (change)="onFileSelected($event)" [disabled]="isSubmitting()" />
+          <label for="company-logo" class="logo-upload-label">
+            <span class="upload-icon">
+              <span class="material-symbols-outlined">add</span>
+            </span>
+            <span class="upload-text">UPLOAD SUBSIDIARY SIGNATURE</span>
+            <span class="upload-hint">SVG, PNG, JPG, GIF, OR WEBP</span>
+          </label>
+          }
+        </div>
+      </div>
+      }
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="modal-footer">
+      @if (submissionState() === 'SUCCESS') {
+      <div class="success-footer-note">Closing in 2 seconds...</div>
+      } @else {
+      <button type="button" class="btn-abort" (click)="onClose()" [disabled]="isSubmitting()">
+        ABORT
+      </button>
+      <button type="button" class="btn-execute" (click)="onSubmit()" [disabled]="isSubmitting()">
+        @if (isSubmitting()) {
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Saving...
+        } @else {
+        EXECUTE SYNC
+        }
+      </button>
+      }
+    </div>
+  </div>
+</div>
+}

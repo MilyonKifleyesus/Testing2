@@ -1,0 +1,68 @@
+<app-page-header [title]="'Carousel'" [title1]="['Advanced Ui']" [activeitem]="'Carousel'"></app-page-header>
+<!-- Start:: row-1 -->
+<div class="row">
+    <div class="col-xl-4 col-md-6">
+        <app-showcode-card [title]="'Slides Only'" [reuseCode]="reusableCode.carouselReuse" [prism]="prismCode.carousel1" [tsCode]="tsCodedata.carouselts">
+          <spk-ngb-carousel [images]="images" [interval]="1000" [showNavigationArrows]="false"
+            [showNavigationIndicators]="false"></spk-ngb-carousel>
+        </app-showcode-card>
+      </div>
+    <div class="col-xl-4 col-md-6">
+      <app-showcode-card [title]="'With controls'" [prism]="prismCode.carousel2" [reuseCode]="reusableCode.carouselReuse" [tsCode]="tsCodedata.carouselts2">
+        <spk-ngb-carousel [images]="imagescontrol" [id]="'carouselExampleControls'" [interval]="3000" [showNavigationArrows]="true"
+          [showNavigationIndicators]="false"></spk-ngb-carousel>
+      </app-showcode-card>
+  
+    </div>
+    <div class="col-xl-4 col-md-6">
+      <app-showcode-card [title]="'With indicators'" [prism]="prismCode.carousel3" [reuseCode]="reusableCode.carouselReuse" [tsCode]="tsCodedata.carouselts3">
+        <spk-ngb-carousel [images]="imagesIndicators" [interval]="3000" [showNavigationArrows]="false"
+          [showNavigationIndicators]="true"></spk-ngb-carousel>
+      </app-showcode-card>
+    </div>
+
+    <div class="col-xl-4 col-md-6">
+      <app-showcode-card [title]="'With captions'" [prism]="prismCode.carousel4" [reuseCode]="reusableCode.carouselReuse" [tsCode]="tsCodedata.carouselts4">
+        <spk-ngb-carousel [images]="carouselImages" [interval]="3000" [showNavigationArrows]="true"
+          [showNavigationIndicators]="true"></spk-ngb-carousel>
+      </app-showcode-card>
+  
+    </div>
+    <div class="col-xl-4 col-md-6">
+        <app-showcode-card [title]="'Crossfade'" [prism]="prismCode.carousel5" [reuseCode]="reusableCode.carouselReuse" [tsCode]="tsCodedata.carouselts5">
+          <spk-ngb-carousel [images]="imagescross" [id]="'carouselExampleFade'" [carouselClass]="'carousel-fade'"
+            [interval]="3200" [showNavigationArrows]="true" [showNavigationIndicators]="false"></spk-ngb-carousel>
+        </app-showcode-card>
+    
+      </div>
+    <div class="col-xl-4 col-md-6">
+      <app-showcode-card [title]="'Individual .carousel-item interval'" [reuseCode]="reusableCode.carouselReuse" [prism]="prismCode.carousel6">
+        <spk-ngb-carousel [images]="imagesindividual" [id]="'carouselExampleInterval'" [interval]="2800"
+          [showNavigationArrows]="true" [showNavigationIndicators]="false"></spk-ngb-carousel>
+      </app-showcode-card>
+    </div>
+  
+   
+  </div>
+  <!-- End:: row-1 -->
+  
+  <!-- Start:: row-2 -->
+  <div class="row">
+    <div class="col-xl-4 col-md-6">
+      <app-showcode-card [title]="'Dark variant'" [reuseCode]="reusableCode.carouselReuse" [prism]="prismCode.carousel8">
+        <spk-ngb-carousel [images]="darkVariantlImages" [interval]="3000" [showNavigationArrows]="true" [id]="'carouselExampleDark'"
+        [showNavigationIndicators]="false"></spk-ngb-carousel>
+      </app-showcode-card>
+  
+    </div>
+    <div class="col-xl-4 col-md-6">
+      <app-showcode-card [title]="'Disable touch swiping'" [reuseCode]="reusableCode.carouselReuse" [prism]="prismCode.carousel7"
+        [tsCode]="tsCodedata.carouselts7">
+        <spk-ngb-carousel [images]="images1" [id]="'carouselExampleControlsNoTouching'" [interval]="2800"
+          [showNavigationArrows]="true" [showNavigationIndicators]="false"></spk-ngb-carousel>
+      </app-showcode-card>
+  
+    </div>
+  
+  </div>
+  <!-- End:: row-2 -->

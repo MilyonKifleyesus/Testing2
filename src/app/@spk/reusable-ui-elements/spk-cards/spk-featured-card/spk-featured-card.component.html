@@ -1,0 +1,39 @@
+<div class="card custom-card">
+    <!-- Card Header -->
+    @if(header){
+
+      <div class="card-header" >
+        <div class="card-title">{{ header }}</div>
+      </div>
+    }
+  
+    <!-- Card Body -->
+    <div class="card-body">
+      @if(title){
+
+        <h6 class="card-title fw-medium" >{{ title }}</h6>
+      }
+      @if(subtitle){
+        <p class="card-subtitle text-muted {{subtitleClass}}" >{{ subtitle }}</p>
+      }
+      <p class="card-text">{{ text }}</p>
+      @if(buttonText){
+
+        <a  href="javascript:void(0);" class="btn" [ngClass]="buttonClass">{{ buttonText }}</a>
+      }
+    </div>
+  
+    <!-- Card Footer -->
+    @if(links && links.length > 0){
+
+      <div class="card-footer" >
+        @for(link of links;track $index){
+
+          <a  href="javascript:void(0);" class="card-link" [ngClass]="link.class">
+            {{ link.text }}
+          </a>
+        }
+      </div>
+    }
+  </div>
+  

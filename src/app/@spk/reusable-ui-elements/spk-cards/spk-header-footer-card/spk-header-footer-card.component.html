@@ -1,0 +1,28 @@
+<div class="card custom-card text-center">
+    <!-- Card Header -->
+    <div class="card-header border-bottom-0 pb-0">
+      <span class="ms-auto shadow-lg fs-17">
+        <i class="ri-heart-fill text-danger"></i>
+      </span>
+    </div>
+  
+    <!-- Card Body -->
+    <div class="card-body pt-1">
+      <!-- Avatar -->
+      <span class="avatar avatar-xl avatar-rounded me-2 mb-2">
+        <img [src]="avatar" alt="Profile Picture">
+      </span>
+  
+      <!-- Name and Job Title -->
+      <div class="fw-medium fs-16">{{ name }}</div>
+      <p class="mb-4 text-muted fs-11">{{ jobTitle }}</p>
+  
+      <!-- Social Media Buttons -->
+      <div class="btn-list">
+        <button *ngFor="let button of socialMediaButtons" class="btn btn-icon btn-wave" [ngClass]="button.class" (click)="button.action()">
+          <i [class]="button.icon"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+  

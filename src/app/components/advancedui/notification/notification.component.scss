@@ -1,0 +1,110 @@
+::ng-deep {
+    .toast-info {
+        background: #d3ebf8;
+        color: #1c76a6 !important;
+    }
+    .toast-success {
+        background: #dff8d3 !important;
+        color: #40871d !important;
+    }
+    .toast-warning {
+        background: #ffe7cc !important;
+        color: #c26700 !important;
+    }
+    .toast-error {
+        background: #f8d5d3 !important;
+        color: #a92019 !important;
+    }
+    #awn-popup-wrapper .awn-popup-body.awn-popup-confirm .fa {
+        color: #c26700 !important;
+        font-size: 44px !important;
+    }
+  
+    #awn-popup-wrapper .awn-buttons .awn-btn-success {
+        background: #40871d;
+    }
+    #awn-popup-wrapper .awn-buttons .awn-btn-cancel {
+        background: #1c76a6;
+    }
+    .swal2-container .swal2-styled.swal2-confirm{
+        display: none !important;
+    }
+    div:where(.swal2-container) div:where(.swal2-popup){
+        width:23em !important;
+        padding-bottom: 0 !important;
+    }
+    #awn-popup-wrapper .awn-buttons .awn-btn {
+        border: 0;
+        border-radius: 4px;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 32px;
+        transition:  .2s linear;
+        width: 45%;
+    }
+    #awn-popup-wrapper .awn-buttons {
+        display: flex !important;
+        justify-content: space-between !important;
+        margin-top: 24px !important;
+        width: 100%;
+    }
+    #awn-popup-wrapper .awn-popup-title {
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        margin-top: 8px !important;
+        text-transform: uppercase;
+    }
+    .defult-notification {
+        .toast-info {
+            background: #ebebeb !important;
+            color: gray !important;
+        }
+    }
+
+    .awn-toast-label {
+        // color: #1c76a6 !important;
+        display: block;
+        font-size: 18px;
+        text-transform: uppercase;
+    }
+
+    .awn-toast-content {
+        font-size: 14px;
+    }
+
+    .awn-toast.awn-toast-success {
+        background: #dff8d3 !important;
+        color: #40871d !important;
+    }
+
+    .awn-toast-icon {
+        align-items: center;
+        bottom: 0;
+        display: flex;
+        justify-content: flex-end;
+        position: absolute;
+        right: 16px;
+        top: 6px;
+    }
+
+    .awn-toast-icon .fa {
+        font-size: 44px !important;
+    }
+
+    button.toast-close-button {
+        display: none !important;
+    }
+
+    .awn-toast.awn-toast-info .awn-toast-wrapper {
+        border-color: #9fd3ef;
+    }
+
+    .toast-message {
+        font-size: 14px !important;
+    }
+
+    .toast-container .ngx-toastr {
+        padding: 15px 15px 15px 15px !important
+    }
+}

@@ -1,0 +1,107 @@
+<app-page-header [title]="'Apex Pie Charts'" [activeitem]="'Apex Pie Charts'"
+    [title1]="['Apex  Charts']"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Pie Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="pie-basic">
+                    <spk-apex-charts [chartOptions]="chartOptions"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Simple Donut Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="donut-simple">
+                    <spk-apex-charts [chartOptions]="chartOptions1"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Updating Donut Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="donut-update">
+                    <apx-chart #chart [series]="chartOptions2.series" [chart]="chartOptions2.chart"
+                        [yaxis]="chartOptions2.yaxis" [xaxis]="chartOptions2.xaxis" [markers]="chartOptions2.markers"
+                        [responsive]="chartOptions2.responsive" [dataLabels]="chartOptions2.dataLabels"
+                        [stroke]="chartOptions2.stroke" [annotations]="chartOptions2.annotations"
+                        [grid]="chartOptions2.grid" [colors]="chartOptions2.colors" [labels]="chartOptions2.labels"
+                        [subtitle]="chartOptions2.subtitle" [title]="chartOptions2.title" [fill]="chartOptions2.fill"
+                        [legend]="chartOptions2.legend" [theme]="chartOptions2.theme"
+                        [plotOptions]="chartOptions2.plotOptions" [tooltip]="chartOptions2.tooltip">
+                    </apx-chart>
+                </div>
+                <div class="text-center mt-4"> 
+                    <button class="btn btn-primary btn-sm m-1"(click)="randomize()"id="randomize">Randomize</button>
+                    <button class="btn btn-primary btn-sm m-1" (click)="appendData()"  id="add">Add</button>
+                    <button class="btn btn-primary btn-sm m-1" (click)="removeData()" id="remove">Remove</button>
+                    <button class="btn btn-primary btn-sm m-1" (click)="reset()"id="reset">Reset</button> 
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Monochrome Pie Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="pie-monochrome">
+                    <spk-apex-charts [chartOptions]="chartOptions3"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Gradient Donut Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="donut-gradient">
+                    <spk-apex-charts [chartOptions]="chartOptions4"></spk-apex-charts>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Donut Chart With Patterns</div>
+            </div>
+            <div class="card-body">
+                <div id="donut-pattern">
+                    <spk-apex-charts [chartOptions]="chartOptions5"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Image Filled Pie Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="pie-image">
+                    <spk-apex-charts [chartOptions]="chartOptions6"></spk-apex-charts>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

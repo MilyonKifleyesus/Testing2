@@ -1,0 +1,16 @@
+{
+  "/api": {
+    "target": "https://api.fleetpulse.net",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/yrt": {
+    "target": "http://rtu.york.ca",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/yrt": ""
+    }
+  }
+}

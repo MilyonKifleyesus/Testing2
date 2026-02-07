@@ -1,0 +1,22 @@
+<div class="col">
+    <div class="card custom-card">
+      <a href="javascript:void(0);" class="card-anchor"></a>
+      @if(image){
+
+        <img [src]="image" class="card-img-top" alt="Card image">
+      }
+      <div class="card-body">
+        <h6 class="card-title fw-semibold">{{ title }}</h6>
+        @if(discription1){
+
+          <p class="card-text">{{discription1}}</p>
+        }
+        <p class="card-text">{{discription}}</p>
+        @if(button){
+
+          <a href="javascript:void(0);" class="btn btn-primary1 me-1">Read More</a>
+          <a href="javascript:void(0);" class="btn btn-primary2">Get Details</a>
+        }
+      </div>
+    </div>
+  </div>

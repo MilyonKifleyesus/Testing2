@@ -1,0 +1,311 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">Add New Inspector</h1>
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
+          <li class="breadcrumb-item"><a routerLink="/admin/users/inspectors">Inspectors</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Add New</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="ms-auto pageheader-btn">
+      <button class="btn btn-secondary btn-wave btn-sm" (click)="goBack()">
+        <i class="ti ti-arrow-left me-1"></i>Back
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="row">
+    <!-- Left Column - Form -->
+    <div class="col-xl-8">
+      <!-- Basic Information Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-user me-2"></i>Basic Information
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Full Name -->
+            <div class="col-md-6">
+              <label class="form-label">Full Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="e.g., Jordan Carter"
+                [(ngModel)]="inspector.fullName">
+            </div>
+
+            <!-- Short Name -->
+            <div class="col-md-6">
+              <label class="form-label">Short Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="e.g., J. Carter"
+                [(ngModel)]="inspector.shortName">
+            </div>
+
+            <!-- Email -->
+            <div class="col-md-6">
+              <label class="form-label">Email Address *</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                placeholder="jordan@example.com"
+                [(ngModel)]="inspector.email">
+            </div>
+
+            <!-- Phone Number -->
+            <div class="col-md-6">
+              <label class="form-label">Phone Number</label>
+              <input 
+                type="tel" 
+                class="form-control" 
+                placeholder="+1 (555) 123-4567"
+                [(ngModel)]="inspector.phone">
+            </div>
+
+            <!-- Location -->
+            <div class="col-md-6">
+              <label class="form-label">Location *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="e.g., Seattle, WA"
+                [(ngModel)]="inspector.location">
+            </div>
+
+            <!-- Badge/ID -->
+            <div class="col-md-6">
+              <label class="form-label">Badge ID</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                placeholder="Badge identification number"
+                [(ngModel)]="inspector.badgeId">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Experience & Skills Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-certificate me-2"></i>Experience & Skills
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Years of Experience -->
+            <div class="col-md-6">
+              <label class="form-label">Years of Experience</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                placeholder="e.g., 5"
+                [(ngModel)]="inspector.yearsExperience"
+                min="0">
+            </div>
+
+            <!-- Specialization -->
+            <div class="col-md-6">
+              <label class="form-label">Specialization</label>
+              <select class="form-select" [(ngModel)]="inspector.specialization">
+                <option value="">Select Specialization</option>
+                <option value="Engine">Engine & Powertrain</option>
+                <option value="Brakes">Brakes & Suspension</option>
+                <option value="Electrical">Electrical Systems</option>
+                <option value="HVAC">HVAC & Interior</option>
+                <option value="Body">Body & Exterior</option>
+                <option value="General">General Inspection</option>
+              </select>
+            </div>
+
+            <!-- Certifications -->
+            <div class="col-12">
+              <label class="form-label">Certifications</label>
+              <div class="form-group">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cert1" value="ASE" [(ngModel)]="selectedCertifications" [value]="'ASE'">
+                  <label class="form-check-label" for="cert1">ASE Certified</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cert2" value="EPA" [(ngModel)]="selectedCertifications" [value]="'EPA'">
+                  <label class="form-check-label" for="cert2">EPA Certified</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="cert3" value="DOT" [(ngModel)]="selectedCertifications" [value]="'DOT'">
+                  <label class="form-check-label" for="cert3">DOT Certified</label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+              <label class="form-label">Notes</label>
+              <textarea 
+                class="form-control" 
+                rows="3"
+                placeholder="Add any additional notes..."
+                [(ngModel)]="inspector.notes"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Work Assignments Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-briefcase me-2"></i>Work Assignments
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Primary Client -->
+            <div class="col-md-6">
+              <label class="form-label">Primary Client</label>
+              <select class="form-select" [(ngModel)]="inspector.primaryClient">
+                <option value="">Select Client</option>
+                <option value="TTC">TTC</option>
+                <option value="GO Transit">GO Transit</option>
+                <option value="MiWay">MiWay</option>
+                <option value="Brampton Transit">Brampton Transit</option>
+              </select>
+            </div>
+
+            <!-- Service Area -->
+            <div class="col-md-6">
+              <label class="form-label">Service Area</label>
+              <select class="form-select" [(ngModel)]="inspector.serviceArea">
+                <option value="">Select Service Area</option>
+                <option value="North">North</option>
+                <option value="South">South</option>
+                <option value="East">East</option>
+                <option value="West">West</option>
+                <option value="Central">Central</option>
+              </select>
+            </div>
+
+            <!-- Shift Preference -->
+            <div class="col-md-6">
+              <label class="form-label">Shift Preference</label>
+              <select class="form-select" [(ngModel)]="inspector.shiftPreference">
+                <option value="">Select Shift</option>
+                <option value="Morning">Morning (6 AM - 2 PM)</option>
+                <option value="Afternoon">Afternoon (2 PM - 10 PM)</option>
+                <option value="Night">Night (10 PM - 6 AM)</option>
+                <option value="Flexible">Flexible</option>
+              </select>
+            </div>
+
+            <!-- Max Inspections per Day -->
+            <div class="col-md-6">
+              <label class="form-label">Max Inspections/Day</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                placeholder="e.g., 8"
+                [(ngModel)]="inspector.maxInspectionsPerDay"
+                min="1">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column - Summary & Status -->
+    <div class="col-xl-4">
+      <!-- Status Card -->
+      <div class="card custom-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-info-circle me-2"></i>Status & Settings
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <label class="form-label">Account Status</label>
+            <select class="form-select" [(ngModel)]="inspector.status">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Role</label>
+            <select class="form-select" [(ngModel)]="inspector.role">
+              <option value="">Select Role</option>
+              <option value="Inspector">Inspector</option>
+              <option value="Senior Inspector">Senior Inspector</option>
+              <option value="Team Lead">Team Lead</option>
+            </select>
+          </div>
+
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="allowOvertime" [(ngModel)]="inspector.allowOvertime">
+            <label class="form-check-label" for="allowOvertime">Allow Overtime</label>
+          </div>
+
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="sendNotifications" [(ngModel)]="inspector.sendNotifications">
+            <label class="form-check-label" for="sendNotifications">Send Notifications</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Card -->
+      <div class="card custom-card summary-card mb-4">
+        <div class="card-header">
+          <h6 class="card-title mb-0">
+            <i class="ti ti-clipboard-list me-2"></i>Summary
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="summary-item">
+            <span class="summary-label">Name:</span>
+            <span class="summary-value">{{inspector.fullName || 'Not provided'}}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Email:</span>
+            <span class="summary-value">{{inspector.email || 'Not provided'}}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Location:</span>
+            <span class="summary-value">{{inspector.location || 'Not provided'}}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Experience:</span>
+            <span class="summary-value">{{inspector.yearsExperience || 0}} years</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Status:</span>
+            <span class="summary-value">
+              <span class="badge" [ngClass]="{'bg-success': inspector.status === 'active', 'bg-secondary': inspector.status === 'inactive', 'bg-danger': inspector.status === 'suspended'}">
+                {{inspector.status | titlecase}}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-grid gap-2">
+        <button class="btn btn-primary btn-lg" (click)="saveInspector()">
+          <i class="ti ti-check me-2"></i>Save Inspector
+        </button>
+        <button class="btn btn-outline-secondary btn-lg" (click)="goBack()">
+          <i class="ti ti-x me-2"></i>Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

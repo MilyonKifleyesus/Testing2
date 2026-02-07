@@ -1,0 +1,15 @@
+::ng-deep {
+    .ng-select.ng-select-disabled > .ng-select-container {
+        background-color: var(--default-background) !important;
+    }
+    .ng-select.ng-select-multiple .ng-select-container .ng-value-container .ng-value {
+        border-color :transparent !important;
+    }
+        .ng-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
+            box-shadow:none;
+        }
+        .ng-clear-wrapper {
+            display: none;
+        }
+        
+}

@@ -1,0 +1,311 @@
+<app-page-header [title]="'Buttons'" [title1]="['Elements']" [activeitem]="'Buttons'"></app-page-header>
+<!--ROW-START-->
+<div class="row">
+    <div class="col-xl-6">
+        <app-showcode-card [title]="'Default Buttons'" [prism]="prsimCodeData.buttonsTS">
+          <div class="btn-list">
+            @for(button of buttons;track $index){
+            <button type="button" class="{{button.class}}">{{button.text}}</button>
+            }
+          </div>
+        </app-showcode-card>
+      </div>
+      <div class="col-xl-6">
+        <app-showcode-card [title]="'Sizes'" [prism]="prsimCodeData.buttonsTS17">
+          <div class="btn-list">
+            @for(button of sizesButtons;track $index){
+            <button type="button" class="{{button.class}}">
+              {{button.buttonText}}</button>
+            }
+          </div>
+        </app-showcode-card>
+      </div>
+
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Button Widths'" [prism]="prsimCodeData.buttonsTS18">
+          <div class="btn-list">
+            @for(button of buttonWidths;track $index){
+            <button type="button" class="{{button.class}}">
+              {{button.size}}</button>
+            }
+          </div>
+        </app-showcode-card>
+      </div>
+      <div class="col-xl-6">
+        <app-showcode-card [title]="'Buttons With Different Shadows'" [prism]="prsimCodeData.buttonsTS19">
+          <div class="btn-list d-flex">
+            <div class="me-5">
+              @for(button of shadowButtons;track $index){
+              <button type="button" class="{{button.class}}">
+                Button</button>
+              }
+            </div>
+            <div>
+              @for(button of shadowButtons1;track $index){
+              <button type="button" class="{{button.class}}">
+                Button</button>
+              }
+            </div>
+          </div>
+        </app-showcode-card>
+      </div>
+      <div class="col-xl-6">
+        <app-showcode-card [title]="' Different Colored Buttons With Shadows'" [prism]="prsimCodeData.buttonsTS20">
+          <div class="btn-list">
+            @for(button of coloredButtons;track $index){
+            <button type="button" class="{{button.class}}">
+              Button </button>
+            }
+    
+          </div>
+        </app-showcode-card>
+      </div>
+      <div class="col-xl-6">
+        <app-showcode-card [title]="' Raised Buttons'" [prism]="prsimCodeData.buttonsTS21">
+          <div class="btn-list">
+            @for(button of raisedButtons;track $index){
+            <button type="button" class="{{button.class}}">
+              Button </button>
+            }
+    
+          </div>
+        </app-showcode-card>
+      </div>
+      <div class="col-xl-6">
+        <app-showcode-card [title]="' Label Buttons'" [prism]="prsimCodeData.buttonsTS22">
+          <div class="btn-list">
+            @for(button of labelButtons;track $index){
+            <button type="button" class="{{button.class}}">
+              <i class="{{button.icon}}"></i>
+              {{button.text}} </button>
+            }
+          </div>
+        </app-showcode-card>
+      </div>
+      
+    <div class="col-xl-6">
+        <app-showcode-card [title]="'Rounded Buttons'" [prism]="prsimCodeData.buttonsTS1">
+          <div class="btn-list">
+            @for(button of roundedButtons;track $index){
+            <button type="button" class="{{button.class}}">{{button.text}}</button>
+            }
+          </div>
+        </app-showcode-card>
+      </div>
+      <div class="col-xl-6">
+        <app-showcode-card [title]="' Light Buttons'" [prism]="prsimCodeData.buttonsTS2">
+          <div class="btn-list">
+            @for(button of lightButtons;track $index){
+            <button type="button" class="{{button.class}}">{{button.text}}</button>
+            }
+          </div>
+        </app-showcode-card>
+      </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' Light Rounded Buttons'" [prism]="prsimCodeData.buttonsTS3">
+        <div class="btn-list">
+          @for(button of lightRoundedButtons;track $index){
+          <button type="button" class="{{button.class}}">{{button.text}}</button>
+          }
+        </div>
+      </app-showcode-card>
+    </div>
+  
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' Outline Buttons'" [prism]="prsimCodeData.buttonsTS4">
+        <div class="btn-list">
+          @for(button of outlineButtons;track $index){
+          <button type="button" class="{{button.class}}">{{button.text}}</button>
+          }
+  
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' Rounded Outline Buttons'" [prism]="prsimCodeData.buttonsTS5">
+        <div class="btn-list">
+          @for(button of roundedOutlineButtons;track $index){
+          <button type="button" class="{{button.class}}">{{button.text}}</button>
+          }
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' Gradient Buttons'" [prism]="prsimCodeData.buttonsTS6">
+        <div class="btn-list">
+          @for(button of gradientButtons;track $index){
+          <button type="button" class="{{button.class}}">{{button.text}}</button>
+          }
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="'Rounded Gradient Buttons'" [prism]="prsimCodeData.buttonsTS7">
+        <div class="btn-list">
+          @for(button of roundedGradientButtons;track $index){
+          <button type="button" class="{{button.class}}">{{button.text}}</button>
+          }
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' Ghost Buttons'" [prism]="prsimCodeData.buttonsTS8">
+        <div class="btn-list">
+          @for(button of ghostButtons;track $index){
+          <button type="button" class="{{button.class}}">{{button.text}}</button>
+          }
+  
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="'Button tags'" [prism]="prsimCodeData.buttonsTS9">
+        <div class="btn-list">
+          <a class="btn btn-primary btn-wave" href="javascript:void(0);">Link</a>
+          <button type="button" class="btn btn-secondary btn-wave">Button </button>
+          <input class="btn btn-info" type="button" value="Input" />
+          <input class="btn btn-warning" type="submit" value="Submit" />
+          <input class="btn btn-success" type="reset" value="Reset" />
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' disabled state with anchor tags'" [prism]="prsimCodeData.buttonsTS10">
+        <div class="btn-list">
+          <div class="mb-4">
+            @for(button of disabledButtons;track $index){
+            <button type="button" class="{{button.class}}" disabled>{{button.text}}</button>
+            }
+          </div>
+          <div>
+            <button type="button" class="btn btn-primary disabled" disabled>Primary link</button>
+            <button type="button" class="btn btn-secondary disabled" disabled>Link</button>
+          </div>
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' button plugin toggle states'" [prism]="prsimCodeData.buttonsTS11">
+        <div class="btn-list">
+          <div class="mb-4">
+            @for(button of toggleButtons;track $index){
+            <button type="button" class="{{button.class}}">{{button.text}}</button>
+            }
+          </div>
+          <div>
+            @for(button of toggleButtons2;track $index){
+            <button type="button" class="{{button.class}}" [disabled]="button.disabled">{{button.text}}</button>
+            }
+          </div>
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Link functionally caveat'" [prism]="prsimCodeData.buttonsTS11">
+            <div class="btn-list">
+                <a class="btn btn-primary disabled" tabindex="-1" role="button"
+                    aria-disabled="true">Primary link</a>
+                <a class="btn btn-secondary disabled" tabindex="-1" role="button"
+                    aria-disabled="true">Link</a>
+            </div>
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' Loading Buttons'" [prism]="prsimCodeData.buttonsTS13">
+        <div class="btn-list d-md-flex flex-wrap">
+          @for(button of loadingButtons;track $index){
+          <button type="button" class="{{button.class}}" [disabled]="button.disabled">
+            <span class="me-2">{{button.text}}</span>
+            <span class="loading"><i class="{{button.icon}}"></i></span></button>
+          }
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [title]="' Icon Buttons'" [prism]="prsimCodeData.buttonsTS14">
+        <div class="btn-list d-md-flex d-block">
+          <div class="mb-md-0 mb-2">
+            @for(button of iconButtons;track $index){
+            <button type="button" class="{{button.class}}">
+              <i class="{{button.icon}}"></i></button>
+            }
+  
+          </div>
+          <div class="mb-md-0 mb-2">
+            @for(button of iconButtons2;track $index){
+            <button type="button" class="{{button.class}}">
+              <i class="{{button.icon}}"></i></button>
+            }
+          </div>
+          <div class="">
+            @for(button of iconButtons3;track $index){
+            <button type="button" class="{{button.class}}">
+              <i class="{{button.icon}}"></i></button>
+            }
+          </div>
+        </div>
+      </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Social Buttons'" [prism]="prsimCodeData.buttonsTS16">
+          <div class="btn-list">
+            @for(button of socialButtons;track $index){
+            <button type="button" class="{{button.class}}">
+              <i class="{{button.icon}}"></i></button>
+            }
+          </div>
+        </app-showcode-card>
+      </div>
+      <div class="col-xl-12">
+        <app-showcode-card [title]="' Custom Buttons'" [prism]="prsimCodeData.buttonsTS23">
+          <div class="btn-list">
+            @for(button of customButtons;track $index){
+            <button type="button" class="{{button.class}}">
+              @if(button.icon){
+              <span class="custom-btn-icons">
+                <i class="{{button.icon}}"></i>
+              </span>
+              }
+              {{button.text}} </button>
+            }
+    
+          </div>
+        </app-showcode-card>
+      </div>
+      <div class="col-xl-12">
+        <app-showcode-card [title]="' Block Buttons'" [prism]="prsimCodeData.buttonsTS24">
+          <div class="btn-list">
+            <div class="d-grid gap-2 mb-4">
+              @for(buttons of Blockbutton;track $index){
+              <ng-container>
+                <button type="button" class="{{buttons.color}}" >{{buttons.class}}</button>
+              </ng-container>
+              }
+            </div>
+            <div class="d-grid gap-2 d-md-block">
+              @for(buttons of Blockbutton1;track $index){
+              <ng-container>
+                <button type="button" class="{{buttons.color}}">{{buttons.class}}</button>
+              </ng-container>
+              }
+            </div>
+    
+            <div class="d-grid gap-2 col-6 mx-auto">
+              @for(buttons of Blockbutton2;track $index){
+              <ng-container>
+                <button type="button" class="{{buttons.color}}">{{buttons.class}}</button>
+              </ng-container>
+              }
+            </div>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end"> 
+              @for(buttons of Blockbutton3;track $index){
+                <ng-container>
+                  <button type="button" class="{{buttons.color}}">{{buttons.class}}</button>
+                </ng-container>
+                }
+          </div>
+          </div>
+        </app-showcode-card>
+      </div>
+  </div>
+  <!--ROW-END-->

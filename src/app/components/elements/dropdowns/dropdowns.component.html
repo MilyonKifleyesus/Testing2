@@ -1,0 +1,595 @@
+<app-page-header [title]="'Dropdowns'" [title1]="['Elements']" [activeitem]="'Dropdowns'"></app-page-header>
+<!--Start:: row-1-->
+<div class="row">
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Split Buttons'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS5">
+            @for (dropdown of splitButtons; track $index) {
+            <spk-dropdowns [Customclass]="'btn-group my-1'" [splitbutton]="true" [splitTitle]="'Action'"
+                [splitbuttonClass]="dropdown.splitbuttonClass" [class]="dropdown.style" [Menuclass]="'dropdown-menu'">
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+            </spk-dropdowns>
+            }
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Dropdown Sizing'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS6">
+            @for (dropdown of dropdownsizing; track $index) {
+            <spk-dropdowns [Customclass]="'btn-group my-1 me-2'" [splitbutton]="dropdown.splitbutton"
+                [splitTitle]="dropdown.splitTitle" [splitbuttonClass]="dropdown.splitbuttonClass"
+                [class]="dropdown.style" [Menuclass]="'dropdown-menu'" [title]="dropdown.label">
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+            </spk-dropdowns>
+            }
+        </app-showcode-card>
+
+    </div>
+</div>
+
+<!--End:: row-1-->
+
+<!-- Start:: row-2 -->
+<div class="row">
+    <div class="col-xl-3">
+        <app-showcode-card [title]="'Dropup'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS7">
+            @for (dropdown of droups; track $index) {
+            <spk-dropdowns [Customclass]="'btn-group  my-1 me-2  dropup-1  '" [class]="dropdown.style"
+                [title]="dropdown.label" [Menuclass]="'dropdown-menu'" [splitbutton]="dropdown.splitbutton"
+                [splitTitle]="dropdown.splitTitle" [splitbuttonClass]="dropdown.splitbuttonClass">
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+            </spk-dropdowns>
+            }
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="'Dropup left'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS10">
+            @for (dropdown of dropleft; track $index) {
+            <spk-dropdowns [Customclass]="dropdown.Customclass" [class]="dropdown.style" [title]="dropdown.label"
+                [Menuclass]="'dropdown-menu'" >
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+            </spk-dropdowns>
+            }
+            <div class="btn-group" >
+                <div class="btn-group dropstart my-1" role="group" ngbDropdown>
+                     <button ngbDropdownToggle type="button"  class="btn btn-info dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+                        aria-expanded="false"> <span class="visually-hidden">Toggle Dropstart</span> </button>
+                    <ul class="dropdown-menu" ngbDropdownMenu>
+                        <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Action</a></li>
+                        <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Another action</a></li>
+                        <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Something else here</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+                    </ul>
+                </div> <button type="button" class="btn btn-info my-1"> Split dropstart </button>
+            </div>
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="' Dropup right'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS8">
+            @for (dropdown of dropright; track $index) {
+            <spk-dropdowns [Customclass]="dropdown.Customclass" [class]="dropdown.style" [title]="dropdown.label"
+                [Menuclass]="'dropdown-menu'" [splitbutton]="dropdown.splitbutton" [splitTitle]="dropdown.splitTitle"
+                [splitbuttonClass]="dropdown.splitbuttonClass">
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+            </spk-dropdowns>
+            }
+        </app-showcode-card>
+
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="'Active'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS9">
+            <spk-dropdowns [Customclass]="''" [class]="'btn-primary dropdown-toggle'" [title]="'Dropstart'"
+                [Menuclass]="'dropdown-menu'" [Id]="'dropdownMenuOffset'">
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Regular link</a></li>
+                <li><a ngbDropdownItem class="dropdown-item active" href="javascript:void(0);"
+                        aria-current="true">Active
+                        link</a>
+                </li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another link</a></li>
+            </spk-dropdowns>
+
+        </app-showcode-card>
+
+    </div>
+</div>
+<div class="row">
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Outline Button Dropdowns'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS3">
+            <div class="btn-list">
+                @for (dropdown of buttonGroups; track $index) {
+                <spk-dropdowns [Customclass]="'btn-group'" [Id]="'dropdownMenuLink'" [class]="dropdown.style"
+                    [title]="dropdown.label" [Menuclass]="'dropdown-menu'">
+                    @for(item of dropdown.items;track $index){
+                    <li>
+                        <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">{{item}}</a>
+                    </li>
+                    }
+                </spk-dropdowns>
+                }
+
+            </div>
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Rounded Outline Dropdowns'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS4">
+            <div class="btn-list">
+                @for (dropdown of roundedOutlineGroups; track $index) {
+                <spk-dropdowns [Customclass]="'btn-group'" [class]="dropdown.style" [title]="dropdown.label"
+                    [Menuclass]="'dropdown-menu'">
+                    @for(item of dropdown.items;track $index){
+                    <li>
+                        <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">{{item}}</a>
+                    </li>
+                    }
+                </spk-dropdowns>
+                }
+            </div>
+        </app-showcode-card>
+
+    </div>
+
+
+</div>
+<!-- End:: row-2 -->
+
+<!-- Start:: row-3 -->
+<div class="row">
+    <div class="col-xl-12">
+        <app-showcode-card [title]="'Dropdowns'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS">
+            <div class="btn-list d-flex align-items-center flex-wrap">
+                <spk-dropdowns [Customclass]="'dropdown'" [Id]="'dropdownMenuButton1'"
+                    [class]="' btn-primary dropdown-toggle'" [title]="'Dropdown button'" [Menuclass]="'dropdown-menu'">
+                    @for(item of dropdownItems;track $index){
+                    <li>
+                        <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">{{item.item}}</a>
+                    </li>
+                    }
+                </spk-dropdowns>
+                <spk-dropdowns [Customclass]="'dropdown'" [Id]="'dropdownMenuLink'"
+                    [class]="' btn-secondary dropdown-toggle'" [title]="'Dropdown link'" [Menuclass]="'dropdown-menu'">
+                    @for(item of dropdownItems;track $index){
+                    <li>
+                        <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">{{item.item}}</a>
+                    </li>
+                    }
+                </spk-dropdowns>
+
+            </div>
+        </app-showcode-card>
+
+    </div>
+</div>
+<div class="row">
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Single dropdown buttons'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS1">
+            <div class="btn-list">
+                @for (dropdown of singledropdownGroups; track $index) {
+                <spk-dropdowns [Customclass]="'btn-group'" [class]="dropdown.style" [title]="dropdown.label"
+                    [Menuclass]="'dropdown-menu'">
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+                </spk-dropdowns>
+                }
+            </div>
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Rounded Button Dropdowns'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS2">
+            <div class="btn-list">
+                @for (dropdown of roundedGroups; track $index) {
+                <spk-dropdowns [Customclass]="'btn-group'" [class]="dropdown.style" [title]="dropdown.label"
+                    [Menuclass]="'dropdown-menu'">
+                    @for(item of dropdown.items;track $index){
+                    <li>
+                        <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">{{item}}</a>
+                    </li>
+                    }
+                </spk-dropdowns>
+                }
+            </div>
+        </app-showcode-card>
+
+    </div>
+
+
+</div>
+<!-- End:: row-3 -->
+
+<!-- Start:: row-4 -->
+
+<!-- End:: row-4 -->
+<!-- Start:: row-6 -->
+<div class="row">
+    <div class="col-xl-3">
+        <app-showcode-card [title]="'Disabled'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS11">
+            <spk-dropdowns [class]="'btn-primary dropdown-toggle'" [Menuclass]="'dropdown-menu'" [title]="'Dropstart'">
+                <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Regular link</a></li>
+                <li><a class="dropdown-item disabled" ngbDropdownItem href="javascript:void(0);"
+                        aria-current="true">Active
+                        link</a></li>
+                <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Another link</a></li>
+            </spk-dropdowns>
+        </app-showcode-card>
+
+    </div>
+    <div class="col-xl-6">
+        <app-showcode-card [title]="' Auto close behavior'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS12">
+            <div class="btn-list">
+                @for (dropdown of autoCloseGroups; track $index) {
+                <spk-dropdowns [Customclass]="'btn-group'" [autoClose]="dropdown.closeAuto" [class]="dropdown.style"
+                    [title]="dropdown.label" [Menuclass]="'dropdown-menu'">
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Menu item</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Menu item</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Menu item</a></li>
+                </spk-dropdowns>
+                }
+            </div>
+        </app-showcode-card>
+
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="' dropdowns with Forms'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS13">
+            <spk-dropdowns [class]="'btn-secondary dropdown-toggle'" [Id]="'dropdownMenu2'"
+                [Menuclass]="'dropdown-menu'" [title]="'Dropdown'">
+                <form class="px-4 py-3">
+                    <div class="mb-3">
+                        <label for="exampleDropdownFormEmail1" class="form-label">Email
+                            address</label>
+                        <input type="email" class="form-control" id="exampleDropdownFormEmail1"
+                            placeholder="email@example.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="exampleDropdownFormPassword1" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="exampleDropdownFormPassword1"
+                            placeholder="Password">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="dropdownCheck">
+                            <label class="form-check-label" for="dropdownCheck">
+                                Remember me
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Sign in</button>
+                </form>
+                <div class="dropdown-divider"></div>
+                <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">New around here? Sign up</a>
+                <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Forgot password?</a>
+            </spk-dropdowns>
+        </app-showcode-card>
+
+    </div>
+</div>
+<!-- End:: row-6 -->
+<!-- Start:: row-7 -->
+<div class="row">
+    <div class="col-xl-3">
+        <app-showcode-card [title]="' Dropdown menu centered'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS14">
+            <p class="card-title mb-3">Use <code>.dropdown-center</code> on the parent element.
+            </p>
+            <spk-dropdowns [Customclass]="'dropdown-center'" [class]="'btn-primary dropdown-toggle'"
+                [title]="'Centered dropdown'" [Menuclass]="'dropdown-menu'" [Id]="'dropdownCenterBtn'">
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action two</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action three</a></li>
+            </spk-dropdowns>
+        </app-showcode-card>
+    </div>
+    <div class=" col-xl-3">
+        <app-showcode-card [title]="'Dropup centered'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS15">
+            <p class="card-title mb-3">Use <code>.dropup-center</code>
+                on the parent element.
+            </p>
+            <spk-dropdowns [Customclass]="'dropdown-center dropup'" [class]="'btn-secondary dropdown-toggle'"
+                [title]="'Centered dropup'" [Menuclass]="'dropdown-menu'" [Id]="'dropdownCenterBtn'">
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action two</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action three</a></li>
+            </spk-dropdowns>
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="' Menu items'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS16">
+            <p class="card-title mb-3">You can use <code>&lt;a&gt;</code> or <code>&lt;button&gt;</code> asdropdown
+                items.</p>
+            <spk-dropdowns [Customclass]="'dropdown'" [class]="'btn-info dropdown-toggle'" [title]="'Dropdown'"
+                [Menuclass]="'dropdown-menu'" [Id]="'dropdownMenu1'">
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Action</button></li>
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Another action</button>
+                </li>
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Something else
+                        here</button>
+                </li>
+            </spk-dropdowns>
+        </app-showcode-card>
+
+    </div>
+    <div class=" col-xl-3">
+        <app-showcode-card [title]="' Dropdowns options'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS17">
+            <p class="card-title mb-3">Use <code>data-bs-offset</code> or <code>data-bs-reference</code> to change the
+                location of the dropdown.</p>
+            <div class="d-flex align-items-center">
+                <spk-dropdowns [Customclass]="'dropdown me-1'" [class]="'btn-primary dropdown-toggle'"
+                    [title]="'Offset'" [Menuclass]="'dropdown-menu'" [Id]="'dropdownMenuOffset'">
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a>
+                    </li>
+                </spk-dropdowns>
+                <spk-dropdowns [Customclass]="'btn-group'" [splitbutton]="true" [splitTitle]="'Reference'"
+                    [splitbuttonClass]="'btn btn-info'" [class]="'btn-info dropdown-toggle dropdown-toggle-split'"
+                    [Menuclass]="'dropdown-menu'" [Id]="'dropdownMenuOffset'">
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a>
+                    </li>
+                </spk-dropdowns>
+            </div>
+        </app-showcode-card>
+
+    </div>
+</div>
+<!-- End:: row-7 -->
+<!-- Start:: row-5 -->
+
+<!-- End:: row-5 -->
+<!-- Start:: row-8 -->
+<div class="row">
+    <div class="col-xl-9">
+        <app-showcode-card [title]="' Alignment options'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS18">
+            <div class="btn-list">
+                @for (dropdown of alignmentOptions; track $index) {
+                <spk-dropdowns [Customclass]="dropdown.Customclass" [class]="dropdown.style" [title]="dropdown.label"
+                    [Menuclass]="dropdown.menuClass" [placement]="dropdown.placement">
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Menu item</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Menu item</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Menu item</a></li>
+                </spk-dropdowns>
+                }
+            </div>
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="' Dark Dropdowns'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS19">
+            <spk-dropdowns [Customclass]="'dropdown'" [class]="'btn-dark dropdown-toggle'" [title]="'Dropdown button'"
+                [Menuclass]="'dropdown-menu dropdown-menu-dark'" [Id]="'dropdownMenuButton3'">
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+            </spk-dropdowns>
+        </app-showcode-card>
+    </div>
+</div>
+<!-- End:: row-8 -->
+<!-- Start:: row-9 -->
+<div class="row">
+    <div class="col-xl-4">
+        <app-showcode-card [title]="'Menu alignment'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS20">
+            <spk-dropdowns [class]="'btn-primary dropdown-toggle'" [title]="'Right-aligned menu'"
+                [Menuclass]="'dropdown-menu dropdown-menu-end'">
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Action</button> </li>
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Another action</button></li>
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Something else here</button> </li>
+            </spk-dropdowns>
+        </app-showcode-card>
+
+    </div>
+    <div class="col-xl-4">
+        <app-showcode-card [title]="'Responsive alignment end'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS21">
+            <spk-dropdowns [class]="'btn-secondary dropdown-toggle text-wrap'"
+                [title]="'Left-aligned but right aligned when large screen'"
+                [Menuclass]="'dropdown-menu dropdown-menu-lg-end'">
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Action</button> </li>
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Another action</button></li>
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Something else here</button> </li>
+            </spk-dropdowns>
+        </app-showcode-card>
+
+    </div>
+    <div class="col-xl-4">
+        <app-showcode-card [title]="'Responsive alignment left'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS22">
+            <spk-dropdowns [class]="'btn-info dropdown-toggle text-wrap'"
+                [title]="'Left-aligned but right aligned when large screen'"
+                [Menuclass]="'dropdown-menu dropdown-menu-lg-start'">
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Action</button> </li>
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Another action</button></li>
+                <li><button ngbDropdownItem class="dropdown-item" type="button">Something else here</button> </li>
+            </spk-dropdowns>
+        </app-showcode-card>
+
+    </div>
+</div>
+<!-- End:: row-9 -->
+
+<!-- Start:: row-10 -->
+<div class="row">
+    <div class="col-xl-6">
+        <app-showcode-card [title]="'Custom Dropdown Menu\'s'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS23">
+            <div class="btn-list">
+                @for (dropdown of customDropdowns; track $index) {
+                <spk-dropdowns [Customclass]="'btn-group'" [class]="dropdown.style" [title]="dropdown.label"
+                    [Menuclass]="dropdown.menuClass">
+                    @if(dropdown.activeTitle){
+                    <li>
+                        <a ngbDropdownItem class="dropdown-item active" href="javascript:void(0);">Active</a>
+                    </li>
+                    }
+                    @for(item of dropdown.items;track $index){
+                    <li>
+                        <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">{{item}}</a>
+                    </li>
+                    }
+
+                </spk-dropdowns>
+                }
+
+            </div>
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+        <app-showcode-card [title]="'Ghost Button Dropdowns'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS24">
+            <div class="btn-list">
+                @for (dropdown of ghostDropdowns; track $index) {
+                <spk-dropdowns [Customclass]="'btn-group'" [class]="dropdown.style" [title]="dropdown.label"
+                    [Menuclass]="'dropdown-menu'">
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Something else here</a>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a ngbDropdownItem class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+                </spk-dropdowns>
+                }
+            </div>
+        </app-showcode-card>
+
+    </div>
+</div>
+<!-- End:: row-10 -->
+
+<!-- Start:: row-11 -->
+<div class="row">
+    <div class="col-xl-3">
+
+        <app-showcode-card [title]="'non-interactive dropdown items'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS25">
+
+            <p class="card-title mb-3">Use <code>.dropdown-item-text.</code> to create non-interactive dropdown items.
+            </p>
+            <div class="bd-example">
+                <ul class="dropdown-menu">
+                    <li><span class="dropdown-item-text">Dropdown item text</span>
+                    </li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Something else here</a>
+                    </li>
+                </ul>
+            </div>
+        </app-showcode-card>
+
+    </div>
+    <div class="col-xl-3">
+
+        <app-showcode-card [title]="'Dropdown Headers'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS26">
+
+            <p class="card-titlte mb-3">Add a <code>.dropdown-header</code> to label sections of actions in any dropdown
+                menu.</p>
+            <div class="bd-example">
+                <ul class="dropdown-menu">
+                    <li>
+                        <h6 class="dropdown-header">Dropdown header</h6>
+                    </li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+                </ul>
+            </div>
+        </app-showcode-card>
+
+    </div>
+    <div class="col-xl-3">
+
+        <app-showcode-card [title]="'Dropdown Dividers'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS27">
+
+            <div class="bd-example">
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-header" href="javascript:void(0);">Heading</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Action</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Another action</a></li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Something else here</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="javascript:void(0);">Separated link</a></li>
+                </ul>
+            </div>
+        </app-showcode-card>
+
+    </div>
+    <div class="col-xl-3">
+
+        <app-showcode-card [title]="'Dropdown Menu Text'" [reuseCode]="reusableCode.dropdownsReuse"
+            [prism]="prsimCodeData.dropdownsTS28">
+
+            <div class="bd-example">
+                <div class="dropdown-menu p-4 text-muted" style="max-width: 200px;">
+                    <p>
+                        Some example text that's free-flowing within the dropdown menu.
+                    </p>
+                    <p class="mb-0">
+                        And this is more example text.
+                    </p>
+                </div>
+            </div>
+        </app-showcode-card>
+
+    </div>
+</div>
+<!-- End:: row-11 -->

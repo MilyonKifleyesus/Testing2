@@ -1,0 +1,24 @@
+
+    <div class="card custom-card">
+      <div class="card-body">
+        <p class="mb-1">{{ title }}</p>
+        <div>
+          <h4 class="dash-25 mb-2">{{ value }}</h4>
+        </div>
+        <div class="expansion-value d-flex">
+          <strong><i [class]="icon1Class"></i> {{ icon1Value }}</strong>
+          <strong class="ms-auto"><i [class]="icon2Class"></i>{{ icon2Value }}</strong>
+        </div>
+        <div class="progress progress-sm progress-animate">
+          <div
+            class="progress-bar progress-bar-xs"
+            [class]="progressBarClass"
+            [style.width]="progressValue + '%'"></div>
+        </div>
+        <div class="expansion-label d-flex text-muted">
+          <span>{{ label1 }}</span>
+          <span class="ms-auto">{{ label2 }}</span>
+        </div>
+      </div>
+    </div>
+  

@@ -1,0 +1,49 @@
+/* User View Component Styles */
+
+.avatar-gradient {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+}
+
+.bg-primary-gradient {
+  background: linear-gradient(135deg, rgba(var(--primary-rgb), 1) 0%, rgba(var(--primary-rgb), 0.7) 100%);
+}
+
+.nav-tabs .nav-link {
+  border: none;
+  color: #5c6770;
+  margin-right: 0.5rem;
+  
+  i {
+    opacity: 0.7;
+  }
+  
+  &.active {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    
+    i {
+      opacity: 1;
+    }
+  }
+  
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+
+.permission-card {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.table-hover tbody tr {
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: rgba(var(--primary-rgb), 0.05);
+  }
+}

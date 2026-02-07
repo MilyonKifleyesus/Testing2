@@ -1,0 +1,507 @@
+<app-page-header [title]="'Swiper'" [title1]="['Advanced Ui']" [activeitem]="'Swiper'"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Basic Swiper
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                        <swiper-container #swiperContainer class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000"
+                            autoplay-disable-on-interaction="false">
+                            @for(image of imageData;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" class="img-fluid rounded" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Swiper With Navigation
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper swiper-navigation">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer   class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000" navigation="true"
+                            autoplay-disable-on-interaction="false">
+                            @for(image of imageData1;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Swiper with Pagination
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <swiper-container #swiperContainer1 class="swiper pagination" space-between="30"
+                    slides-per-view="1" slides-per-group="1" autoplay-delay="2000" pagination="true"
+                    pagination-clickable="true" autoplay-disable-on-interaction="false">
+                    @for(image of imageData2;track $index){
+
+                    <swiper-slide>
+                        <div class="swiper-slide"><img class="img-fluid rounded" [src]="image.src" alt=""></div>
+                    </swiper-slide>
+                    }
+                </swiper-container>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Dynamic Pagination
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper pagination-dynamic">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer1 class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000" pagination="true" pagination-clickabke="true"
+                            pagination-dynamic-bullets="true" autoplay-disable-on-interaction="false">
+                            @for(image of imageData3;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+                    <!-- <div class="swiper-pagination"></div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Pagination With Progress
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper pagination-progress">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer1 class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000"
+                            autoplay-disable-on-interaction="false"  pagination-type="progressbar"
+                            navigation="true">
+                            @for(image of imageData4;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Pagination Fraction
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper pagination-fraction">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer1 class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000"
+                            autoplay-disable-on-interaction="false"  pagination-type="fraction"
+                            navigation="true">
+                            @for(image of imageData5;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Custom Paginatioin
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="swiper custom-pagination">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer2 class="swiper mySwiper " space-between="10"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000"
+                            autoplay-disable-on-interaction="false" navigation="false">
+                            @for(image of imageData6;track $index){
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                               </swiper-slide>
+                            }
+                        </swiper-container>
+
+
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Scrollbar Swiper
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper scrollbar-swiper">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000" scrollbar-hide="true"
+                            autoplay-disable-on-interaction="false">
+                            @for(image of imageData7;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+                    <div class="swiper-scrollbar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Vertical Swiper
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <swiper-container #swiperContainer3 class="swiper mySwiper vertical swiper-vertical" space-between="10"
+                    slides-per-view="1" slides-per-group="1" autoplay-delay="2000"
+                    autoplay-disable-on-interaction="false">
+                    @for(image of imageData8;track $index){
+
+                    <swiper-slide>
+                        <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                    </swiper-slide>
+                    }
+                </swiper-container>
+            
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Mouse Wheel Control
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <swiper-container #swiperContainer4 class="swiper mySwiper  vertical vertical-mouse-control" space-between="10"
+                slides-per-view="1" slides-per-group="1" autoplay-delay="2000"
+                autoplay-disable-on-interaction="false">
+                @for(image of imageData9;track $index){
+
+                <swiper-slide>
+                    <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+
+                </swiper-slide>
+                }
+            </swiper-container>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Keyboard Control
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper keyboard-control">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000" pagination-clickable="true"
+                            navigation="true" pagination="true" keyboard="true" autoplay-disable-on-interaction="false">
+                            @for(image of imageData10;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Nested Swiper</div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper swiper-horizontal1">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer class="swiper mySwiper myNestedSwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000" pagination-clickable="true"
+                            navigation="false" pagination="true" keyboard="true" autoplay-disable-on-interaction="false">
+
+                            <!-- Slide 1 -->
+                            <swiper-slide><img src="./assets/images/media/media-30.jpg" alt=""></swiper-slide>
+
+                            <!-- Slide 2 with Nested Swiper -->
+                            <swiper-slide>
+                                <swiper-container #swiperContainer5 class="swiper myNestedSwiper" space-between="10"
+                                    slides-per-view="1" slides-per-group="1" direction="vertical" autoplay-delay="2000"
+                                    pagination="true" pagination-clickable="true" autoplay-disable-on-interaction="false">
+
+                                    <!-- Nested Swiper Slides -->
+                                    <swiper-slide><img src="./assets/images/media/media-25.jpg" alt=""></swiper-slide>
+                                    <swiper-slide><img src="./assets/images/media/media-31.jpg" alt=""></swiper-slide>
+                                    <swiper-slide><img src="./assets/images/media/media-32.jpg" alt=""></swiper-slide>
+                                    <!-- Add more slides as needed -->
+                                </swiper-container>
+                            </swiper-slide>
+
+                            <!-- Slide 3 -->
+                            <swiper-slide><img src="./assets/images/media/media-28.jpg" alt=""></swiper-slide>
+
+                            <!-- Slide 4 -->
+                            <swiper-slide><img src="./assets/images/media/media-29.jpg" alt=""></swiper-slide>
+
+                        </swiper-container>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Effect Cube
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper swiper-effect-cube">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000" pagination="true"
+                            autoplay-disable-on-interaction="false" effect="cube">
+                            @for(image of imageData12;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Effect Fade
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper swiper-fade">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000" navigation="true"
+                            pagination="true" pagination-clickable="true" autoplay-disable-on-interaction="false"
+                            effect="fade">
+                            @for(image of imageData13;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Effect Flip
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper swiper-flip">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer class="swiper mySwiper" space-between="30"
+                            slides-per-view="1" slides-per-group="1" autoplay-delay="2000" navigation="true"
+                            pagination="true" pagination-clickable="true" autoplay-disable-on-interaction="false"
+                            effect="flip">
+                            @for(image of imageData14;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->
+
+<!-- Start:: row-2 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Effect Coverflow
+                </div>
+            </div>
+            <div class="card-body swiper-pagination">
+                <div class="swiper swiper-overflow">
+                    <div class="swiper-wrapper">
+                        <swiper-container #swiperContainer6 class="swiper mySwiper" space-between="10"
+                            slides-per-view="5" slides-per-group="1" autoplay-delay="2000" pagination="true"
+                            pagination-clickable="true" autoplay-disable-on-interaction="false" effect="coverflow">
+                            @for(image of imageData15;track $index){
+
+                            <swiper-slide>
+                                <div class="swiper-slide"><img [src]="image.src" class="img-fluid" alt=""></div>
+                            </swiper-slide>
+                            }
+                        </swiper-container>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-2 -->
+
+<!-- Start:: row-3 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Thumbs Gallery
+                </div>
+            </div>
+            <div class="card-body">
+                <swiper-container 
+                    class="mySwiper1 swiper swiper-preview swiper-initialized swiper-horizontal swiper-pointer-events swiper-backface-hidden" thumbs-swiper=".mySwiper2" autoplay-delay="2000" space-between="10" navigation="true" loop="true">
+                    <swiper-slide>                      
+                        <img class="img-fluid rounded" src="./assets/images/media/media-1.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid rounded" src="./assets/images/media/media-2.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid rounded" src="./assets/images/media/media-3.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid rounded" src="./assets/images/media/media-6.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid rounded" src="./assets/images/media/media-7.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid rounded" src="./assets/images/media/media-10.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid rounded" src="./assets/images/media/media-11.jpg" alt="img">
+                    </swiper-slide>
+
+                </swiper-container>
+
+                <swiper-container class="mySwiper2 swiper swiper-view swiper-initialized swiper-horizontal swiper-pointer-events swiper-free-mode swiper-watch-progress swiper-backface-hidden swiper-thumbs" space-between="10" slides-per-view="4" free-mode="true" loop="true"
+                    watch-slides-progress="true">
+                    <swiper-slide>
+                        <img class="img-fluid" src="./assets/images/media/media-1.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid" src="./assets/images/media/media-2.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid" src="./assets/images/media/media-3.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid" src="./assets/images/media/media-6.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid" src="./assets/images/media/media-7.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid" src="./assets/images/media/media-10.jpg" alt="img">
+                    </swiper-slide>
+                    <swiper-slide>
+                        <img class="img-fluid" src="./assets/images/media/media-11.jpg" alt="img">
+                    </swiper-slide>
+
+                </swiper-container>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-3 -->

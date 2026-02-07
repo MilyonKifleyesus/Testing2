@@ -1,0 +1,88 @@
+<app-page-header [title]="'Blog Post'" [title1]="['Blog']" [activeitem]="'Blog Post'"></app-page-header>
+
+                <!-- Start::row-1 -->
+                <div class="row row-sm">
+                    <div class="col-lg-12 col-md-12 col-md-12">
+                        <div class="card custom-card">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label class="form-label fw-medium">Title</label>
+                                    <input type="text" class="form-control" value="Title">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label fw-medium">Category</label>
+                                  
+                                    <spk-ng-select 
+                                    [options]="category"
+                                    [mainClass]="'form-control'"
+                                    [clearable]="true"
+                                    [multi]="true"
+                                    [searchable]="true"
+                                    [placeholder]="'Select'"
+                                    [additionalProperties]="{}">
+                                    </spk-ng-select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label fw-medium">Type</label>
+                                    <div class="d-md-flex ad-post-details">
+                                        <label class="custom-control custom-radio mb-2 me-4">
+                                            <input type="radio" class="custom-control-input" name="radios2" value="option1">
+                                            <span class="custom-control-label ms-1">Image</span>
+                                        </label>
+                                        <label class="custom-control custom-radio  mb-2 me-4">
+                                            <input type="radio" class="custom-control-input" name="radios2" value="option2" checked="">
+                                            <span class="custom-control-label ms-1">Video</span>
+                                        </label>
+                                        <label class="custom-control custom-radio mb-2 me-4">
+                                            <input type="radio" class="custom-control-input" name="radios2" value="option3">
+                                            <span class="custom-control-label ms-1">Audio</span>
+                                        </label>
+                                        <label class="custom-control custom-radio mb-2">
+                                            <input type="radio" class="custom-control-input" name="radios2" value="option4">
+                                            <span class="custom-control-label ms-1">Text</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="ql-wrapper ql-wrapper-demo mb-3">
+                                    <div class="ql-wrapper ql-wrapper-demo mb-3">
+                                        <label class="fw-medium form-label">Product Description</label>
+                                        <div id="editor">
+                                            <form [formGroup]="form">
+                                                <ngx-editor-menu
+                                                class="border-1"
+                                                [editor]="editor"
+                                                [toolbar]="toolbar"
+                                              >
+                                              </ngx-editor-menu>
+                                              <ngx-editor [editor]="editor" formControlName="editorContent" >
+                                              </ngx-editor>
+                                              </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                <label class="form-label fw-medium">Upload File</label>
+                                <div class="p-4 border rounded-6 mb-4 form-group">
+                                    <div>
+                                        @if(type === 'component'){
+
+                                            <dropzone  class="product-Images w-full"
+                                            [config]="config" [disabled]="disabled"
+                                            [message]="'Click or drag images here to upload'"
+                                            (init)="onUploadInit($event)" (error)="onUploadError($event)"
+                                            (success)="onUploadSuccess($event)"></dropzone>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="form-group mb-0">
+                                    <label class="form-label fw-medium">Upload Video URL</label>
+                                    <input type="text" class="form-control" placeholder="https://videos.com" value="https://www.youtube.com/embed/tMWkeBIohBs">
+                                </div>
+                            </div>
+                            <div class="card-footer mb-1">
+                                <a href="javascript:void(0)" class="btn btn-primary me-2">Post</a>
+                                <a href="javascript:void(0)" class="btn btn-danger">Cancel</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--End::row-1 -->

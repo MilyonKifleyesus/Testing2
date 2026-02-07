@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "AAAA,AACI,SADK,CACL,aAAa,AAAA,OAAO,CAAA;EAChB,YAAY,EAAE,gBAAgB;CACjC;;AAIL,MAAM,EAAE,SAAS,EAAE,KAAK;EACpB,AAAA,aAAa,CAAC,eAAe,CAAA;IACzB,UAAU,EAAE,KAAK;GACpB",
+    "sources": [
+        "customizer.component.scss"
+    ],
+    "names": [],
+    "file": "customizer.component.css"
+}

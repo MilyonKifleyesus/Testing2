@@ -1,0 +1,228 @@
+<app-page-header [title]="'Angular Material Tables'" [title1]="['Tables']" [activeitem]="'Angular Material  Tables'"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Basic Table
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <div class="mat-elevation-z8">
+
+                        <app-angular-material-reusable-table [dataSource]="dataSource"></app-angular-material-reusable-table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->
+
+<!-- Start:: row-2 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Table With Pagination
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mat-elevation-z8">
+
+                    <app-angular-material-reusable-table [dataSource]="dataSource2" [showPaginator]="true"></app-angular-material-reusable-table>
+                </div>
+           
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-2 -->
+
+<!-- Start:: row-3 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Table With Search
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="mat-elevation-z8">
+
+                    <app-angular-material-reusable-table [showFilter]="true" [showPaginator]="true"></app-angular-material-reusable-table>
+                </div>
+           
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-3 -->
+
+<!-- Start:: row-4 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Table Sorting
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="mat-sorting">
+                   <app-angular-material-reusable-table [showPaginator]="true"></app-angular-material-reusable-table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-4 -->
+
+<!-- Start:: row-6 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Wide Table
+                </div>
+            </div>
+            <div class="card-body">
+                <section class="example-container mat-elevation-z8" tabindex="0">
+                    <app-angular-material-reusable-table [dataSource]="dataSource4" [wideTable]="true"></app-angular-material-reusable-table>
+                 
+                </section>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-6 -->
+
+<!-- Start:: row-7 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Fixed Header
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- <div class="table-responsive"> -->
+                <section class="example-container mat-elevation-z8" tabindex="0">
+
+                    <table mat-table [dataSource]="dataSource5" matSort #sort4="matSort">
+
+                        <!-- Position Column -->
+                        <ng-container matColumnDef="position">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header
+                                sortActionDescription="Sort by number"> No. </th>
+                            <td mat-cell *matCellDef="let element"> {{element.position}} </td>
+                        </ng-container>
+
+                        <!-- Name Column -->
+                        <ng-container matColumnDef="name">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by name">
+                                Name </th>
+                            <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                        </ng-container>
+
+                        <!-- Weight Column -->
+                        <ng-container matColumnDef="weight">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header
+                                sortActionDescription="Sort by weight"> Weight </th>
+                            <td mat-cell *matCellDef="let element"> {{element.weight}} </td>
+                        </ng-container>
+
+                        <!-- Symbol Column -->
+                        <ng-container matColumnDef="symbol">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header
+                                sortActionDescription="Sort by Symbol"> Symbol </th>
+                            <td mat-cell *matCellDef="let element"> {{element.symbol}} </td>
+                        </ng-container>
+                        <!--Cost Column-->
+                        <ng-container matColumnDef="cost">
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by cost">
+                                cost </th>
+                            <td mat-cell *matCellDef="let element"> {{element.cost}} </td>
+                        </ng-container>
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                    </table>
+                    <mat-paginator #paginator5 [pageSizeOptions]="[5, 10,15,20]" showFirstLastButtons
+                        aria-label="Select page of periodic elements">
+                    </mat-paginator>
+                </section>
+             <!-- </div> -->
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-7 -->
+
+<!-- Start:: row-8 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Adding and Removing data
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="demo-button-container p-4 border-b border-defaultborder dark:border-defaultborder/10">
+                    <button mat-raised-button (click)="addData()" class="demo-button me-2 btn-primary my-1">
+                      Add data
+                    </button>
+                    <button 
+                        mat-raised-button
+                        [disabled]="!dataToDisplay.length"
+                        (click)="removeData()"
+                        class="demo-button btn-primary my-1">
+                      Remove data
+                    </button>
+                  </div>
+                  <div class="table-responsive">
+                      <table mat-table [dataSource]="dataSource7" class="mat-elevation-z8 demo-table border">
+                        <!-- Position Column -->
+                        <ng-container matColumnDef="position">
+                          <th mat-header-cell *matHeaderCellDef>No.</th>
+                          <td mat-cell *matCellDef="let element">{{element.position}}</td>
+                        </ng-container>
+                    
+                        <!-- Name Column -->
+                        <ng-container matColumnDef="name">
+                          <th mat-header-cell *matHeaderCellDef>Name</th>
+                          <td mat-cell *matCellDef="let element">{{element.name}}</td>
+                        </ng-container>
+                      
+                        <!-- Weight Column -->
+                        <ng-container matColumnDef="weight">
+                          <th mat-header-cell *matHeaderCellDef>Weight</th>
+                          <td mat-cell *matCellDef="let element">{{element.weight}}</td>
+                        </ng-container>
+                      
+                        <!-- Symbol Column -->
+                        <ng-container matColumnDef="symbol">
+                          <th mat-header-cell *matHeaderCellDef>Symbol</th>
+                          <td mat-cell *matCellDef="let element">{{element.symbol}}</td>
+                        </ng-container>
+                      
+                        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                      </table>
+                  </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-8 -->

@@ -1,0 +1,22 @@
+
+    <div class="card custom-card">
+      <div class="card-body pb-3">
+        <h5 class="fs-14">{{ pair }}</h5>
+        <div class="d-flex">
+          <div>
+            <h4 class="mb-2">
+              {{ value }} <span class="text-muted fs-12">${{ usdValue }}</span>
+            </h4>
+            <div class="d-flex text-muted fs-13">
+              <span [class]="percentageClass + ' me-2 fw-semibold'">
+                {{ percentage }}
+              </span>
+              Volume - {{ volume }}
+            </div>
+          </div>
+          <div class="d-flex ms-auto float-end">
+            <spk-apex-charts [chartOptions]="chartOptions"></spk-apex-charts>
+          </div>
+        </div>
+      </div>
+    </div>

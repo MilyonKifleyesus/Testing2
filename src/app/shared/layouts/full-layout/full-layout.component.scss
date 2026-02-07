@@ -1,0 +1,10 @@
+.main-content{
+    min-height: calc(100vh - 47px);
+}
+::ng-deep{
+    @media (min-width: 992px) {
+        .horizontalmenu .pt-40{
+            padding-top: 40px;
+        }
+    }
+}

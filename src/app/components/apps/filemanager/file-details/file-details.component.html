@@ -1,0 +1,74 @@
+<app-page-header [title]="'File-Details'" [title1]="['File-Manager']" [activeitem]="'File-Details'"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    <div class="col-xl-8 col-lg-12 col-md-12">
+        <div class="card custom-card overflow-hidden">
+            <div class="card-body px-4 pt-4">
+                <a href="javascript:void(0);"><img src="./assets/images/media/jobs-landing/blog/15.jpg" alt="img"
+                        class="br-5 w-100"></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-12 col-md-12">
+        <div class="card custom-card">
+            <div class=" card-body ">
+                <h5 class="mb-3">File details :</h5>
+                <div class="">
+                    <div class="row">
+                        <div class="col-xl-12">
+                            <div class="table-responsive">
+                                <spk-reusable-tables [tableClass]="'mb-0 border-top table-bordered text-nowrap border'">
+                                    @for(detail of fileDetails;track $index){
+                                        <tr>
+                                            <th scope="row">{{ detail.key }}</th>
+                                            <td>{{ detail.value }}</td>
+                                          </tr>
+                                    }
+                                </spk-reusable-tables>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8 col-lg-12  col-md-12">
+        <swiper-container #swiperContainer1 class="swiper mySwiper" space-between="10"
+        slides-per-view="4" slides-per-group="1" autoplay-delay="2000" navigation="true"
+        autoplay-disable-on-interaction="false">
+        @for (slide of slidesStore; track $index) {
+        <swiper-slide>
+            <div class="swiper-slide">
+                <div class="card">
+                    <div class="card custom-card overflow-hidden mb-0 rounded-2 ">
+                        <a routerLink="/apps/filemanager/file-details"><img [src]="slide.src" alt="img"></a>
+                        <div class="card-footer bd-t-0 py-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="mb-0">221.jpg</h6>
+                                </div>
+                                <div>
+                                    <h6 class="text-muted mb-0">{{slide.size}}</h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                </div>
+                </swiper-slide>
+            }
+                </swiper-container>
+    
+    </div>
+    <div class="col-xl-4 col-lg-12 col-md-12">
+        <div class="card custom-card">
+            <div class="card-body pb-0">
+                <h5 class="mb-3">Recent Files</h5>
+                <spk-gallery [mainClass]="'row'" [imageData]="imageData"></spk-gallery>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

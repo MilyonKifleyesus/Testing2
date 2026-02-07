@@ -1,0 +1,816 @@
+// Station Legend Styles
+.station-legend-container {
+  margin-bottom: 1.5rem;
+  
+  &.sticky {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    background: white;
+    margin-left: -1.25rem;
+    margin-right: -1.25rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.station-legend {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+  transition: all 0.3s ease;
+  
+  &.collapsed {
+    padding: 1rem 1.5rem;
+    
+    .legend-header {
+      margin-bottom: 0 !important;
+    }
+  }
+  
+  .legend-header {
+    h6 {
+      color: #495057;
+      font-weight: 600;
+      font-size: 1rem;
+      
+      i {
+        color: rgb(var(--primary-rgb));
+      }
+    }
+    
+    .legend-toggle {
+      font-size: 0.8rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      
+      i {
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+      }
+      
+      &:hover {
+        background: rgb(var(--primary-rgb));
+        color: white;
+        border-color: rgb(var(--primary-rgb));
+      }
+    }
+  }
+  
+  .legend-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+    animation: fadeIn 0.3s ease-in-out;
+    
+    @media (max-width: 1200px) {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    }
+    
+    @media (max-width: 576px) {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: white;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      border-color: rgb(var(--primary-rgb));
+      
+      .legend-number {
+        background: linear-gradient(135deg, rgb(var(--primary-rgb)) 0%, #3487d2 100%);
+        color: white;
+      }
+    }
+    
+    .legend-number {
+      min-width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+      color: white;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .legend-description {
+      flex: 1;
+      font-size: 0.85rem;
+      color: #495057;
+      line-height: 1.4;
+      min-width: 0;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+  }
+}
+
+// Fade-in animation
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Table Styling
+.station-tracker-table {
+  font-size: 0.875rem;
+  
+  thead {
+    th {
+      font-weight: 600;
+      font-size: 0.8125rem;
+      padding: 0.75rem 0.5rem;
+      vertical-align: middle;
+      white-space: nowrap;
+      background-color: #f8f9fa;
+      border: 1px solid #dee2e6;
+      
+      &.station-col {
+        width: 80px;
+        min-width: 80px;
+        max-width: 80px;
+      }
+    }
+  }
+  
+  tbody {
+    tr.main-row {
+      transition: background-color 0.2s ease;
+      
+      &:hover {
+        background-color: #f8f9fa;
+      }
+      
+      td {
+        padding: 0.75rem 0.5rem;
+        vertical-align: middle;
+        border: 1px solid #dee2e6;
+      }
+    }
+    
+    tr.expanded-row {
+      td {
+        padding: 0;
+        border: none;
+        background-color: #fafbfc;
+      }
+    }
+  }
+}
+
+// Station Cell Styling
+.station-cell {
+  &.completed {
+    background-color: #e8f5e9 !important;
+  }
+  
+  .station-completed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    
+    i {
+      font-size: 1.25rem;
+    }
+    
+    .station-date {
+      font-size: 0.65rem;
+      color: #2e7d32;
+      font-weight: 600;
+      text-align: center;
+    }
+  }
+  
+  .station-pending {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    i {
+      font-size: 1.25rem;
+    }
+  }
+}
+
+// Progress Wrapper
+.progress-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  
+  .progress {
+    border-radius: 4px;
+    
+    .progress-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      small {
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+// Expanded Content
+.expanded-content {
+  background-color: #fafbfc;
+  border-top: 2px solid #6259ca;
+  
+  .expanded-header {
+    padding: 1rem 1.25rem;
+    background-color: #f0f1f4;
+    border-bottom: 1px solid #dee2e6;
+    
+    strong {
+      color: #495057;
+      font-size: 0.9375rem;
+      
+      i {
+        color: #6259ca;
+      }
+    }
+  }
+}
+
+// Checkpoints Grid
+.checkpoints-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1rem;
+  padding: 1.25rem;
+  
+  .checkpoint-item {
+    display: flex;
+    gap: 1rem;
+    padding: 0.875rem;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      border-color: #6259ca;
+      box-shadow: 0 2px 8px rgba(98, 89, 202, 0.1);
+    }
+    
+    .checkpoint-number {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #6259ca;
+      color: white;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.8125rem;
+      flex-shrink: 0;
+    }
+    
+    .checkpoint-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-width: 0;
+      
+      .checkpoint-label {
+        font-size: 0.875rem;
+        color: #495057;
+        font-weight: 500;
+        line-height: 1.4;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        white-space: normal;
+      }
+      
+      .checkpoint-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        
+        i {
+          font-size: 1rem;
+        }
+        
+        .badge {
+          font-size: 0.75rem;
+          font-weight: 600;
+          padding: 0.25rem 0.5rem;
+        }
+        
+        .bg-success-light {
+          background-color: #d1e7dd;
+          color: #0f5132;
+        }
+      }
+    }
+  }
+}
+
+// Custom Scrollbar
+.table-responsive {
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+
+    &:hover {
+      background: #555;
+    }
+  }
+}
+
+// Print Styles
+@media print {
+  .btn,
+  .breadcrumb,
+  .page-header,
+  .card-header {
+    display: none !important;
+  }
+  
+  .card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  .station-tracker-table {
+    font-size: 0.75rem;
+    
+    thead th {
+      font-size: 0.7rem;
+      padding: 0.5rem 0.25rem;
+    }
+    
+    tbody td {
+      padding: 0.5rem 0.25rem;
+    }
+  }
+  
+  .checkpoints-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem;
+  }
+}
+
+// Responsive Styles
+@media (max-width: 1200px) {
+  .station-tracker-table {
+    font-size: 0.8125rem;
+    
+    thead th {
+      font-size: 0.75rem;
+      padding: 0.5rem 0.35rem;
+      
+      &.station-col {
+        width: 70px;
+        min-width: 70px;
+      }
+    }
+    
+    tbody td {
+      padding: 0.5rem 0.35rem;
+    }
+  }
+  
+  .checkpoints-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .station-tracker-table {
+    font-size: 0.75rem;
+    
+    thead th {
+      font-size: 0.7rem;
+      padding: 0.4rem 0.25rem;
+      
+      &.station-col {
+        width: 60px;
+        min-width: 60px;
+      }
+    }
+    
+    tbody td {
+      padding: 0.4rem 0.25rem;
+    }
+  }
+  
+  .station-cell {
+    .station-completed {
+      i {
+        font-size: 1rem;
+      }
+      
+      .station-date {
+        font-size: 0.6rem;
+      }
+    }
+  }
+  
+  .progress-wrapper {
+    .progress {
+      width: 80px !important;
+      height: 16px !important;
+      
+      small {
+        font-size: 0.65rem;
+      }
+    }
+    
+    small {
+      font-size: 0.65rem;
+    }
+  }
+  
+  .checkpoints-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-header {
+    .d-flex {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.75rem;
+      
+      .d-flex.gap-2 {
+        flex-direction: row !important;
+      }
+    }
+  }
+  
+  .station-tracker-table {
+    font-size: 0.7rem;
+    
+    thead th {
+      font-size: 0.65rem;
+      padding: 0.35rem 0.2rem;
+      
+      &.station-col {
+        width: 50px;
+        min-width: 50px;
+      }
+    }
+    
+    tbody td {
+      padding: 0.35rem 0.2rem;
+    }
+  }
+  
+  .station-cell {
+    .station-completed {
+      i {
+        font-size: 0.9rem;
+      }
+      
+      .station-date {
+        font-size: 0.55rem;
+      }
+    }
+    
+    .station-pending {
+      i {
+        font-size: 0.9rem;
+      }
+    }
+  }
+  
+  .progress-wrapper {
+    .progress {
+      width: 70px !important;
+      height: 14px !important;
+      
+      small {
+        font-size: 0.6rem;
+      }
+    }
+    
+    small {
+      font-size: 0.6rem;
+    }
+  }
+  
+  .expanded-content {
+    .expanded-header {
+      padding: 0.75rem;
+      
+      strong {
+        font-size: 0.85rem;
+      }
+    }
+  }
+  
+  .checkpoints-grid {
+    padding: 0.75rem;
+    gap: 0.5rem;
+    
+    .checkpoint-item {
+      padding: 0.75rem;
+      
+      .checkpoint-number {
+        width: 32px;
+        height: 32px;
+        font-size: 0.75rem;
+      }
+      
+      .checkpoint-info {
+        .checkpoint-label {
+          font-size: 0.8rem;
+        }
+        
+        .checkpoint-status {
+          i {
+            font-size: 0.9rem;
+          }
+          
+          .badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Print Styles for PDF Export
+@media print {
+  // Hide UI elements not needed in print
+  .card-header,
+  .card-footer,
+  .btn,
+  .search-box,
+  .pagination,
+  .station-legend-container,
+  .alert {
+    display: none !important;
+  }
+
+  // Page setup
+  @page {
+    size: A4 landscape;
+    margin: 0.5in;
+  }
+
+  // Main container
+  .main-container {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  // Card styling for print
+  .custom-card {
+    border: none !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+    margin-bottom: 0 !important;
+
+    .card-body {
+      padding: 0.5rem !important;
+    }
+  }
+
+  // Report header
+  .page-header-breadcrumb {
+    margin-bottom: 1rem;
+    page-break-after: avoid;
+
+    .page-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #000;
+    }
+
+    .breadcrumb {
+      display: none;
+    }
+  }
+
+  // Table styling
+  .table-responsive {
+    overflow: visible !important;
+    border: none !important;
+
+    .table {
+      font-size: 10px;
+      margin-bottom: 0;
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        background-color: #f0f0f0 !important;
+        color: #000 !important;
+        display: table-header-group; // Repeat header on each page
+
+        th {
+          border: 1px solid #333 !important;
+          padding: 4px !important;
+          text-align: left;
+          font-weight: bold;
+          color: #000 !important;
+        }
+      }
+
+      tbody {
+        tr {
+          border: 1px solid #ddd !important;
+          page-break-inside: avoid;
+
+          &:nth-child(even) {
+            background-color: #f9f9f9 !important;
+          }
+
+          td {
+            border: 1px solid #ddd !important;
+            padding: 4px !important;
+            color: #000 !important;
+
+            // Status column styling
+            .badge {
+              font-size: 8px;
+              padding: 2px 4px;
+              display: inline-block;
+            }
+
+            // Fleet number column
+            &:first-child {
+              font-weight: bold;
+              width: 8%;
+            }
+
+            // Status/completed columns
+            .badge-success {
+              background-color: #28a745;
+              color: white;
+            }
+
+            .badge-warning {
+              background-color: #ffc107;
+              color: black;
+            }
+
+            .badge-danger {
+              background-color: #dc3545;
+              color: white;
+            }
+
+            .badge-secondary {
+              background-color: #6c757d;
+              color: white;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Report summary section
+  .report-summary {
+    margin-top: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #333;
+    page-break-inside: avoid;
+
+    h5 {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .summary-item {
+      font-size: 10px;
+      margin-bottom: 0.3rem;
+
+      strong {
+        display: inline-block;
+        width: 40%;
+      }
+    }
+  }
+
+  // Legend for print
+  .print-legend {
+    margin-top: 1rem;
+    font-size: 9px;
+    border-top: 2px solid #333;
+    padding-top: 0.5rem;
+    page-break-inside: avoid;
+
+    h6 {
+      font-size: 10px;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.5rem;
+
+      .legend-item {
+        font-size: 8px;
+        margin-bottom: 0.3rem;
+
+        strong {
+          display: inline-block;
+          width: 25%;
+        }
+      }
+    }
+  }
+
+  // Hide pagination for print
+  nav[aria-label="Pagination"] {
+    display: none !important;
+  }
+
+  // Ensure text is black for printing
+  * {
+    color: #000 !important;
+    background-color: transparent !important;
+  }
+
+  // Preserve specific colors for badges/status
+  .badge-success,
+  .badge-warning,
+  .badge-danger,
+  .badge-secondary {
+    color: white !important;
+  }
+
+  // Page breaks
+  .print-page-break {
+    page-break-before: always;
+  }
+
+  // Footer with timestamp
+  .print-footer {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #ddd;
+    font-size: 9px;
+    text-align: right;
+  }
+}
+
+// Print orientation and size preferences
+@media print {
+  body {
+    margin: 0;
+    padding: 0.5in;
+  }
+
+  // Landscape orientation for wide tables
+  @page {
+    margin: 0.25in;
+  }
+}

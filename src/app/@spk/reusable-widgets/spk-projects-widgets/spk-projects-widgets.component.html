@@ -1,0 +1,31 @@
+<div class="card custom-card">
+    <div class="card-header border-bottom-0 pt-4">
+      <h6 class="main-content-label mb-0">{{ title }}</h6>
+    </div>
+    <div class="card-body">
+      <div class="border">
+        @for(project of projects;track $index; let isFirst = $first){
+
+            <div [class]="'p-3' + (isFirst ? '' : ' border-top')">
+              <h6>{{ project.name }}</h6>
+              <div class="main-traffic-detail-item">
+                <div>
+                  <span>Project status</span> <span>{{ project.status }}%</span>
+                </div>
+                <div class="progress progress-sm progress-animate">
+                  <div
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    [attr.aria-valuenow]="project.status"
+                    class="progress-bar "
+                    [class]="'wd-' + project.status + 'p ' + project.barClass"
+                    role="progressbar">
+                  </div>
+                </div>
+              </div>
+            </div>
+        }
+      </div>
+    </div>
+  </div>
+  

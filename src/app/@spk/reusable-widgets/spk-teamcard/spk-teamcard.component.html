@@ -1,0 +1,29 @@
+
+    <div class="card custom-card our-team">
+      <div class="card-body">
+        <div class="picture avatar-lg online text-center">
+          <img [src]="imageSrc" alt="avatar" class="rounded-circle">
+        </div>
+        <div class="text-center mt-3">
+          <h5 class="pro-user-username text-dark mt-2 mb-0">{{ name }}</h5>
+          <p class="pro-user-desc text-muted mb-1">{{ role }}</p>
+          <p class="user-info-rating">
+            @for(star of stars;track $index){
+
+                <a  href="javascript:void(0);">
+                  <i [class]="star ? 'fa fa-star text-warning me-1' : 'far fa-star text-warning me-1'"></i>
+                </a>
+            }
+          </p>
+        </div>
+        <div class="contact-info mb-0 text-center">
+            @for(social of socialLinks;track $index){
+
+                <a  href="javascript:void(0);" class="contact-icon border text-primary me-1">
+                  <i [class]="social.iconClass"></i>
+                </a>
+            }
+        </div>
+      </div>
+    </div>
+  

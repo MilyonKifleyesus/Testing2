@@ -1,0 +1,134 @@
+/* Force vertical scroll for sidebar */
+:host ::ng-deep .main-sidebar {
+    height: calc(100vh - 72px); /* adjust if header height changes */
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+}
+::ng-deep{
+    .tooltip .tooltip-arrow{
+        display: none !important;
+    }
+}
+
+/* Add spacing to head title in sidebar */
+:host ::ng-deep .category-name {
+    display: block;
+    margin: 5px 16px 10px 16px;
+}
+
+/* Ensure logo displays in sidebar */
+.main-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+    background: transparent;
+    border-radius: 0;
+    margin: 0;
+    min-height: 72px;
+    max-height: 72px;
+    margin-bottom: 2rem;
+
+    .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+
+        .header-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: auto;
+            text-decoration: none;
+
+
+            img {
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 72px;
+                object-fit: contain;
+                margin: 0;
+                padding: 0;
+                background: transparent;
+                box-shadow: none;
+                display: block;
+                transition: max-width 0.2s, max-height 0.2s;
+            }
+
+            /* Show desktop-dark for both light and dark mode */
+            .desktop-dark {
+                display: block;
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 72px;
+                object-fit: contain;
+                margin: 0;
+                padding: 0;
+                transition: max-width 0.2s, max-height 0.2s;
+            }
+
+@media (max-width: 1200px) {
+    .main-sidebar-header {
+        padding: 1rem 0.25rem 1rem 0.25rem;
+        min-height: 64px;
+        margin-bottom: 1.2rem;
+    }
+    .main-sidebar-header .logo-container .header-logo img,
+    .main-sidebar-header .logo-container .header-logo .desktop-dark {
+        max-width: 160px;
+        max-height: 52px;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-sidebar-header {
+        padding: 0.5rem 0.1rem 0.5rem 0.1rem;
+        min-height: 48px;
+        margin-bottom: 0.8rem;
+    }
+    .main-sidebar-header .logo-container .header-logo img,
+    .main-sidebar-header .logo-container .header-logo .desktop-dark {
+        max-width: 110px;
+        max-height: 36px;
+    }
+}
+
+            .desktop-white,
+            .toggle-white,
+            .toggle-logo,
+            .toggle-dark,
+            .desktop-logo {
+                display: none;
+            }
+        }
+    }
+}
+
+/* Dark mode */
+:host-context(html[data-theme-mode="dark"]) {
+    .main-sidebar-header {
+        background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .main-sidebar-header {
+        padding: 0.75rem 0.75rem 1rem 0.75rem;
+        min-height: auto;
+        margin-bottom: 2rem;
+
+        .logo-container {
+            .header-logo img {
+                max-width: 140px;
+                width: 140px;
+            }
+        }
+    }
+}

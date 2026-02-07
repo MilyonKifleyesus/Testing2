@@ -1,0 +1,10 @@
+::ng-deep .demo_changer.active {
+  margin-right: -10px !important;
+}
+
+@media (max-width: 992px) {
+  .demo_changer .sidebar-right1 {
+    max-height: 100vh;
+  }
+}
+/*# sourceMappingURL=customizer.component.css.map */

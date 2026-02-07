@@ -1,0 +1,762 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+// Color Variables - Using CSS custom properties for theme support
+$tactical-green: #00FF41;
+$war-gray: #ffffff;
+$war-dark: #f5f5f5;
+$black: #000000;
+$zinc-100: #f4f4f5;
+$zinc-200: #e4e4e7;
+$zinc-300: #d4d4d8;
+$zinc-500: #71717a;
+$zinc-600: #52525b;
+$zinc-700: #3f3f46;
+$zinc-800: #27272a;
+
+// Cellular / bio-cell theme — using CSS variables for dynamic theming
+$primary-forest: var(--primary-bg-color, #1B4332); // Falls back to default if not set
+$secondary-forest: var(--primary05, rgba(45, 106, 79, 0.5));
+$bg-main: var(--default-background, #F0F4F2);
+$neural-bg: var(--primary01, rgba(27, 67, 50, 0.1));
+$radius-cell: 12px;
+$radius-organoid: 16px;
+// Use CSS variables that update with theme - these will change when theme color changes
+$sidebar-bg: var(--default-background, #f8faf9);
+$card-bg: var(--custom-white, #ffffff);
+$card-border: var(--primary02, rgba(27, 67, 50, 0.12));
+
+// Accessibility: Focus states
+:focus-visible {
+  outline: 2px solid $tactical-green !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(0, 255, 65, 0.2) !important;
+}
+
+.btn-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.war-room-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100vh;
+  max-height: 100vh;
+  font-family: 'Roboto Condensed', sans-serif;
+  background-color: $war-gray;
+  color: $black;
+  text-transform: uppercase;
+  overflow: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
+.war-room-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.war-room-map-area {
+  flex: 1;
+  position: relative;
+  background-color: transparent;
+  overflow: hidden;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-view-toggle {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 35;
+  display: inline-flex;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  width: fit-content;
+  max-width: calc(100% - 3.5rem);
+}
+
+.map-view-btn {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.875rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-width: 2px;
+
+  &[aria-checked="true"]::before {
+    content: '✓';
+    font-weight: 700;
+    font-size: 0.75rem;
+    line-height: 1;
+  }
+
+  &[aria-checked="true"] {
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.15);
+  }
+}
+
+.map-filter-btn {
+  position: relative;
+  white-space: nowrap;
+
+  &.btn-primary-transparent {
+    background-color: var(--primary01, rgba(27, 67, 50, 0.1));
+    border-color: var(--primary05, rgba(45, 106, 79, 0.5));
+    color: var(--primary-bg-color, #1B4332);
+    font-weight: 600;
+  }
+}
+
+.clear-filters-quick {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  min-height: 2rem;
+}
+
+.war-room-filters {
+  position: absolute;
+  top: 3.2rem;
+  left: 0.75rem;
+  width: 290px;
+  display: none;
+  z-index: 34;
+  backdrop-filter: blur(8px);
+
+  &.open {
+    display: block;
+  }
+}
+
+.filters-section {
+  margin-bottom: 0.85rem;
+}
+
+.filters-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.filters-pill-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  .btn[aria-pressed="true"] {
+    border-width: 2px;
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.15);
+  }
+
+  .btn[aria-pressed="true"]::before {
+    content: '✓';
+    font-weight: 700;
+    font-size: 0.7rem;
+    margin-right: 0.35rem;
+  }
+}
+
+.filters-options {
+  .form-check-input:checked {
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+  }
+}
+
+// ---- Hud label utility (cellular / JetBrains Mono) ----
+.hud-label {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.war-room-sidebar {
+  // Sidebar structure matching website's .app-sidebar
+  width: 160px;
+  min-width: 160px;
+  max-width: 160px;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  align-self: stretch;
+  background: var(--menu-bg, #ffffff);
+  border-inline-end: 1px solid var(--menu-border-color, #e8e8f7);
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  max-height: 100%;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  padding: 0.75rem;
+
+  &.expanded {
+    width: 320px;
+    min-width: 320px;
+    max-width: 320px;
+  }
+
+  &.collapsed {
+    width: 56px;
+    min-width: 56px;
+    max-width: 56px;
+    padding: 0.5rem 0.35rem;
+
+    .sidebar-section,
+    .sidebar-edit-actions {
+      display: none;
+    }
+
+    .sidebar-collapse-btn .collapse-text {
+      display: none;
+    }
+
+    .sidebar-toggle-btn {
+      justify-content: center;
+      padding: 0.45rem;
+      min-height: 40px;
+    }
+
+    .sidebar-toggle-btn .toggle-text {
+      display: none;
+    }
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--gray-4, #8f8fb7);
+    border-radius: 0.3rem;
+    transition: background 0.3s ease;
+
+    &:hover {
+      background: var(--gray-5, #717196);
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--gray-4, #8f8fb7) transparent;
+}
+
+.sidebar-collapse-btn {
+  border: 1px solid var(--primary02, rgba(27, 67, 50, 0.12));
+  background: var(--custom-white, #ffffff);
+  color: var(--gray-4, #71717a);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: rgb(var(--primary-rgb));
+    border-color: rgb(var(--primary-rgb));
+    background: rgba(var(--primary-rgb), 0.08);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(var(--primary-rgb), 0.9);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.2);
+  }
+
+  .collapse-text {
+    flex: 1;
+    text-align: left;
+  }
+}
+
+// ---- Toggle buttons matching website button structure ----
+.sidebar-toggle-btn {
+  // Base button structure from website
+  position: sticky;
+  z-index: 2;
+  font-size: 0.875rem;
+  border-radius: 0.188rem;
+  padding: 0.5rem 0.85rem;
+  box-shadow: none;
+  font-weight: 400;
+  color: var(--gray-4, #71717a);
+
+  // Layout and positioning
+  background: var(--custom-white, #ffffff);
+  border: 1px solid var(--primary02, rgba(27, 67, 50, 0.12));
+  min-height: 44px;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  width: 100%;
+  margin-bottom: 0.5rem;
+  top: 0;
+  overflow: hidden;
+  user-select: none;
+
+  .tactical-edge {
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 3px;
+    background: $tactical-green;
+    border-radius: 0 2px 2px 0;
+    display: none;
+    transition: opacity 0.25s ease;
+  }
+
+  // Hover state matching website button structure
+  &:hover {
+    background-color: rgba(var(--primary-rgb), 0.1) !important;
+    border-color: rgb(var(--primary-rgb)) !important;
+    color: rgb(var(--primary-rgb)) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transform: translateY(-1px);
+  }
+
+  // Active state matching website button structure
+  &:active,
+  &:focus {
+    background-color: rgb(var(--primary-rgb)) !important;
+    border-color: rgb(var(--primary-rgb)) !important;
+    color: #fff !important;
+    box-shadow: none;
+    outline: 0;
+  }
+
+  // Active class state (when button is toggled on)
+  &.active {
+    background-color: rgb(var(--primary-rgb)) !important;
+    border-color: rgb(var(--primary-rgb)) !important;
+    color: #fff !important;
+    box-shadow: 0 0.25rem 1rem rgba(var(--primary-rgb), 0.5);
+
+    .tactical-edge {
+      display: block;
+      background: $tactical-green;
+    }
+
+    .toggle-icon {
+      color: $tactical-green;
+    }
+
+    .toggle-text {
+      color: #fff !important;
+      font-weight: 400;
+    }
+
+    &:hover {
+      background-color: rgba(var(--primary-rgb), 0.9) !important;
+      border-color: rgb(var(--primary-rgb)) !important;
+      color: #fff !important;
+      box-shadow: 0 0.25rem 1rem rgba(var(--primary-rgb), 0.6);
+      transform: translateY(-2px);
+    }
+
+    &:focus {
+      background-color: rgb(var(--primary-rgb)) !important;
+      border-color: rgb(var(--primary-rgb)) !important;
+      box-shadow: 0 0.25rem 1rem rgba(var(--primary-rgb), 0.5);
+    }
+  }
+
+  .toggle-icon {
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    color: inherit;
+    line-height: 1;
+
+    &.expanded {
+      transform: rotate(90deg);
+    }
+  }
+
+  .toggle-text {
+    font-size: 0.875rem;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: inherit;
+    flex: 1;
+    text-align: left;
+    line-height: 1.3;
+    transition: color 0.25s ease, font-weight 0.25s ease;
+  }
+
+  &.activity-log-toggle {
+    margin-top: 0;
+  }
+
+  &.hub-status-toggle {
+    margin-top: 0.5rem;
+  }
+}
+
+.sidebar-edit-toggle {
+  border: 1px solid var(--default-border, #e8e8f7);
+  background: var(--custom-white, #ffffff);
+  color: var(--text-muted, #8f8fb1);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0.75rem;
+  width: 100%;
+
+  &:hover {
+    color: rgb(var(--primary-rgb));
+    border-color: rgb(var(--primary-rgb));
+  }
+
+  &.active {
+    background: rgb(var(--primary-rgb));
+    color: #ffffff;
+    border-color: rgb(var(--primary-rgb));
+  }
+}
+
+.sidebar-section {
+  position: relative;
+  z-index: 1;
+  transition: max-height 0.25s ease, opacity 0.2s ease, transform 0.2s ease;
+  max-height: none;
+  opacity: 1;
+  transform: translateX(0);
+  overflow: visible;
+  flex-shrink: 0;
+
+  &.hidden {
+    max-height: 0;
+    opacity: 0;
+    transform: translateX(-100%);
+    pointer-events: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+}
+
+// -------- Responsive breakpoints --------
+// Tablet: 768px–991px
+@media (max-width: 991.98px) {
+  .war-room-main {
+    min-height: 0;
+  }
+
+  .war-room-map-area {
+    min-height: 0;
+  }
+
+  .war-room-sidebar {
+    width: 140px;
+    min-width: 140px;
+    max-width: 140px;
+
+    &.expanded {
+      width: 280px;
+      min-width: 280px;
+      max-width: 280px;
+    }
+
+    &.collapsed {
+      width: 52px;
+      min-width: 52px;
+      max-width: 52px;
+    }
+  }
+}
+
+// Mobile: < 576px — stack map then sidebar
+@media (max-width: 575.98px) {
+  .war-room-container {
+    min-height: 0;
+    height: 100vh;
+  }
+
+  .war-room-main {
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
+    overflow: auto;
+  }
+
+  .war-room-map-area {
+    flex: 1;
+    min-height: 0;
+    order: 1;
+  }
+
+  .war-room-sidebar {
+    order: 2;
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    max-height: 45vh;
+    min-height: 0;
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+
+    &.expanded {
+      width: 100%;
+      min-width: 100%;
+      max-width: 100%;
+      max-height: 55vh;
+    }
+  }
+
+  .sidebar-toggle-btn {
+    padding: 0.5rem 0.625rem;
+    font-size: 0.75rem;
+
+    .toggle-icon {
+      font-size: 0.75rem;
+    }
+
+    .toggle-text {
+      font-size: 0.75rem;
+    }
+  }
+
+  .map-view-toggle {
+    top: 0.5rem;
+    left: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .map-view-btn {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .war-room-filters {
+    top: 3rem;
+    left: 0.5rem;
+    width: calc(100vw - 1rem);
+  }
+}
+
+// Small mobile: < 400px
+@media (max-width: 399.98px) {
+  .war-room-map-area {
+    min-height: 0;
+  }
+
+  .war-room-sidebar {
+    max-height: 40vh;
+
+    &.expanded {
+      max-height: 50vh;
+    }
+  }
+}
+
+// Large screens: ensure min heights
+@media (min-width: 992px) {
+  .war-room-main {
+    min-height: 0;
+  }
+
+  .war-room-map-area {
+    min-height: 0;
+  }
+}
+
+@media (min-width: 1200px) {
+  .war-room-main {
+    min-height: 0;
+  }
+
+  .war-room-map-area {
+    min-height: 0;
+  }
+}
+
+// Animations
+@keyframes pulse-green {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes move-chevrons {
+  from {
+    stroke-dashoffset: 72;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+// Global styles for war room
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+// Material Icons
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+// Active Filters Bar
+.active-filters-bar {
+  padding-left: 340px;
+  min-height: 3rem;
+  margin-top: 5.75rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.35rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .badge {
+    font-weight: 500;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    padding: 0.4rem 0.75rem !important;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+
+    &:hover {
+      background-color: rgba(var(--primary-rgb), 0.15) !important;
+    }
+
+    .cursor-pointer {
+      cursor: pointer;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  @media (max-width: 991.98px) {
+    padding-left: 0;
+    min-height: auto;
+    margin-top: 0.75rem;
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+// Empty State Overlay enhancements
+.empty-state-overlay {
+  // Ensure it sits on top of map but below modals if any
+  pointer-events: auto;
+
+  // Dark mode support handled via bg-light/text-muted classes, 
+  // but let's add specific overrides if needed
+  [data-theme-mode="dark"] & {
+    background: rgba(0, 0, 0, 0.7) !important;
+
+    .empty-state-content {
+      background: #1e1e1e; // Approx dark card bg
+      color: #fff;
+    }
+
+    .avatar.bg-light {
+      background: #2d2d2d !important;
+      color: #8c9097 !important;
+    }
+  }
+}
+
+// Ensure map area is relative for absolute overlay
+.war-room-map-area {
+  position: relative;
+}

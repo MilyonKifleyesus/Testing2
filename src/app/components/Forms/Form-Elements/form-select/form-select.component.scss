@@ -1,0 +1,8 @@
+::ng-deep {
+    .ng-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
+        box-shadow:none;
+    }
+    .ng-clear-wrapper {
+        display: none;
+    }
+    }

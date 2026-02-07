@@ -1,0 +1,235 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">User Management</h1>
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a href="javascript:void(0);">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Users</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="ms-auto pageheader-btn">
+      <button class="btn btn-primary btn-wave btn-sm" [routerLink]="['/admin/users/new']">
+        <i class="ti ti-plus me-1"></i>New User
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="row mb-4">
+    <div class="col-xl-12">
+      <div class="card custom-card">
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- Client Filter -->
+            <div class="col-md-4">
+              <label class="form-label">Client</label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="selectedClient"
+                (ngModelChange)="filterUsers()">
+                <option value="all">All Clients</option>
+                <option *ngFor="let client of clients" [value]="client.toLowerCase()">{{client}}</option>
+              </select>
+            </div>
+
+            <!-- Manufacturer Filter -->
+            <div class="col-md-4">
+              <label class="form-label">Manufacturer</label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="selectedManufacturer"
+                (ngModelChange)="filterUsers()">
+                <option value="all">All Manufacturers</option>
+                <option *ngFor="let manufacturer of manufacturers" [value]="manufacturer.toLowerCase()">{{manufacturer}}</option>
+              </select>
+            </div>
+
+            <!-- Role Filter -->
+            <div class="col-md-4">
+              <label class="form-label">Role</label>
+              <select 
+                class="form-select" 
+                [(ngModel)]="selectedRole"
+                (ngModelChange)="filterUsers()">
+                <option value="all">All Roles</option>
+                <option *ngFor="let role of roles" [value]="role.toLowerCase()">{{role}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Table -->
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card custom-card">
+        <div class="card-header justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <div class="card-title">List of Users</div>
+            <span class="badge bg-primary-transparent">{{totalCount}} users</span>
+          </div>
+          <div class="search-box">
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Search:"
+              [(ngModel)]="searchTerm"
+              (ngModelChange)="filterUsers()">
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table text-nowrap table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">UserName</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Client</th>
+                  <th scope="col">Manufacturer</th>
+                  <th scope="col" class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of filteredUsers" class="user-row">
+                  <!-- ID -->
+                  <td>
+                    <span class="text-muted">{{user.id}}</span>
+                  </td>
+
+                  <!-- Name -->
+                  <td>
+                    <div class="d-flex align-items-center gap-2">
+                      <div class="avatar avatar-sm">
+                        <div class="avatar-title rounded-circle bg-primary-transparent text-primary fw-bold">
+                          {{getUserInitials(user.name)}}
+                        </div>
+                      </div>
+                      <span class="fw-semibold">{{user.name}}</span>
+                    </div>
+                  </td>
+
+                  <!-- UserName -->
+                  <td>
+                    <code class="text-dark">{{user.username}}</code>
+                  </td>
+
+                  <!-- Role -->
+                  <td>
+                    <span class="badge" [ngClass]="getRoleClass(user.role)">
+                      {{user.role | titlecase}}
+                    </span>
+                  </td>
+
+                  <!-- Client -->
+                  <td>
+                    <span *ngIf="user.client" class="badge bg-info-transparent">{{user.client}}</span>
+                    <span *ngIf="!user.client" class="text-muted">—</span>
+                  </td>
+
+                  <!-- Manufacturer -->
+                  <td>
+                    <span *ngIf="user.manufacturer" class="badge bg-secondary-transparent">{{user.manufacturer}}</span>
+                    <span *ngIf="!user.manufacturer" class="text-muted">—</span>
+                  </td>
+
+                  <!-- Action (using spk-dropdowns) -->
+                  <td class="text-center">
+                    <spk-dropdowns
+                      [title]="'Action'"
+                      [Arrowicon]="false"
+                      [Menuclass]="'dropdown-menu dropdown-menu-end'"
+                      [class]="'btn btn-sm btn-primary'"
+                    >
+                      <li><a class="dropdown-item" [routerLink]="['/admin/users/view', user.id]"><i class="ti ti-eye me-2"></i>View</a></li>
+                      <li><a class="dropdown-item" [routerLink]="['/admin/users/edit', user.id]"><i class="ti ti-edit me-2"></i>Edit</a></li>
+                      <li><a class="dropdown-item" (click)="resetPassword(user, confirmModal)" href="javascript:void(0);"><i class="ti ti-lock me-2"></i>Reset Password</a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" (click)="deleteUser(user, confirmModal)" href="javascript:void(0);"><i class="ti ti-trash me-2"></i>Delete</a></li>
+                    <!-- Confirmation Modal Template -->
+                    <ng-template #confirmModal let-modal>
+                      <div class="modal-header">
+                        <h5 class="modal-title">{{ confirmTitle }}</h5>
+                        <button type="button" class="btn-close" aria-label="Close" (click)="confirmModalNo()"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>{{ confirmMessage }}</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" (click)="confirmModalNo()">Cancel</button>
+                        <button type="button" class="btn btn-danger" (click)="confirmModalYes()">Yes</button>
+                      </div>
+                    </ng-template>
+                    </spk-dropdowns>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div *ngIf="filteredUsers.length === 0" class="text-center py-5">
+              <div class="mb-3">
+                <i class="ti ti-users-off fs-1 text-muted"></i>
+              </div>
+              <h5 class="text-muted">No users found</h5>
+              <p class="text-muted">Try adjusting your search or filter criteria</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Pagination Controls -->
+        <div class="card-footer border-top" *ngIf="totalCount > 10">
+          <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <div class="text-muted small">
+              Showing <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong> to <strong>{{ Math.min(currentPage * pageSize, totalCount) }}</strong> of <strong>{{ totalCount }}</strong> users
+            </div>
+            <nav aria-label="Pagination" *ngIf="getTotalPages() > 1">
+              <ul class="pagination mb-0">
+                <!-- Previous Button -->
+                <li class="page-item" [class.disabled]="currentPage === 1">
+                  <button class="page-link" (click)="previousPage()" [disabled]="currentPage === 1">
+                    <i class="ti ti-chevron-left"></i> Previous
+                  </button>
+                </li>
+
+                <!-- Page Numbers with Ellipsis -->
+                <li class="page-item" *ngIf="getPageNumbers()[0] > 1">
+                  <button class="page-link" (click)="goToPage(1)">1</button>
+                </li>
+                <li class="page-item disabled" *ngIf="getPageNumbers()[0] > 2">
+                  <span class="page-link">...</span>
+                </li>
+
+                <li class="page-item" 
+                  *ngFor="let pageNum of getPageNumbers()"
+                  [class.active]="pageNum === currentPage">
+                  <button class="page-link" (click)="goToPage(pageNum)">{{pageNum}}</button>
+                </li>
+
+                <li class="page-item disabled" *ngIf="getPageNumbers()[getPageNumbers().length - 1] < getTotalPages() - 1">
+                  <span class="page-link">...</span>
+                </li>
+                <li class="page-item" *ngIf="getPageNumbers()[getPageNumbers().length - 1] < getTotalPages()">
+                  <button class="page-link" (click)="goToPage(getTotalPages())">{{getTotalPages()}}</button>
+                </li>
+
+                <!-- Next Button -->
+                <li class="page-item" [class.disabled]="currentPage === getTotalPages()">
+                  <button class="page-link" (click)="nextPage()" [disabled]="currentPage === getTotalPages()">
+                    Next <i class="ti ti-chevron-right"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

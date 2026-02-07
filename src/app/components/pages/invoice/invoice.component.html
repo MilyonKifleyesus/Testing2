@@ -1,0 +1,84 @@
+<app-page-header [title]="'Invoice '" [title1]="['Pages']" [activeitem]="'Invoice '"></app-page-header>
+
+    <!-- Start::row-1 -->
+    <div class="row row-sm">
+        <div class="col-lg-12 col-md-12">
+            <div class="card custom-card">
+                <div class="card-body">
+                    <div class="d-lg-flex">
+                        <h2 class="main-content-label mb-1">#INV0678</h2>
+                        <div class="ms-auto">
+                            <p class="mb-1"><span class="fw-semibold">Invoice Date :</span> 01st November 2020</p>
+                            <p class="mb-0"><span class="fw-semibold">Due Date :</span> 01 May  2020</p>
+                        </div>
+                    </div>
+                    <hr class="mg-b-40">
+                    <div class="row row-sm">
+                        <div class="col-lg-6">
+                            <p class="h3">Invoice Form:</p>
+                            <address>
+                                Street Address<br>
+                                State, City<br>
+                                Region, Postal Code<br>
+                                yourdomain&#64;example.com
+                            </address>
+                        </div>
+                        <div class="col-lg-6 text-end">
+                            <p class="h3">Invoice To:</p>
+                            <address>
+                                Street Address<br>
+                                State, City<br>
+                                Region, Postal Code<br>
+                                ypurdomain&#64;example.com
+                            </address>
+                        </div>
+                    </div>
+                    <div class="table-responsive mg-t-40">
+                        <spk-reusable-tables [columns]="invoiceColumn" [tableClass]="'table-invoice table-bordered'">
+                            @for( item of items;track $index){
+
+                                <tr>
+                                    <td>{{ item.description }}</td>
+                                    <td class="fs-12">{{ item.details }}</td>
+                                    <td class="tx-center">{{ item.quantity }}</td>
+                                    <td class="tx-right">${{ item.unitPrice.toFixed(2) }}</td>
+                                    <td class="tx-right">${{ item.totalPrice.toFixed(2) }}</td>
+                                  </tr>
+                                }
+                                <tr>
+                                  <td class="valign-middle" colspan="2" rowspan="4">
+                                    <div class="invoice-notes">
+                                      <label class="main-content-label tx-13">Notes</label>
+                                      <p>{{ notes }}</p>
+                                    </div>
+                                  </td>
+                                  <td class="tx-right">Sub-Total</td>
+                                  <td class="tx-right" colspan="2">${{ subTotal.toFixed(2) }}</td>
+                                </tr>
+                                <tr>
+                                  <td class="tx-right">Tax</td>
+                                  <td class="tx-right" colspan="2">{{ taxPercentage }}%</td>
+                                </tr>
+                                <tr>
+                                  <td class="tx-right">Discount</td>
+                                  <td class="tx-right" colspan="2">{{ discountPercentage }}%</td>
+                                </tr>
+                                <tr>
+                                  <td class="tx-right tx-uppercase tx-bold tx-inverse">Total Due</td>
+                                  <td class="tx-right" colspan="2">
+                                    <h4 class="tx-bold">${{ totalDue.toFixed(2) }}</h4>
+                                  </td>
+                                </tr>
+                        </spk-reusable-tables>
+             
+                    </div>
+                </div>
+                <div class="card-footer text-end btn-list">
+                    <button type="button" class="btn ripple btn-primary mb-1"><i class="fe fe-credit-card me-1"></i> Pay Invoice</button>
+                    <button type="button" class="btn ripple btn-secondary mb-1"><i class="fe fe-send me-1"></i> Send Invoice</button>
+                    <button type="button" class="btn ripple btn-info mb-1" onclick="javascript:window.print();"><i class="fe fe-printer me-1"></i> Print Invoice</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End::row-1 -->

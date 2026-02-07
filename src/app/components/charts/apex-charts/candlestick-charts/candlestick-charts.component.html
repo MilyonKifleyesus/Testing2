@@ -1,0 +1,61 @@
+<app-page-header [title]="'Apex Candlestick Charts'" [activeitem]="'Apex Candlestick Charts'" [title1]="['Apex  Charts']"></app-page-header>
+
+<!-- Start::row-1 -->
+ <div class="row">
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Candlestick Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="candlestick-basic">
+                    <spk-apex-charts [chartOptions]="chartOptions"></spk-apex-charts>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Candlestick Synced With Brush Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="chart-candlestick">
+                    <spk-apex-charts #chartCandle [chartOptions]="chartCandleOptions1"></spk-apex-charts>
+                 
+                    </div>
+                    <div id="chart-bar">
+                    <spk-apex-charts #chartBar [chartOptions]="chartBarOptions"></spk-apex-charts>
+                    </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Candlestick With Category X-axis</div>
+            </div>
+            <div class="card-body">
+                <div id="candlestick-categoryx">
+                    <spk-apex-charts  [chartOptions]="chartOptions2"></spk-apex-charts>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Candlestick With Line Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="candlestick-line">
+                    <spk-apex-charts  [chartOptions]="chartOptions3"></spk-apex-charts>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

@@ -1,0 +1,268 @@
+<app-page-header [title]="'Echarts'" [activeitem]="'Echarts'" [title1]="['Charts']"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Line Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-basic-line'" [options]="options1"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Smoothed Line Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-smoothed-line'" [options]="options2"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Area Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-basic-area'" [options]="options3"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Stacked Line Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-stacked-line'" [options]="options4"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Stacked Area Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-stacked-area'" [options]="options5" [theme]="'macarons'"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Step Line Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-step-line'" [options]="options6" [theme]="'macarons'"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Bar Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-bar-basic'" [options]="options7"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Bar With Background Chart</div>
+            </div>
+            <div class="card-body"> 
+                <spk-echarts [echartId]="'echart-bar-background'" [options]="options8" [theme]="'macarons'"></spk-echarts>
+                </div>
+            </div>
+        </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Style For a Single Bar Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-bar-single'" [options]="options9"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Water Fall Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-waterfall'" [options]="options10" [theme]="'macarons'"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Bar With Negative Values Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-negative-values'" [options]="options11" [theme]="'macarons'"></spk-echarts>
+                </div>
+            </div>
+        </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Bar With Labels Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-bar-labels'" [options]="options12" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Horizontal Bar Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-bar-horizontal'" [options]="options14" ></spk-echarts>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Horizontal Stacked Bar Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-stacked-horizontal'" [options]="options15" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Pie Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-pie'" [options]="options16" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Doughnut Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-doughnut'" [options]="options17" [theme]="'theme'" ></spk-echarts>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Scatter Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-scatter'" [options]="options18" [theme]="'theme'" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Bubble Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-bubble'" [options]="options19" [theme]="'theme'" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Candlestick Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-candlestick'" [options]="options20"></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Radar Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-basic-radar'" [options]="options21"  ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Heatmap Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-heatmap'" [options]="options22"  ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Treemap Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-treemap'" [options]="options23" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Funnel Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-funnel'" [options]="options24"  ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Gauge Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-gauge-basic'" [options]="options25" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Simple Graph Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-simple-graph'" [options]="options" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">bar Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-echarts [echartId]="'echart-pictorial'" [options]="options27" ></spk-echarts>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

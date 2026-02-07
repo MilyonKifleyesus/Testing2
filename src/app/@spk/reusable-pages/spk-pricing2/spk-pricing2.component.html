@@ -1,0 +1,23 @@
+
+    <div class="card custom-card card-pricing">
+      <div class="bg-transparent border-0">
+        <div [class]="'price-img text-center ' + iconClass">
+          <i [class]="icon + ' ' + iconBg"></i>
+        </div>
+        <div class="pricing-title">{{ title }}</div>
+        <h1 class="h1 font-weight-normal mb-0" data-pricing-value="30">
+          $<span class="price">{{ price }}</span>
+        </h1>
+      </div>
+      <div class="card-body pt-0 text-center">
+        <ul class="list-unstyled mb-4">
+            @for(feature of features;track $index){
+
+                <li>{{ feature }}</li>
+            }
+        </ul>
+        <a href="javascript:void(0);" class="btn ripple" [class]="'btn-outline-' + btnClass + ' mb-3'">
+          {{ buttonText }}
+        </a>
+      </div>
+    </div>

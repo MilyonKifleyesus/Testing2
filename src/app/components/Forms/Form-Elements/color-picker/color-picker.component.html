@@ -1,0 +1,44 @@
+<app-page-header [title]="'Color Pickers'" [title1]="['Form Elements']" [activeitem]="'Color Pickers'"></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    <div class="col-xl-3">
+        <app-showcode-card [title]="'Bootstrap Color Picker'" [prism]="prismCode.colorpickerTS">
+            <input type="color" class="form-control form-control-color border-0" id="exampleColorInput" value="#136ad0"
+                title="Choose your color">
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-9">
+        <div class="card custom-card">
+            <div class="card-header border-bottom p-3">
+                <div class="card-title"> Classic </div>
+            </div>
+            <div class="card-body d-sm-flex justify-content-between">
+                <div>
+                    <div class="theme-container"></div>
+                    <div class="pickr-container example-picker">
+                        <form class="example-form2" [formGroup]="exampleForm">
+                            <mat-form-field class="example-full-width">
+                                <mat-label>Color</mat-label>
+                                <input matInput formControlName="inputCtrl" />
+                                <ngx-colors class="suffix" matSuffix ngx-colors-trigger
+                                    formControlName="pickerCtrl"></ngx-colors>
+                            </mat-form-field>
+                        </form>
+                    </div>
+                </div>
+                <div>
+                    <div class="theme-container1"></div>
+                    <div class="pickr-container1 example-picker"></div>
+                </div>
+                <div>
+                    <div class="theme-container2"></div>
+                    <div class="pickr-container2 example-picker">
+                        <ngx-colors ngx-colors-trigger [(ngModel)]="color2" acceptLabel="Select" cancelLabel="Cancel">
+                        </ngx-colors>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

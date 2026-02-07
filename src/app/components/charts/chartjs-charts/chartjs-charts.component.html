@@ -1,0 +1,106 @@
+<app-page-header [title]="'ChartJs'" [activeitem]="'ChartJs'" [title1]="['Charts']"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Line Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-line"   [data]="lineChartData" [options]="lineChartOptions"
+                    [type]="lineChartType"></spk-chartjs>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Bar Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-bar" [data]="barChartData" [options]="barChartOptions"
+                    [type]="barChartType"></spk-chartjs>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Pie Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-pie" [data]="PieChartData" [options]="PieChartOptions"
+                    [type]="PieChartType"></spk-chartjs>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Doughnut Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-doughnut" [data]="PieChartData" [options]="PieChartOptions"
+                    [type]="DoughnutChartType"></spk-chartjs>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Mixed Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-mixed" [data]="barChart2Data" [options]="barChart2Options"
+                    [type]="barChart2Type">
+                </spk-chartjs>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Scatter Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-scatter" [data]="scatterchartData" [options]="ScatterchartOptions"
+                    [type]="ScatterchartType"></spk-chartjs>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Polar Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-polar" [data]="polarChartData" [options]="polarChartOptions"
+                    [type]="polarChartType"></spk-chartjs>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Radial Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-radar" [data]="radarChartData" [options]="radarChartOptions"
+                    [type]="radarChartType"></spk-chartjs>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Chartjs Bubble Chart</div>
+            </div>
+            <div class="card-body">
+                <spk-chartjs id="chartjs-bubble" [data]="bubblechartData" [options]="bubblechartOptions"
+                    [type]="bubblechartType"></spk-chartjs>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

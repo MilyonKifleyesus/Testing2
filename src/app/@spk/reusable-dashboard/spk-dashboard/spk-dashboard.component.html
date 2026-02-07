@@ -1,0 +1,20 @@
+<div class="card custom-card">
+    <div class="card-body">
+      <div class="card-item">
+        <div class="card-item-icon card-icon" [innerHTML]="sanitizeIcon(card.svg)">
+            {{card.svg}}
+        </div>
+        <div class="card-item-title mb-2">
+          <label class="main-content-label fs-13 font-weight-bold mb-1">{{ card.title }}</label>
+          <span class="d-block fs-12 mb-0 text-muted">{{ card.subtitle }}</span>
+        </div>
+        <div class="card-item-body">
+          <div class="card-item-stat">
+            <h4 class="font-weight-bold">{{ card.value }}</h4>
+            <small><b [class]="card.percentageClass">{{ card.percentage }}</b> {{ card.percentage1 }}</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

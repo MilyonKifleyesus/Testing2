@@ -1,0 +1,249 @@
+<app-page-header [title]="'Date & Time Pickers '" [title1]="['Form Elements']" [activeitem]="'Date & Time Pickers '"></app-page-header>
+<!-- Start:: row-1 -->
+<div class="row">
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Basic Date picker
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="input-group custom-inputGroup">
+                        <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                        <spk-flatpickr placeholder="Choose Date" class="form-control"
+                        [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="false"
+                        [dateFormat]="'Y-m-d'"></spk-flatpickr>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Date picker With Time
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="input-group custom-inputGroup">
+                        <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                        <spk-flatpickr placeholder="Choose Date With Time" class="form-control"
+                        [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="true"
+                        [dateFormat]="'Y-m-d H:i'"></spk-flatpickr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Human Friendly dates
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="input-group custom-inputGroup">
+                        <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                        <spk-flatpickr placeholder="HUMAN FRIENDLY DATES" class="form-control"
+                        [mode]="'single'" [altInput]="true" [convertModelValue]="true" [enableTime]="false"
+                        [dateFormat]="'Y-m-d'"></spk-flatpickr>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Date range picker
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="input-group custom-inputGroup">
+                        <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                        <spk-flatpickr  [placeholder]="'2024-05-01 to 2024-05-30'" class="form-control "
+                        [mode]="'range'" [altInput]="false" [convertModelValue]="true" [enableTime]="false"
+                        [dateFormat]="'Y-m-d'"></spk-flatpickr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-1 -->
+
+<!-- Start:: row-3 -->
+<div class="row">
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Basic Time picker
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="input-group custom-inputGroup">
+                        <div class="input-group-text text-muted"> <i class="ri-time-line"></i> </div>
+                        <spk-flatpickr placeholder="choose time" class="form-control"
+                                [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="true" [noCalendar]="true" [inline]="false"
+                                [dateFormat]="'H:i'"></spk-flatpickr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Time picker with 24hr Format
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="input-group custom-inputGroup">
+                        <div class="input-group-text text-muted"> <i class="ri-time-line"></i> </div>
+                        
+                            <spk-flatpickr placeholder="Choose time in 24hr format" class="form-control"
+                            [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="true" [noCalendar]="true" [inline]="false"
+                            [dateFormat]="'H:i'"></spk-flatpickr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Time Picker with Limits
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="input-group custom-inputGroup">
+                        <div class="input-group-text text-muted"> <i class="ri-time-line"></i> </div>
+                        <spk-flatpickr placeholder="choose time" class="form-control"
+                        [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="true" [noCalendar]="true" [inline]="false"
+                        [dateFormat]="'H:i'"></spk-flatpickr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    DateTimePicker with Limited Time Range
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="input-group custom-inputGroup">
+                        <div class="input-group-text text-muted"> <i class="ri-time-line"></i> </div>
+                        <spk-flatpickr placeholder="Choose Date With Time" class="form-control"
+                        [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="true"
+                        [dateFormat]="'Y-m-d H:i'"></spk-flatpickr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+</div>
+<!-- End:: row-3 -->
+<!-- Start:: row-2 -->
+<div class="row">
+  
+    <div class="col-xl-6">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            Date Picker with week numbers
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group mb-0">
+                            <div class="input-group custom-inputGroup">
+                                <div class="input-group-text text-muted"> <i class="ri-calendar-line"></i> </div>
+                                <spk-flatpickr placeholder="Choose date" class="form-control"
+                                [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="false" [inline]="false"
+                                [dateFormat]="'Y-m-d'"></spk-flatpickr>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-12">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            Inline Time Picker
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group mb-0">
+                            
+                            <spk-flatpickr placeholder="Choose Time" [class]="'form-control'"
+                            [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="true" [noCalendar]="true" [inline]="true"
+                            [dateFormat]="'H:i'"></spk-flatpickr>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-12">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            Preloading time
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group mb-0">
+                            <div class="input-group custom-inputGroup">
+                                <div class="input-group-text text-muted"> <i class="ri-time-line"></i> </div>
+                                <spk-flatpickr placeholder="Preloading time" class="form-control"
+                                [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="true" [noCalendar]="true" [inline]="false"
+                                [dateFormat]="'H:i'"></spk-flatpickr>
+                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Inline Calendar
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="form-group overflow-auto">
+                    <spk-flatpickr placeholder="Choose date" [class]="'form-control'"
+                    [mode]="'single'" [altInput]="false" [convertModelValue]="true" [enableTime]="false" [inline]="true"
+                    [dateFormat]="'Y-m-d'"></spk-flatpickr>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-2 -->

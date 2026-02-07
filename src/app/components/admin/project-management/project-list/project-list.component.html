@@ -1,0 +1,134 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">Project Management</h1>
+      <p class="mb-0 text-muted fs-13">List of all projects in the system</p>
+    </div>
+    <div class="btn-list">
+      <button class="btn btn-primary btn-wave" routerLink="/admin/projects/new">
+        <i class="ti ti-plus me-2"></i>New Project
+      </button>
+    </div>
+  </div>
+
+  <!-- Projects Table -->
+  <div class="row">
+    <div class="col-xl-12">
+      <div class="card custom-card">
+        <div class="card-header d-flex justify-content-between">
+          <div class="card-title">Projects List</div>
+          <div class="d-flex">
+            <div class="me-3">
+              <input class="form-control form-control-sm" type="text" placeholder="Search Projects..." aria-label="Search">
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table text-nowrap table-hover border table-bordered">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Project Name</th>
+                  <th scope="col">Client</th>
+                  <th scope="col">Assessment Type</th>
+                  <th scope="col">Location</th>
+                  <th scope="col">Manufacturer</th>
+                  <th scope="col">Total Assets</th>
+                  <th scope="col">User Access</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let project of projects">
+                  <td>{{ project.id }}</td>
+                  <td>
+                    <div class="fw-semibold d-flex align-items-center justify-content-between">
+                      <span>{{ project.projectName }}</span>
+                      <span *ngIf="project.status === 'Closed'" class="badge bg-secondary ms-2">Closed</span>
+                    </div>
+                  </td>
+                  <td>{{ project.client }}</td>
+                  <td>
+                    <span class="badge bg-primary-transparent">{{ project.assessmentType }}</span>
+                  </td>
+                  <td>{{ project.location }}</td>
+                  <td>{{ project.manufacturer }}</td>
+                  <td>
+                    <span class="badge bg-success">{{ project.totalAssets }}</span>
+                  </td>
+                  <td>
+                    <div class="avatar-list-stacked">
+                      <span class="badge bg-light text-dark" *ngFor="let user of project.userAccess.slice(0, 2)">
+                        {{ user.split('@')[0] }}
+                      </span>
+                      <span class="badge bg-light text-dark" *ngIf="project.userAccess.length > 2">
+                        +{{ project.userAccess.length - 2 }}
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="dropdown">
+                      <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Action
+                      </button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <a class="dropdown-item" href="javascript:void(0);" (click)="viewProjectDetails(project.id)">
+                            View
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item" href="javascript:void(0);" (click)="goToTickets(project.id)">
+                            Tickets
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                          <a class="dropdown-item" [class.disabled]="project.status === 'Closed'" [attr.aria-disabled]="project.status === 'Closed'" href="javascript:void(0);" (click)="project.status !== 'Closed' && closeProject(project.id)">
+                            Close Project
+                          </a>
+                        </li>
+                        <li>
+                          <a class="dropdown-item text-danger" href="javascript:void(0);" (click)="deleteProject(project.id)">
+                            Delete Project
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="d-flex align-items-center">
+            <div>
+              Showing {{ projects.length }} of {{ projects.length }} Entries
+            </div>
+            <div class="ms-auto">
+              <nav aria-label="Page navigation" class="pagination-style-4">
+                <ul class="pagination mb-0">
+                  <li class="page-item disabled">
+                    <a class="page-link" href="javascript:void(0);">
+                      Prev
+                    </a>
+                  </li>
+                  <li class="page-item active"><a class="page-link" href="javascript:void(0);">1</a></li>
+                  <li class="page-item"><a class="page-link" href="javascript:void(0);">2</a></li>
+                  <li class="page-item">
+                    <a class="page-link text-primary" href="javascript:void(0);">
+                      next
+                    </a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

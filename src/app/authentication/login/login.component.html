@@ -1,0 +1,279 @@
+
+     <!-- CONTAINER OPEN -->
+     <div class="page main-signin-wrapper enhanced-login">
+         <ul
+         ngbNav
+         #nav="ngbNav"
+         [(activeId)]="active"
+        
+         class="nav-tabs rounded-3 justify-content-center mt-2 border-bottom-0 auth-tabs"
+       >
+         <li ngbNavItem="Firebase" >
+           <a ngbNavLink class="firebase-img">
+             <img src="./assets/images/firebase.svg" class="firebase" alt="Firebase Auth" />
+           </a>
+           <ng-template ngbNavContent> 
+                   <div class="col-md-12">
+                     <div class="card mb-0 login-card shadow-lg">
+                         <div class="row row-sm g-0">
+                             <div class="col-lg-6 col-xl-5 d-none d-lg-flex login-hero-section">
+                                 <div class="hero-content">
+                                     <a routerLink="/dashboard" class="brand-logo-wrapper">
+                                         <img src="./assets/images/brand-logos/desktop-white.png" class="header-brand-img mb-4 brand-logo" alt="BusPulse Logo">
+                                     </a>
+                                     <div class="hero-illustration">
+                                         <div class="illustration-wrapper">
+                                             <img src="./assets/images/svgs/user.svg" class="user-illustration animate-float" alt="Welcome">
+                                         </div>
+                                     </div>
+                                     <h3 class="hero-title">Welcome to BusPulse</h3>
+                                     <p class="hero-subtitle">Fleet management made simple and efficient</p>
+                                     <div class="feature-list">
+                                         <div class="feature-item">
+                                             <i class="fe fe-check-circle"></i>
+                                             <span>Real-time tracking</span>
+                                         </div>
+                                         <div class="feature-item">
+                                             <i class="fe fe-check-circle"></i>
+                                             <span>Advanced analytics</span>
+                                         </div>
+                                         <div class="feature-item">
+                                             <i class="fe fe-check-circle"></i>
+                                             <span>Secure & reliable</span>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                             <div class="col-lg-6 col-xl-7 col-xs-12 col-sm-12 login_form">
+                                 <div class="form-container">
+                                     <div class="form-header">
+                                         <h4 class="form-title">Sign In</h4>
+                                         <p class="form-subtitle">Enter your credentials to access your account</p>
+                                     </div>
+                                     
+                                     <form [formGroup]="loginForm" (ngSubmit)="login()" class="modern-form">
+                                        @if(errorMessage.length > 0){
+                                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                <i class="fe fe-alert-circle me-2"></i>
+                                                {{errorMessage}}
+                                            </div>
+                                        }
+                                        @if(_error.message.length > 0){
+                                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                                <i class="fe fe-alert-circle me-2"></i>
+                                                {{_error.message}}
+                                            </div>
+                                        }
+                                         
+                                         <div class="form-group floating-label">
+                                             <div class="input-group">
+                                                 <span class="input-group-text bg-transparent">
+                                                     <i class="fe fe-mail"></i>
+                                                 </span>
+                                                 <input 
+                                                     class="form-control form-control-lg" 
+                                                     type="email" 
+                                                     autocomplete="email"
+                                                     formControlName="username" 
+                                                     [(ngModel)]="email" 
+                                                     placeholder="Enter your email"
+                                                     required>
+                                             </div>
+                                             <label class="floating-label-text">Email Address</label>
+                                         </div>
+                                         
+                                         <div class="form-group floating-label">
+                                             <div class="input-group">
+                                                 <span class="input-group-text bg-transparent">
+                                                     <i class="fe fe-lock"></i>
+                                                 </span>
+                                                 <input 
+                                                     class="form-control form-control-lg" 
+                                                     [type]="showPassword ? 'text' : 'password'" 
+                                                     autocomplete="current-password"
+                                                     formControlName="password" 
+                                                     [(ngModel)]="password" 
+                                                     placeholder="Enter your password"
+                                                     required>
+                                                 <span class="input-group-text bg-transparent cursor-pointer" (click)="toggleVisibility()">
+                                                     <i [class]="showPassword ? 'fe fe-eye-off' : 'fe fe-eye'"></i>
+                                                 </span>
+                                             </div>
+                                             <label class="floating-label-text">Password</label>
+                                         </div>
+
+                                         <div class="form-options">
+                                             <div class="form-check">
+                                                 <input class="form-check-input" type="checkbox" id="rememberMe">
+                                                 <label class="form-check-label" for="rememberMe">
+                                                     Remember me
+                                                 </label>
+                                             </div>
+                                             <a routerLink="/custom/forget-password" class="forgot-link">Forgot password?</a>
+                                         </div>
+                                         
+                                         <div class="d-grid">
+                                             <button 
+                                                 type="submit" 
+                                                 [disabled]="!loginForm.valid || authservice.showLoader"
+                                                 [class.loader--text]="authservice.showLoader" 
+                                                 class="btn btn-primary btn-lg btn-wave">
+                                                 <span *ngIf="!authservice.showLoader">
+                                                     <i class="fe fe-log-in me-2"></i>Sign In
+                                                 </span>
+                                                 <span *ngIf="authservice.showLoader">
+                                                     <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                     Signing in...
+                                                 </span>
+                                             </button>
+                                         </div>
+                                     </form>
+
+                                     <div class="signup-prompt">
+                                         <p class="text-center mb-0">
+                                             Don't have an account? 
+                                             <a routerLink="/custom/sign-up" class="signup-link">Create Account</a>
+                                         </p>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+           
+             </ng-template>
+             </li>
+             <li ngbNavItem="Angular" >
+                 <a ngbNavLink class="firebase-img">
+                   <img src="./assets/images/favicon.svg" class="firebase" alt="Angular Auth" />
+                 </a>
+                 <ng-template ngbNavContent>
+         
+                         <div class="col-md-12">
+                             <div class="card mb-0 login-card shadow-lg">
+                                 <div class="row row-sm g-0">
+                                     <div class="col-lg-6 col-xl-5 d-none d-lg-flex login-hero-section">
+                                         <div class="hero-content">
+                                             <a routerLink="/dashboard" class="brand-logo-wrapper">
+                                                 <img src="./assets/images/brand-logos/desktop-white.png" class="header-brand-img mb-4 brand-logo" alt="BusPulse Logo">
+                                             </a>
+                                             <div class="hero-illustration">
+                                                 <div class="illustration-wrapper">
+                                                     <img src="./assets/images/svgs/user.svg" class="user-illustration animate-float" alt="Welcome">
+                                                 </div>
+                                             </div>
+                                             <h3 class="hero-title">Welcome to BusPulse</h3>
+                                             <p class="hero-subtitle">Fleet management made simple and efficient</p>
+                                             <div class="feature-list">
+                                                 <div class="feature-item">
+                                                     <i class="fe fe-check-circle"></i>
+                                                     <span>Real-time tracking</span>
+                                                 </div>
+                                                 <div class="feature-item">
+                                                     <i class="fe fe-check-circle"></i>
+                                                     <span>Advanced analytics</span>
+                                                 </div>
+                                                 <div class="feature-item">
+                                                     <i class="fe fe-check-circle"></i>
+                                                     <span>Secure & reliable</span>
+                                                 </div>
+                                             </div>
+                                         </div>
+                                     </div>
+                                     <div class="col-lg-6 col-xl-7 col-xs-12 col-sm-12 login_form">
+                                         <div class="form-container">
+                                             <div class="form-header">
+                                                 <h4 class="form-title">Sign In</h4>
+                                                 <p class="form-subtitle">Enter your credentials to access your account</p>
+                                             </div>
+                                             
+                                             <form [formGroup]="loginForm" (ngSubmit)="Submit()" class="modern-form">
+                                                 <div class="form-group floating-label">
+                                                     <div class="input-group">
+                                                         <span class="input-group-text bg-transparent">
+                                                             <i class="fe fe-mail"></i>
+                                                         </span>
+                                                         <input 
+                                                             class="form-control form-control-lg" 
+                                                             type="email" 
+                                                             autocomplete="email"
+                                                             formControlName="username" 
+                                                             [(ngModel)]="email" 
+                                                             placeholder="Enter your email"
+                                                             required>
+                                                     </div>
+                                                     <label class="floating-label-text">Email Address</label>
+                                                 </div>
+                                                 
+                                                 <div class="form-group floating-label">
+                                                     <div class="input-group">
+                                                         <span class="input-group-text bg-transparent">
+                                                             <i class="fe fe-lock"></i>
+                                                         </span>
+                                                         <input 
+                                                             class="form-control form-control-lg" 
+                                                             [type]="showPassword ? 'text' : 'password'" 
+                                                             autocomplete="current-password"
+                                                             formControlName="password" 
+                                                             [(ngModel)]="password" 
+                                                             placeholder="Enter your password"
+                                                             required>
+                                                         <span class="input-group-text bg-transparent cursor-pointer" (click)="toggleVisibility()">
+                                                             <i [class]="showPassword ? 'fe fe-eye-off' : 'fe fe-eye'"></i>
+                                                         </span>
+                                                     </div>
+                                                     <label class="floating-label-text">Password</label>
+                                                 </div>
+
+                                                 <div class="form-options">
+                                                     <div class="form-check">
+                                                         <input class="form-check-input" type="checkbox" id="rememberMeAngular">
+                                                         <label class="form-check-label" for="rememberMeAngular">
+                                                             Remember me
+                                                         </label>
+                                                     </div>
+                                                     <a routerLink="/custom/forget-password" class="forgot-link">Forgot password?</a>
+                                                 </div>
+                                                 
+                                                 <div class="d-grid">
+                                                     <button 
+                                                         type="submit" 
+                                                         [disabled]="!loginForm.valid || authservice.showLoader"
+                                                         [class.loader--text]="authservice.showLoader" 
+                                                         class="btn btn-primary btn-lg btn-wave">
+                                                         <span *ngIf="!authservice.showLoader">
+                                                             <i class="fe fe-log-in me-2"></i>Sign In
+                                                         </span>
+                                                         <span *ngIf="authservice.showLoader">
+                                                             <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                                                             Signing in...
+                                                         </span>
+                                                     </button>
+                                                 </div>
+                                             </form>
+
+                                             <div class="signup-prompt">
+                                                 <p class="text-center mb-0">
+                                                     Don't have an account? 
+                                                     <a routerLink="/custom/sign-up" class="signup-link">Create Account</a>
+                                                 </p>
+                                             </div>
+                                         </div>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>
+                      
+                   </ng-template>
+                   </li>
+             </ul>
+        <div class="row signpages text-center mt-3">
+            <div [ngbNavOutlet]="nav" ></div>
+      </div>
+      </div>
+     
+  
+  <!-- CONTAINER CLOSED --> 
+
+  
+  

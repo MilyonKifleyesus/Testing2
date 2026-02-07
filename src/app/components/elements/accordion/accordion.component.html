@@ -1,0 +1,189 @@
+<app-page-header [title]="'Accordions'" [title1]="['Elements']" [activeitem]="'Accordions'"></app-page-header>
+<!-- Start:: row-1 -->
+<div class="row">
+    <div class="col-xl-12">
+      <app-showcode-card [title]="'Basic Accordion'" [reuseCode]="reusableCode.accordionReuse"  [prism]="prismCode.accordion1">
+          <app-ngb-accordion [accordionId]="'accordionExample'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+    <div class="col-xl-12">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse"
+      title="Always Open Accordion <p class='text-muted subtitle fs-12 fw-normal'>Omit the <code>data-bs-parent</code> attribute on each <code>.accordion-collapse</code> to make accordion items stay  open when another item is opened. </p>"
+      [prism]="prismCode.accordion2" >
+      <app-ngb-accordion [accordionId]="'accordionExample'" [closeOthers]="false" [accordionItems]="openAccordions"></app-ngb-accordion>
+  </app-showcode-card>
+    </div>
+  </div>
+  <!-- End:: row-1 -->
+  
+  <!-- Start:: row-2 -->
+  <div class="row">
+    <div class="col-xl-12">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" title="Flush Accordion <p class='subtitle text-muted fs-12 fw-normal'>Add <code>.accordion-flush</code> to remove the default
+        <code>background-color </code>, some borders, and some rounded corners to render accordions edge-to-edge with their parent container.
+        </p>" [prism]="prismCode.accordion3" classbody="p-0">
+      <app-ngb-accordion [accordionId]="'accordionFlushExample'" [closeOthers]="true" [accordionItems]="flushAccordions"></app-ngb-accordion>
+        </app-showcode-card>
+    </div>
+  </div>
+  <!-- End:: row-2 -->
+  <!-- Start:: row-4-->
+  <h6 class="mb-3">Light Colors:</h6>
+  <div class="row">
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Primary'" [prism]="prismCode.accordion6">
+      <app-ngb-accordion [accordionId]="'accordionPrimaryExample'" [accodionClass]="' accordion-primary'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Secondary'" [prism]="prismCode.accordion7">
+      <app-ngb-accordion [accordionId]="'accordionSecondaryExample'" [accodionClass]="'accordion-secondary'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+  </div>
+  <!-- End:: row-4 -->
+  <!-- Start:: row-3 -->
+  <h6 class="mb-3">Solid Colors:</h6>
+  <div class="row">
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Primary'" [prism]="prismCode.accordion6">
+      <app-ngb-accordion [accordionId]="'accordionPrimarySolidExample'" [accodionClass]="'accordion-solid-primary'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Secondary'" [prism]="prismCode.accordion7">
+      <app-ngb-accordion [accordionId]="'accordionSecondarySolidExample'" [accodionClass]="'accordion-solid-secondary'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+  </div>
+  <!-- End:: row-3 -->
+  
+  
+  
+  <!-- Start:: row-5 -->
+  <div class="row">
+      <div class="col-xl-6">
+          <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Custom Accordion'" [prism]="prismCode.accordion13">
+          <app-ngb-accordion [accordionId]="'customizedAccordion'"  [accodionClass]="'customized-accordion accordions-items-seperate'" [closeOthers]="true" [accordionItems]="customAccordions"></app-ngb-accordion>
+        </app-showcode-card>
+        </div>
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Custom Icon Accordion'" [prism]="prismCode.accordion12">
+      <app-ngb-accordion [accordionId]="'accordioncustomicon1Example'" [accodionClass]="' accordion-customicon1 accordions-items-seperate'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+  </div>
+  <!-- End:: row-5 -->
+  
+  <!-- Start:: row-6 -->
+  <h6 class="mb-3">Colored Borders:</h6>
+  <div class="row">
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Primary'" [prism]="prismCode.accordion8">
+      <app-ngb-accordion [accordionId]="'accordionprimaryborderExample'" [accodionClass]="' accordion-border-primary accordions-items-seperate'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Success'" [prism]="prismCode.accordion9">
+      <app-ngb-accordion [accordionId]="'accordionsuccessborderExample'" [accodionClass]="'accordion-border-success accordions-items-seperate'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+  </div>
+  <!-- End:: row-6 -->
+  
+  <!-- Start:: row-7 -->
+  <div class="row">
+      <div class="col-xl-6">
+          <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Without Icon'" [prism]="prismCode.accordion15">
+          <app-ngb-accordion [accordionId]="'accordioniconnoIconExample'" [accodionClass]="'accordionicon-none accordions-items-seperate'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+        </app-showcode-card>
+        </div>
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Left Aligned Icons'" [prism]="prismCode.accordion14">
+      <app-ngb-accordion [accordionId]="'accordioniconLeftExample'" [accodionClass]="'accordionicon-left accordions-items-seperate'" [closeOthers]="true" [accordionItems]="basicAccordions"></app-ngb-accordion>
+    </app-showcode-card>
+    </div>
+  </div>
+  <!-- End:: row-7 -->
+  
+  <!--ROW-START-->
+  <div class="row">
+    <div class="col-xl-12">
+      <app-showcode-card  [reuseCode]="reusableCode.accordionReuse" [title]="'Horizontal Collapse'" [prism]="prismCode.accordion16">
+          <app-ngb-collapse [items]="collapseItems1" ></app-ngb-collapse>
+    </app-showcode-card>
+    </div>
+  </div>
+  <!--ROW-END-->
+  
+  <!-- Start:: row-8 -->
+  <div class="row">
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Targets Collapse'" [prism]="prismCode.accordion11" classbody="collapsebody">
+        <p class="mb-0">
+            <a class="btn btn-primary mb-2 me-1" (click)="isCollapsed1 = !isCollapsed1" role="button"
+                [attr.aria-expanded]="!isCollapsed1" [attr.aria-controls]="'multiCollapseExample1'">Toggle
+                first element</a>
+            <button class="btn btn-success mb-2 me-1" (click)="isCollapsed2 = !isCollapsed2"
+                [attr.aria-expanded]="!isCollapsed2" [attr.aria-controls]="'multiCollapseExample2'">Toggle
+                second element</button>
+            <button class="btn btn-danger mb-2 me-1"
+                (click)="isCollapsed1 = !isCollapsed1; isCollapsed2 = !isCollapsed2"
+                [attr.aria-expanded]="!isCollapsed1 && !isCollapsed2"
+                [attr.aria-controls]="'multiCollapseExample1 multiCollapseExample2'">Toggle both
+                elements</button>
+        </p>
+        <div class="row">
+            <div class="col m-1">
+                <div class="collapse multi-collapse" id="multiCollapseExample1" [ngbCollapse]="isCollapsed1">
+                    <div class="card card-body mb-0 shadow-none">
+                        Some placeholder content for the first collapse component of this multi-collapse
+                        example. This panel is hidden by default but revealed when the user activates the
+                        relevant trigger.
+                    </div>
+                </div>
+            </div>
+            <div class="col m-1">
+                <div class="collapse multi-collapse" id="multiCollapseExample2" [ngbCollapse]="isCollapsed2">
+                    <div class="card card-body mb-0 shadow-none">
+                        Some placeholder content for the second collapse component of this multi-collapse
+                        example. This panel is hidden by default but revealed when the user activates the
+                        relevant trigger.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </app-showcode-card>
+    </div>
+    <div class="col-xl-6">
+      <app-showcode-card [reuseCode]="reusableCode.accordionReuse" [title]="'Example'" [prism]="prismCode.accordion10">
+          <!-- <app-ngb-collapse [items]="collapseItems2" ></app-ngb-collapse> -->
+  
+        <p class="mb-0">
+            <a class="btn btn-primary collapsed mb-2 me-1" (click)="collapse.toggle()" data-bs-toggle="collapse"
+                role="button" [attr.aria-expanded]="!isCollapsed" aria-controls="collapseExample">
+                Link with href
+            </a>
+            <button class="btn btn-secondary collapsed mb-2" (click)="isCollapsed = !isCollapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#collapseExample" [attr.aria-expanded]="!isCollapsed"
+                aria-controls="collapseExample">
+                Button with data-bs-target
+            </button>
+        </p>
+        <div #collapse="ngbCollapse" [(ngbCollapse)]="isCollapsed" id="collapseExample">
+            <div class="card card-body mb-0">
+                Some placeholder content for the collapse component. This panel
+                is
+                hidden by default but revealed when the user activates the
+                relevant
+                trigger.
+            </div>
+        </div>
+    </app-showcode-card>
+    </div>
+  
+   
+  </div>
+  <!-- End:: row-8 -->
+  
+  

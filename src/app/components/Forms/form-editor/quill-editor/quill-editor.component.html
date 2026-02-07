@@ -1,0 +1,50 @@
+<app-page-header [title]="'Quill Editor'" [title1]="['Form Editor']" [activeitem]="'Quill Editor'"></app-page-header>
+
+      <!-- Start:: row-1 -->
+      <div class="row row-sm">
+        <div class="col-xl-12">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Quill Snow Editor
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="editor">
+                        <angular-editor [(ngModel)]="htmlContent" [config]="config1">
+                        </angular-editor>
+                       
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End:: row-1 -->
+
+    <!-- Start:: row-2 -->
+    <div class="row row-sm">
+        <div class="col-xl-12">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Quill Bubble Editor
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="editor1">
+                        <form [formGroup]="form">
+                            <ngx-editor-menu
+                            class="border-1"
+                            [editor]="editor"
+                            [toolbar]="toolbar"
+                          >
+                          </ngx-editor-menu>
+                          <ngx-editor [editor]="editor" formControlName="editorContent" >
+                          </ngx-editor>
+                          </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End:: row-2 -->

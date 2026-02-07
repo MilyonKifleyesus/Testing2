@@ -1,0 +1,139 @@
+<app-page-header [title]="'Apex Column Charts'" [activeitem]="'Apex Column Charts'" [title1]="['Apex  Charts']"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Basic Column Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="column-basic">
+                    <spk-apex-charts  [chartOptions]="chartOptions"></spk-apex-charts>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Column Chart With Datalabels</div>
+            </div>
+            <div class="card-body">
+                <div id="column-datalabels">
+                    <spk-apex-charts  [chartOptions]="chartOptions1"></spk-apex-charts>
+             
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Stacked Column Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="column-stacked">
+                    <spk-apex-charts  [chartOptions]="chartOptions2"></spk-apex-charts>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">100% Stacked Column Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="column-stacked-full">
+                    <spk-apex-charts  [chartOptions]="chartOptions3"></spk-apex-charts>
+             
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Column Chart With Markers</div>
+            </div>
+            <div class="card-body">
+                <div id="column-markers">
+                    <spk-apex-charts  [chartOptions]="chartOptions4"></spk-apex-charts>
+              
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Column Chart With Rotated Labels</div>
+            </div>
+            <div class="card-body">
+                <div id="column-rotated-labels">
+                    <spk-apex-charts  [chartOptions]="chartOptions5"></spk-apex-charts>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Column Chart With Negative Values</div>
+            </div>
+            <div class="card-body">
+                <div id="column-negative">
+                    <spk-apex-charts  [chartOptions]="chartOptions6"></spk-apex-charts>
+                 
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Range Column Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="column-range">
+                    <spk-apex-charts  [chartOptions]="chartOptions7"></spk-apex-charts>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Dynamic Loaded Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="chart-year">
+                    <spk-apex-charts  [chartOptions]="chartOptions8"></spk-apex-charts>
+                  
+                </div>
+                <div id="chart-quarter">
+                    <spk-apex-charts  [chartOptions]="chartQuarterOptions8"></spk-apex-charts>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Distributed Columns Chart</div>
+            </div>
+            <div class="card-body">
+                <div id="columns-distributed">
+                    <spk-apex-charts  [chartOptions]="chartOptions9"></spk-apex-charts>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

@@ -1,0 +1,6 @@
+<a  [ngbTooltip]="tooltipText" [routerLink]="routerLink" [placement]="placement" [autoClose]="autoClose" [tooltipClass]="tooltipClass"   [ngClass]="buttonClass"  >
+    <ng-content></ng-content>
+    @if(iconClass){
+        <i [ngbTooltip]="icontooltipText" [class]="iconClass"></i>
+    }
+</a>

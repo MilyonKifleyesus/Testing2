@@ -1,0 +1,14 @@
+<div class="card custom-card {{cardBg}}">
+  <div class="card-body {{cardBody}}">
+    <a href="javascript:void(0);" class="card-anchor"></a>
+    <blockquote class="blockquote mb-0 text-center">
+      <h6 class="{{textColor}}">{{ quote }}</h6>
+      <footer class="blockquote-footer  fs-14 {{textColor1}}">
+        {{ author }}
+        @if (sourceTitle) {
+        <cite title="Source Title">{{ sourceTitle }}</cite>
+        }
+      </footer>
+    </blockquote>
+  </div>
+</div>

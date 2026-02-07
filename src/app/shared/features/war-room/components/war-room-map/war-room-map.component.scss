@@ -1,0 +1,1615 @@
+@use '../../war-room.component.scss' as *;
+
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.war-room-map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%; // Ensure it doesn't exceed parent
+  overflow: hidden;
+  background-color: var(--war-map-bg, #1a1a1a);
+  display: flex;
+  flex-direction: column;
+
+  // Set CSS variables for theme-aware fullscreen
+  &[data-theme-mode="light"] {
+    --war-map-bg: #f5f5f5;
+  }
+
+  &[data-theme-mode="dark"] {
+    --war-map-bg: #1a1a1a;
+  }
+
+  // Default fallback
+  --war-map-bg: #1a1a1a;
+
+  // Fullscreen styles
+  &:fullscreen,
+  &:-webkit-full-screen,
+  &:-moz-full-screen,
+  &:-ms-fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    max-height: 100vh !important;
+    background-color: var(--war-map-bg, #1a1a1a) !important;
+    z-index: 9999;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+
+    .map-container {
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100vh !important;
+      max-height: 100vh !important;
+      background-color: var(--war-map-bg, #1a1a1a) !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+    }
+
+    #war-room-map {
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100vh !important;
+      max-height: 100vh !important;
+      background-color: #1a1a1a !important;
+      border-radius: 0 !important;
+      border: none !important;
+      box-shadow: none !important;
+      outline: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    // Theme-aware fullscreen background
+    &[data-theme-mode="light"] #war-room-map {
+      background-color: #f5f5f5 !important;
+    }
+
+    &[data-theme-mode="dark"] #war-room-map {
+      background-color: #1a1a1a !important;
+    }
+
+    .grid-overlay {
+      width: 100% !important;
+      height: 100% !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+    }
+
+    .node-markers-overlay {
+      width: 100% !important;
+      height: 100% !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+    }
+
+    ::ng-deep {
+      .jvm-container {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        background-color: var(--war-map-bg, #1a1a1a) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        outline: none !important;
+      }
+
+      // Theme-aware fullscreen jvm-container background
+      &[data-theme-mode="light"] .jvm-container {
+        background-color: #f5f5f5 !important;
+      }
+
+      &[data-theme-mode="dark"] .jvm-container {
+        background-color: #1a1a1a !important;
+      }
+
+      svg {
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+      }
+    }
+  }
+}
+
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.map-container {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%; // Ensure it doesn't exceed parent
+  overflow: hidden; // Changed from visible to hidden to prevent map from being cut off
+  background-color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Center content horizontally
+  justify-content: center; // Center content vertically
+
+  // Theme-aware background
+  [data-theme-mode="light"] & {
+    background-color: #f5f5f5;
+  }
+
+  [data-theme-mode="dark"] & {
+    background-color: #1a1a1a;
+  }
+}
+
+#war-room-map {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  max-height: 100%; // Ensure it doesn't exceed parent
+  position: relative;
+  background-color: #1a1a1a;
+  border-radius: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Center content horizontally
+  justify-content: center; // Center content vertically
+  visibility: visible !important;
+  opacity: 1 !important;
+  box-sizing: border-box;
+  overflow: hidden; // Ensure map doesn't overflow container
+  // Allow map to fill the available height without cropping
+  aspect-ratio: auto;
+
+  // Theme-aware background
+  [data-theme-mode="light"] & {
+    background-color: #f5f5f5;
+  }
+
+  [data-theme-mode="dark"] & {
+    background-color: #1a1a1a;
+  }
+
+  // Direct style for zoom container to override library inline styles
+  // Positioned top-right, grouped with fullscreen button
+  ::ng-deep .jvm-zoom-container {
+    position: absolute !important;
+    top: 6px !important;
+    bottom: auto !important;
+    right: 0.5rem !important;
+    left: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.25rem !important;
+    z-index: 40 !important;
+  }
+
+  ::ng-deep {
+    .jvm-container {
+      background-color: var(--war-map-bg, #1a1a1a) !important;
+      width: 100% !important;
+      height: 100% !important;
+      position: relative !important; // Required for absolute positioned SVG
+      visibility: visible !important;
+      opacity: 1 !important;
+      display: block !important; // Ensure container is displayed
+      overflow: hidden !important; // Prevent overflow
+      top: 0 !important;
+      left: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    // Theme-aware jvm-container background
+    [data-theme-mode="light"] & .jvm-container {
+      background-color: #f5f5f5 !important;
+    }
+
+    [data-theme-mode="dark"] & .jvm-container {
+      background-color: #1a1a1a !important;
+    }
+
+    // jsVectorMap integration
+    // This block is nested inside the existing `::ng-deep` block
+    .jvm-container {
+      background-color: transparent !important;
+    }
+
+    // World Map Regions - Apply Dotted Aesthetic
+    .jvm-region {
+      fill: url(#dotted-map-pattern) !important;
+      stroke: rgba(255, 255, 255, 0.05); // Very subtle borders
+      stroke-width: 0.5;
+      color: #FFFF7F; // Base color for the dots (inspired by React code)
+    }
+
+    .jvm-series-container {
+      display: none; // Hide legends if any
+    }
+
+    // Ensure SVG is visible and responsive
+    svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      max-width: 100% !important; // Prevent overflow
+      max-height: 100% !important; // Prevent overflow
+      // Remove fixed width/height attributes via CSS override
+      box-sizing: border-box !important;
+      position: relative !important;
+      top: 0 !important;
+      left: 0 !important;
+      margin: 0 auto !important; // Center horizontally
+      padding: 0 !important;
+    }
+
+    // Override any fixed width/height attributes on SVG
+    svg[width],
+    svg[height] {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    #jvm-regions-group path {
+      fill: #2d2d2d !important;
+      stroke: #3d3d3d !important;
+      stroke-width: 0.5 !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      fill-opacity: 0.7 !important;
+    }
+
+    #jvm-regions-group path:hover {
+      fill: #404040 !important;
+    }
+
+    // Light theme colors
+    [data-theme-mode="light"] & {
+      #jvm-regions-group path {
+        fill: #e0e0e0 !important;
+        stroke: #d0d0d0 !important;
+        fill-opacity: 0.8 !important;
+      }
+
+      #jvm-regions-group path:hover {
+        fill: #d5d5d5 !important;
+      }
+    }
+
+    // Dark theme colors
+    [data-theme-mode="dark"] & {
+      #jvm-regions-group path {
+        fill: #2d2d2d !important;
+        stroke: #3d3d3d !important;
+        fill-opacity: 0.7 !important;
+      }
+
+      #jvm-regions-group path:hover {
+        fill: #404040 !important;
+      }
+    }
+
+    .jvm-series-lines path,
+    .jvm-series-lines line {
+      stroke: #00FF41 !important; // Tactical green
+      stroke-width: 3 !important;
+      stroke-opacity: 0.8 !important;
+      visibility: visible !important;
+    }
+
+    .jvm-marker {
+      fill: #00FF41 !important; // Tactical green for markers
+      visibility: visible !important;
+      opacity: 1 !important;
+      cursor: pointer !important;
+      pointer-events: auto !important; // Ensure markers are clickable
+      z-index: 30 !important; // Higher than overlay
+    }
+
+    // Ensure all marker circles are clickable
+    circle.jvm-marker,
+    circle[data-index],
+    circle[class*="jvm-marker"] {
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      z-index: 30 !important;
+      transition: opacity 0.3s ease, filter 0.3s ease, r 0.3s ease !important;
+
+      // Unselected markers when something is selected
+      [data-has-selection="true"] &:not(.selected-marker) {
+        opacity: 0.25 !important;
+        filter: grayscale(0.8) !important;
+      }
+
+      // Ensure pulses go above everything
+      &.selected-marker {
+        opacity: 1 !important;
+        filter: grayscale(0) !important;
+        z-index: 60 !important;
+      }
+    }
+
+    // Ensure all map elements are visible
+    .jvm-series-container,
+    .jvm-zoom-container,
+    .jvm-tooltip {
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    // Enhanced tooltip styling for company descriptions
+    .jvm-tooltip {
+      max-width: 350px !important;
+      background-color: rgba(26, 26, 26, 0.95) !important;
+      border: 1px solid #00FF41 !important;
+      border-radius: 4px !important;
+      padding: 12px !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+      z-index: 1000 !important;
+
+      // Ensure text is readable
+      color: #ffffff !important;
+      font-family: Arial, sans-serif !important;
+      line-height: 1.5 !important;
+    }
+  }
+
+  // Marker popup (shown on click)
+  .marker-popup {
+    position: absolute;
+    z-index: 2000;
+    background-color: rgba(26, 26, 26, 0.98);
+    border: 2px solid #00FF41;
+    border-radius: 8px;
+    padding: 0;
+    min-width: 300px;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 255, 65, 0.3);
+    pointer-events: auto;
+    animation: popupFadeIn 0.2s ease-out;
+
+    .marker-popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+      background-color: rgba(0, 255, 65, 0.1);
+
+      .marker-popup-title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #00FF41;
+        flex: 1;
+      }
+
+      .marker-popup-close {
+        background: none;
+        border: none;
+        color: #00FF41;
+        font-size: 24px;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s;
+
+        &:hover {
+          color: #ffffff;
+        }
+      }
+    }
+
+    .marker-popup-body {
+      padding: 16px;
+
+      .marker-popup-location {
+        margin-bottom: 12px;
+        font-size: 14px;
+        color: #ffffff;
+
+        strong {
+          color: #00FF41;
+        }
+      }
+
+      .marker-popup-description {
+        font-size: 13px;
+        line-height: 1.6;
+        color: #e0e0e0;
+        margin-top: 12px;
+      }
+    }
+  }
+
+  // Transit routes overlay styling
+  .transit-routes-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 10;
+    overflow: visible;
+
+    .transit-route-group {
+
+      // Styles now primarily handled by SVG attributes and <animate>
+      // Main Connection Path (Sharp and Thin)
+      .route-path {
+        // stroke and filter set in HTML
+        fill: none;
+        transition: stroke 0.3s ease, stroke-width 0.3s ease, filter 0.3s ease, opacity 0.3s ease;
+        opacity: 0.8;
+
+        // Mute non-highlighted routes when there is a selection
+        [data-has-selection="true"] &:not(.highlighted) {
+          opacity: 0.1 !important;
+          stroke-width: 0.5 !important;
+        }
+
+        &.highlighted {
+          opacity: 1 !important;
+          stroke-width: 2.5 !important;
+          stroke: #00FF41 !important;
+          filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.8)) !important;
+          z-index: 20;
+        }
+      }
+    }
+  }
+
+  @keyframes popupFadeIn {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -90%) scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-50%, -100%) scale(1);
+    }
+  }
+
+  @keyframes markerPulse {
+    0% {
+      stroke-width: 3;
+      stroke-opacity: 0.9;
+      filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.7));
+    }
+
+    50% {
+      stroke-width: 12;
+      stroke-opacity: 0.2;
+      filter: drop-shadow(0 0 30px rgba(0, 255, 65, 0.9));
+    }
+
+    100% {
+      stroke-width: 3;
+      stroke-opacity: 0.9;
+      filter: drop-shadow(0 0 8px rgba(0, 255, 65, 0.7));
+    }
+  }
+
+  // Theme-aware popup styles
+  [data-theme-mode="light"] & .marker-popup {
+    background-color: rgba(255, 255, 255, 0.98);
+    border-color: #00FF41;
+
+    .marker-popup-header {
+      background-color: rgba(0, 255, 65, 0.1);
+      border-bottom-color: rgba(0, 255, 65, 0.3);
+    }
+
+    .marker-popup-body {
+      .marker-popup-location {
+        color: #333333;
+      }
+
+      .marker-popup-description {
+        color: #555555;
+      }
+    }
+  }
+
+  // Custom tooltip for markers (fallback if jsVectorMap tooltip doesn't work)
+  .custom-marker-tooltip {
+    position: absolute;
+    z-index: 10000 !important;
+    pointer-events: none;
+    display: none;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.1s ease-in-out;
+
+    &.visible {
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
+
+    div {
+      background-color: rgba(26, 26, 26, 0.98) !important;
+      border: 1px solid #00FF41 !important;
+      border-radius: 4px;
+      padding: 12px;
+      max-width: 350px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      line-height: 1.5;
+    }
+  }
+
+  // Ensure markers group is clickable (moved out of .custom-marker-tooltip)
+  ::ng-deep #jvm-markers-group,
+  ::ng-deep g[class*="markers"] {
+    pointer-events: auto !important;
+  }
+
+  // Ensure marker circles have proper pointer events (moved out of .custom-marker-tooltip)
+  ::ng-deep #jvm-markers-group circle,
+  ::ng-deep g[class*="markers"] circle {
+    pointer-events: auto !important;
+    cursor: pointer !important;
+    transition: r 0.3s ease, stroke-width 0.3s ease, filter 0.3s ease;
+
+    &:hover {
+      r: 10 !important;
+      filter: drop-shadow(0 0 8px rgba(0, 255, 65, 1)) !important;
+    }
+  }
+
+  // Hide legacy logo overlays; use badge container instead.
+  ::ng-deep .company-logo-image {
+    display: none !important;
+  }
+
+  ::ng-deep .company-logo-image[data-selected="true"] {
+    filter: drop-shadow(0 0 10px rgba(0, 255, 65, 0.85)) drop-shadow(0 0 20px rgba(0, 255, 65, 0.6)) !important;
+    z-index: 28 !important;
+    animation: breathingGlow 3s infinite ease-in-out !important;
+  }
+
+  ::ng-deep .company-logo-image[data-selected="true"]:hover {
+    transform: scale(1.15) !important;
+    filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.9)) drop-shadow(0 0 24px rgba(0, 255, 65, 0.7)) !important;
+  }
+
+  // Ensure logo images are visible (moved out of .custom-marker-tooltip)
+  ::ng-deep image.company-logo-image {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  ::ng-deep .company-label[data-selected="true"] {
+    fill: #eafff1 !important;
+    text-shadow: 0 0 6px rgba(0, 255, 65, 0.8), 0 0 12px rgba(0, 255, 65, 0.6) !important;
+  }
+
+  ::ng-deep circle.jvm-marker.selected-marker,
+  ::ng-deep circle[data-index].selected-marker,
+  ::ng-deep circle[class*="jvm-marker"].selected-marker {
+    stroke: #ffffff !important;
+    stroke-width: 3 !important;
+    stroke-opacity: 1 !important;
+    fill-opacity: 0.9 !important;
+    filter: drop-shadow(0 0 15px rgba(0, 255, 65, 0.8)) !important;
+    animation: markerPulse 3s infinite ease-in-out !important;
+    z-index: 100 !important;
+  }
+
+  // NEW: Temporary hover highlighting (cross-component sync)
+  ::ng-deep circle.jvm-marker.marker-temp-hover,
+  ::ng-deep circle[data-index].marker-temp-hover,
+  ::ng-deep circle[class*="jvm-marker"].marker-temp-hover {
+    filter: brightness(1.3) drop-shadow(0 0 8px rgba(0, 255, 65, 0.6)) !important;
+    stroke: #00FF41 !important;
+    stroke-width: 2 !important;
+    animation: breathingGlow 2s infinite ease-in-out !important;
+    transition: filter 0.15s ease !important;
+  }
+
+  ::ng-deep image.company-logo-image.marker-temp-hover {
+    filter: brightness(1.3) drop-shadow(0 0 8px rgba(0, 255, 65, 0.6)) !important;
+    animation: breathingGlow 2s infinite ease-in-out !important;
+    transition: filter 0.15s ease !important;
+  }
+
+  @keyframes breathingGlow {
+
+    0%,
+    100% {
+      filter: brightness(1) drop-shadow(0 0 5px rgba(0, 255, 65, 0.4));
+    }
+
+    50% {
+      filter: brightness(1.3) drop-shadow(0 0 15px rgba(0, 255, 65, 0.8));
+    }
+  }
+
+  @keyframes pinPulse {
+
+    0%,
+    100% {
+      transform: scale(1) translate(0, 0);
+      opacity: 0.4;
+      filter: blur(2px) drop-shadow(0 0 5px rgba(0, 255, 65, 0.4));
+    }
+
+    50% {
+      transform: scale(1.8) translate(0, 0);
+      opacity: 0.8;
+      filter: blur(4px) drop-shadow(0 0 20px rgba(0, 255, 65, 0.9));
+    }
+  }
+
+  @keyframes markerPulse {
+    0% {
+      r: 5;
+      fill-opacity: 0.4;
+      stroke-width: 1;
+    }
+
+    50% {
+      r: 12;
+      fill-opacity: 0.1;
+      stroke-width: 4;
+    }
+
+    100% {
+      r: 5;
+      fill-opacity: 0.4;
+      stroke-width: 1;
+    }
+  }
+
+  // Hide legacy labels; use badge container instead.
+  ::ng-deep .company-label,
+  ::ng-deep #jvm-labels-group text,
+  ::ng-deep #jvm-markers-labels-group text {
+    display: none !important;
+  }
+
+  // Milli: badge container for logo + text under markers.
+  ::ng-deep .company-badge {
+    pointer-events: auto !important;
+    cursor: pointer;
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+
+  ::ng-deep .company-badge * {
+    pointer-events: auto !important;
+  }
+
+  ::ng-deep .company-badge:hover,
+  ::ng-deep .company-badge[data-selected="true"],
+  ::ng-deep .company-badge.marker-temp-hover {
+    /* Avoid transform so the badge doesn't jump from its translate() position */
+    filter: drop-shadow(0 0 12px rgba(0, 255, 65, 0.8));
+    animation: breathingGlow 3s infinite ease-in-out !important;
+  }
+
+  ::ng-deep .company-badge-bg {
+    fill: rgba(10, 20, 15, 0.92);
+    stroke: #00FF41;
+    stroke-width: 1;
+    filter: drop-shadow(0 2px 6px rgba(0, 255, 65, 0.3));
+  }
+
+  ::ng-deep .company-badge-text {
+    fill: #00FF41;
+    font-weight: 700;
+    font-size: 0.75rem;
+    font-family: Arial, sans-serif;
+    paint-order: stroke;
+    stroke: rgba(0, 0, 0, 0.6);
+    stroke-width: 2px;
+  }
+
+  ::ng-deep .company-badge-logo {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+  }
+
+  // --- NEW HIGH-FIDELITY PIN MARKERS ---
+  ::ng-deep .pin-marker {
+    cursor: pointer;
+    transition: none;
+    transform-origin: 0 0;
+
+    // Milli: Shadow base to ground the pin
+    .pin-shadow {
+      fill: rgba(0, 0, 0, 0.55);
+      opacity: 0.65;
+      filter: blur(6px);
+      pointer-events: none;
+    }
+
+    // Milli: Status dot in global view
+    .pin-bg-marker {
+      fill: #00FF41;
+      stroke: #00FF41;
+      stroke-width: 1;
+      filter: drop-shadow(0 0 6px rgba(0, 255, 65, 0.8));
+      transition: opacity 0.2s ease;
+    }
+
+    .pin-halo {
+      fill: #00FF41;
+      pointer-events: none;
+      opacity: 0;
+      transform-origin: 0px 0px;
+      /* Lock to geometric center (0,0) to prevent wobble */
+      transition: opacity 0.3s ease;
+    }
+
+    // Default pulse on close-up view
+    &.lod-high .pin-halo {
+      opacity: 0.6;
+      animation: pinPulse 2.4s infinite ease-in-out;
+    }
+
+    // Selection lock: faster pulse + brighter glow
+    &[data-selected="true"] .pin-halo,
+    &.selected-marker .pin-halo {
+      opacity: 0.9;
+      animation: pinPulse 1.1s infinite ease-in-out;
+      filter: blur(2px) drop-shadow(0 0 20px rgba(0, 255, 65, 0.9));
+    }
+
+    &.selected-marker {
+      z-index: 100 !important;
+
+      .pin-body {
+        stroke: #00FF41;
+        stroke-width: 2px;
+        fill: #000000;
+        filter: drop-shadow(0 0 18px rgba(0, 255, 65, 0.7));
+      }
+
+      .pin-label {
+        opacity: 1 !important; // Always show label for selected pin
+        color: #00FF41;
+      }
+    }
+
+    .pin-body {
+      fill: #1a1a1a;
+      stroke: rgba(0, 255, 65, 0.2);
+      stroke-width: 1px;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.7));
+      transition: all 0.3s ease;
+    }
+
+    &:hover .pin-body {
+      stroke: #00FF41;
+      filter: drop-shadow(0 6px 15px rgba(0, 255, 65, 0.3));
+    }
+
+    .pin-gloss {
+      fill: url(#pinGlossGradient);
+      pointer-events: none;
+    }
+
+    .pin-logo {
+      opacity: 0;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+      transition: opacity 0.3s ease, filter 0.3s ease;
+    }
+
+    .pin-label {
+      fill: #ffffff;
+      font-weight: 700;
+      font-size: 11px;
+      font-family: 'Outfit', 'Inter', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 1);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+
+    // Level of Detail (LOD) states
+    &.lod-medium .pin-logo,
+    &.lod-high .pin-logo {
+      opacity: 1;
+    }
+
+    &.lod-high .pin-label {
+      opacity: 1;
+    }
+  }
+
+
+  // Ensure pattern images are visible (moved out of .custom-marker-tooltip)
+  ::ng-deep defs pattern image {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  // Reposition zoom buttons top-right, grouped with fullscreen (moved out of .custom-marker-tooltip)
+  ::ng-deep .jvm-zoom-container,
+  ::ng-deep div.jvm-zoom-container,
+  ::ng-deep #war-room-map .jvm-zoom-container,
+  ::ng-deep #war-room-map div.jvm-zoom-container {
+    position: absolute !important;
+    top: 6px !important;
+    bottom: auto !important;
+    right: 0.5rem !important;
+    left: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.25rem !important;
+    z-index: 40 !important;
+  }
+
+  ::ng-deep .jvm-zoom-btn {
+    left: auto !important;
+    top: auto !important;
+    position: relative !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid #e5e5e5 !important;
+    color: #000000 !important;
+    min-width: 2rem !important;
+    min-height: 2.75rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.875rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 2px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  ::ng-deep .jvm-zoom-btn:hover {
+    background-color: #00FF41 !important;
+    color: #000000 !important;
+    border-color: #00FF41 !important;
+    box-shadow: 0 2px 6px rgba(0, 255, 65, 0.4) !important;
+    transform: scale(1.05) !important;
+  }
+
+  ::ng-deep .jvm-zoom-btn:active {
+    transform: scale(0.95) !important;
+  }
+}
+
+.map-controls {
+  position: absolute;
+  top: 6px;
+  right: 0.5rem;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.map-control-btn {
+  min-width: 2rem;
+  min-height: 2.75rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e5e5;
+  color: #000000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 0.875rem;
+  line-height: 1;
+  font-weight: 700;
+  padding: 0;
+
+  &:hover {
+    background-color: #00FF41 !important;
+    color: #000000 !important;
+    border-color: #00FF41;
+    box-shadow: 0 2px 6px rgba(0, 255, 65, 0.4);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus {
+    outline: 2px solid #00FF41;
+    outline-offset: 2px;
+  }
+}
+
+.zoom-in-btn,
+.zoom-out-btn {
+  font-size: 1rem;
+}
+
+.fullscreen-btn .fullscreen-icon {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  display: inline-block;
+  line-height: 1;
+}
+
+.node-markers-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none; // Allow clicks to pass through to SVG markers below
+}
+
+.node-marker-wrapper {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none; // Allow clicks to pass through to SVG markers
+
+  // Only the label should be clickable, not the marker area
+  .glass-tag {
+    pointer-events: auto; // Label can be clicked
+  }
+
+  &.selected {
+    .node-marker {
+      transform: scale(1.5);
+      box-shadow: 0 0 15px $tactical-green;
+    }
+
+    .glass-tag {
+      border-color: $tactical-green;
+    }
+  }
+
+  &.hub {
+    .node-marker {
+      background-color: $war-gray;
+      border-color: $tactical-green;
+    }
+  }
+}
+
+.node-marker {
+  width: 0.75rem;
+  height: 0.75rem;
+  background-color: $tactical-green;
+  border: 2px solid $war-gray;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  transition: all 0.2s ease;
+  pointer-events: none; // Don't block clicks to SVG markers below
+
+  &.hub-marker {
+    background-color: $war-gray;
+    border-color: $tactical-green;
+  }
+}
+
+.glass-tag {
+  display: none !important;
+}
+
+// Transit Routes Overlay - SVG layer for animated connection lines
+.transit-routes-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 15; // Above map but below markers (20)
+  pointer-events: none; // Allow clicks to pass through to map
+
+  // Ensure SVG scales with map
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  // Route path styling
+  .route-path {
+    pointer-events: none;
+    opacity: 0.9;
+  }
+
+  // Animated traveling dot
+  .route-dot {
+    pointer-events: none;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+
+  // Endpoint circles
+  .route-endpoint {
+    pointer-events: none;
+
+    .endpoint-core {
+      filter: drop-shadow(0 0 3px currentColor);
+    }
+
+    .endpoint-pulse {
+      pointer-events: none;
+    }
+  }
+
+  // Transit route group
+  .transit-route {
+    pointer-events: none;
+  }
+}
+
+// Transit line animations (handled by SVG in map)
+.transit-line {
+  stroke: $tactical-green;
+  stroke-width: 3;
+  stroke-dasharray: 0;
+  filter: drop-shadow(0 0 2px rgba(228, 224, 224, 0.5));
+}
+
+.chevron-path {
+  stroke: $tactical-green;
+  stroke-width: 5;
+  stroke-dasharray: 12 24;
+  animation: move-chevrons 1.5s linear infinite;
+}
+
+@keyframes move-chevrons {
+  from {
+    stroke-dashoffset: 72;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+// -------- Responsive: map container & SVG --------
+@media (max-width: 575.98px) {
+  .war-room-map-container {
+    min-height: 0;
+  }
+
+  .map-container {
+    min-height: 0;
+  }
+
+  #war-room-map {
+    min-height: 0;
+    border-radius: 0.2rem;
+  }
+
+  .map-controls {
+    top: 6px;
+    right: 0.375rem;
+  }
+
+  .map-control-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+
+  .zoom-in-btn,
+  .zoom-out-btn {
+    font-size: 0.875rem;
+  }
+
+  .fullscreen-btn .fullscreen-icon {
+    font-size: 0.75rem;
+  }
+
+  .node-marker {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+
+  .glass-tag {
+    font-size: 0.5rem;
+    padding: 0.1rem 0.25rem;
+    margin-top: 0.5rem;
+    max-width: 90px;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .war-room-map-container {
+    min-height: 0;
+  }
+
+  .map-container {
+    min-height: 0;
+  }
+
+  #war-room-map {
+    min-height: 0;
+  }
+}
+
+@media (min-width: 992px) {
+  .war-room-map-container {
+    min-height: 0;
+  }
+
+  .map-container {
+    min-height: 0;
+  }
+
+  #war-room-map {
+    min-height: 0;
+  }
+}
+
+@media (min-width: 1200px) {
+  .war-room-map-container {
+    min-height: 0;
+  }
+
+  .map-container {
+    min-height: 0;
+  }
+
+  #war-room-map {
+    min-height: 0;
+  }
+}
+
+// Popup Overlay
+.map-popup-overlay {
+  position: absolute;
+  z-index: 1000;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+  pointer-events: auto;
+
+  .popup-content {
+    background: rgba(10, 20, 15, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid #00FF41;
+    border-radius: 4px;
+    padding: 0;
+    min-width: 220px;
+    overflow: hidden;
+  }
+
+  .popup-header {
+    background: rgba(0, 255, 65, 0.1);
+    border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .popup-title {
+      font-weight: 700;
+      color: #00FF41;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+    }
+
+    .popup-close {
+      background: none;
+      border: none;
+      color: #00FF41;
+      font-size: 1.2rem;
+      line-height: 1;
+      cursor: pointer;
+      opacity: 0.7;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+
+  .popup-body {
+    padding: 12px;
+  }
+
+  .popup-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.8rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .popup-label {
+      color: #b0b0b0;
+      font-size: 0.7rem;
+    }
+
+    .popup-value {
+      color: #fff;
+      font-weight: 600;
+
+      &.status-online {
+        color: #00FF41;
+      }
+    }
+  }
+
+  .popup-actions {
+    margin-top: 12px;
+    text-align: center;
+
+    .popup-action-btn {
+      background: rgba(0, 255, 65, 0.1);
+      border: 1px solid #00FF41;
+      color: #00FF41;
+      font-size: 0.7rem;
+      padding: 4px 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      width: 100%;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+
+      &:hover {
+        background: #00FF41;
+        color: #000;
+      }
+    }
+  }
+
+  .popup-arrow {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #00FF41;
+    margin: 0 auto;
+  }
+}
+
+// Milli: larger tooltip sizing so text is readable and full content fits.
+.company-logo-tooltip {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  margin-top: -12px;
+  animation: tooltipFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+
+  .tooltip-content {
+    background: rgba(10, 20, 15, 0.98);
+    backdrop-filter: blur(12px);
+    border: 1.5px solid #00FF41;
+    border-radius: 8px;
+    padding: 0 !important;
+    width: 360px !important;
+    max-width: 360px !important;
+    max-height: 320px !important;
+    box-shadow:
+      0 8px 24px rgba(0, 0, 0, 0.6),
+      0 0 20px rgba(0, 255, 65, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: visible;
+  }
+
+  .tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px !important;
+    background: rgba(0, 255, 65, 0.08);
+    border-bottom: 1px solid rgba(0, 255, 65, 0.3);
+    backdrop-filter: blur(4px);
+
+    .tooltip-logo {
+      width: 36px !important;
+      height: 36px !important;
+      object-fit: contain;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3px;
+      border: 1px solid rgba(0, 255, 65, 0.2);
+      flex-shrink: 0;
+      animation: logoPulse 2s ease-in-out infinite;
+    }
+
+    .tooltip-title {
+      font-weight: 700;
+      font-size: 0.75rem !important;
+      color: #00FF41;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      flex: 1;
+      line-height: 1.1;
+    }
+  }
+
+  // Milli: readable tooltip; no scroll, allow full content.
+  .tooltip-body {
+    padding: 12px !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+
+    .tooltip-description {
+      // Milli: larger description text for readability.
+      font-size: 0.75rem !important;
+      line-height: 1.4 !important;
+      letter-spacing: 0 !important;
+      color: #e0e0e0;
+      margin-bottom: 10px !important;
+      text-align: justify;
+    }
+
+    .tooltip-location,
+    .tooltip-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0 !important;
+      font-size: 0.7rem !important;
+      line-height: 1.2 !important;
+      border-top: 1px solid rgba(0, 255, 65, 0.1);
+
+      &:first-of-type {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .tooltip-label {
+        color: #b0b0b0;
+        font-size: 0.65rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+      }
+
+      .tooltip-value {
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 0.7rem !important;
+        text-align: right;
+
+        &.status-online {
+          color: #00FF41;
+          text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+        }
+      }
+    }
+  }
+
+  .tooltip-arrow {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #00FF41;
+    margin: 0 auto;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+    animation: arrowPulse 2s ease-in-out infinite;
+  }
+
+  // Light theme styles
+  [data-theme-mode="light"] & {
+    .tooltip-content {
+      background: rgba(255, 255, 255, 0.98);
+      border-color: #00FF41;
+      box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(0, 255, 65, 0.15);
+    }
+
+    .tooltip-header {
+      background: rgba(0, 255, 65, 0.1);
+      border-bottom-color: rgba(0, 255, 65, 0.3);
+
+      .tooltip-logo {
+        background: rgba(0, 0, 0, 0.02);
+        border-color: rgba(0, 255, 65, 0.3);
+      }
+    }
+
+    .tooltip-body {
+      .tooltip-description {
+        color: #555555;
+      }
+
+      .tooltip-location,
+      .tooltip-status {
+        border-top-color: rgba(0, 255, 65, 0.15);
+
+        .tooltip-label {
+          color: #777777;
+        }
+
+        .tooltip-value {
+          color: #333333;
+
+          &.status-online {
+            color: #00FF41;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Milli: end tooltip sizing overrides.
+
+// Animations
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) scale(1);
+  }
+}
+
+@keyframes logoPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.4);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px rgba(0, 255, 65, 0);
+  }
+}
+
+@keyframes arrowPulse {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: translateY(-2px);
+  }
+}
+
+// Responsive tooltip
+@media (max-width: 575.98px) {
+  .company-logo-tooltip {
+    .tooltip-content {
+      min-width: 280px;
+      max-width: 320px;
+    }
+
+    .tooltip-header {
+      padding: 12px 14px;
+      gap: 10px;
+
+      .tooltip-logo {
+        width: 40px;
+        height: 40px;
+      }
+
+      .tooltip-title {
+        font-size: 0.875rem;
+      }
+    }
+
+    .tooltip-body {
+      padding: 12px;
+
+      .tooltip-description {
+        font-size: 0.75rem;
+        margin-bottom: 12px;
+      }
+    }
+  }
+}
+
+@keyframes pinPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.4);
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes breathingGlow {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px rgba(0, 255, 65, 0.4));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 20px rgba(0, 255, 65, 0.8));
+  }
+}
+
+@keyframes markerPulse {
+  0% {
+    r: 8;
+    stroke-width: 2;
+    stroke-opacity: 1;
+  }
+
+  100% {
+    r: 20;
+    stroke-width: 0;
+    stroke-opacity: 0;
+  }
+}
+
+// Fullscreen styles
+:host-context(:fullscreen) .war-room-map-container,
+:host-context(:-webkit-full-screen) .war-room-map-container,
+:host-context(:-ms-fullscreen) .war-room-map-container {
+  width: 100vw !important;
+  height: 100vh !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 9999 !important;
+  background-color: #1a1a1a;
+
+  .map-container,
+  #war-room-map {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}

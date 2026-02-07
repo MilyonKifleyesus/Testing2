@@ -1,0 +1,23 @@
+
+    <div class="card overflow-hidden">
+      <div class="text-center card-pricing pricing1">
+        <div [class]="'p-2 fs-20 ' + bgClass">{{ plan }}</div>
+        <div class="p-3 font-weight-normal mb-0">
+          <span class="price">{{ price }}</span>
+        </div>
+        <div class="card-body text-center pt-0">
+          <ul class="list-unstyled mb-0">
+            @for(feature of features;track $index){
+
+                <li>
+                  <i [class]="'me-2 ' + feature.iconClass"></i><strong>{{ feature.value }}</strong> {{ feature.label }}
+                </li>
+            }
+          </ul>
+        </div>
+        <div class="card-footer text-center d-grid">
+          <a href="javascript:void(0);" [class]="'btn ripple btn-block ' + buttonClass">{{ buttonText }}</a>
+        </div>
+      </div>
+    </div>
+  

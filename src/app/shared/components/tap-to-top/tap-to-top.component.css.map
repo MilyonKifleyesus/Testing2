@@ -1,0 +1,9 @@
+{
+    "version": 3,
+    "mappings": "",
+    "sources": [
+        "tap-to-top.component.scss"
+    ],
+    "names": [],
+    "file": "tap-to-top.component.css"
+}

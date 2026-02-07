@@ -1,0 +1,43 @@
+<div class="card custom-card">
+    <div class="card-body p-3">
+      <div class="row g-0 blog-list">
+        <div class="col-xl-5 col-lg-12 col-md-12">
+          <div class="card-body p-0">
+            <div class="item-card-img">
+              <a routerLink="/apps/blog/blog-details">
+                <img
+                  class="card-img-left h-130 w-100 rounded-start {{cardData.imageClass}}"
+                  [src]="cardData.image"
+                  alt=""
+                />
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-7 col-lg-12 col-md-12">
+          <div class="card-body p-2 px-4">
+            <a routerLink="/apps/blog/blog-details">
+              <h5 class="fw-medium mt-3 text-primary">{{ cardData.title }}</h5>
+            </a>
+            <p>{{ cardData.description }}</p>
+            <div class="media py-2 mt-0 border-top"></div>
+            <div class="item-card-desc d-sm-flex blog-footer-details flex-wrap">
+              <div class="avatar-md avatar online">
+                <img alt="avatar" class="rounded-circle" [src]="cardData.authorImage" />
+              </div>
+              <div class="main-contact-body">
+                <h6>{{ cardData.author }}</h6><span class="phone">{{ cardData.date }}</span>
+              </div>
+              <div class="ms-auto mb-2">
+                <a class="me-0 d-flex justify-content-center" href="javascript:void(0);">
+                  <span class="fe fe-message-square text-muted me-2 fs-18"></span>
+                  <div class="mt-0 mt-0 text-dark">{{ cardData.comments }} Comments</div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  

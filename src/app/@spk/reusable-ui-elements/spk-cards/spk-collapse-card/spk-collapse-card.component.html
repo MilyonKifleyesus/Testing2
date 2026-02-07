@@ -1,0 +1,42 @@
+@if (!isClosed) {
+<div class="card custom-card" [class.card-fullscreen]="isFullscreen">
+    <div class="card-header justify-content-between border-bottom-0">
+      <div class="card-title">{{ title }}</div>
+      <div >
+        <!-- Collapse Button -->
+         @if(isCollapsible){
+             <a  (click)="toggleCollapse()" [attr.aria-expanded]="!isCollapsed" href="javascript:void(0);">
+               <i [class]="isCollapsed ? 'ri-arrow-down-s-line fs-18' : 'ri-arrow-up-s-line fs-18'"></i>
+             </a>
+         }
+  
+        <!-- Close Button -->
+        @if(isClosable){
+        <a (click)="closeCard()" href="javascript:void(0);">
+          <i class="ri-close-line fs-18"></i>
+        </a>
+    }
+  
+        <!-- Fullscreen Button -->
+        @if(isFullscreenable){
+        <a  (click)="toggleFullscreen()" href="javascript:void(0);">
+          <i [class]="isFullscreen ? 'ri-fullscreen-exit-line' : 'ri-fullscreen-line'"></i>
+        </a>
+    }
+      </div>
+    </div>
+    @if(isCollapsible || !isCollapsed){
+    <div [class.collapse]="isCollapsible" [class.show]="!isCollapsed" class="{{collapseClass}}" >
+      <div class="card-body">
+        <h6 class="card-text fw-medium">{{ subtitle }}</h6>
+        <p class="card-text mb-0">{{ content }}</p>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-primary">Read More</button>
+      </div>
+    </div>
+}
+
+  </div>
+}
+  

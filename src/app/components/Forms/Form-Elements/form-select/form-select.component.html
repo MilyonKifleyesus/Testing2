@@ -1,0 +1,293 @@
+<app-page-header [title]="'Form Select'" [title1]="['Form Elements']" [activeitem]="'Form Select'"></app-page-header>
+
+    <!-- Start:: row-4 -->
+    <h6 class="fw-semibold mb-2">Choices:</h6>
+    <div class="row row-sm">
+        <div class="col-xl-6">
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card custom-card">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h6 class="card-title">Multiple Select</h6>
+                        </div>
+                        <div class="card-body" >
+                            <p class="fw-semibold mb-2">Default</p>
+                            <spk-ng-select 
+                            [options]="Single"
+                            [selectClass]="''"
+                            [clearable]="true"
+                            [multiple]="true"
+                            [defaultValue]="selecteddefault"
+                            [searchable]="true"
+                            [placeholder]="'This is a placeholder'"
+                            [additionalProperties]="{}"
+                            (change)="handleSelectChange($event)">
+                            </spk-ng-select>
+                          
+                            <p class="fw-semibold mb-2 mt-3">With Remove Button</p>
+                            <spk-ng-select 
+                            [options]="multipleRemove"
+                            [selectClass]="'rounded-sm'"
+                            [clearable]="true"
+                            [multiple]="true"
+                            [defaultValue]="selected"
+                            [hideSelected]="true"
+                            [searchable]="true"
+                            [placeholder]="'Choose a city'"
+                            [additionalProperties]="{}"
+                            (change)="handleSelectChange($event)">
+                            </spk-ng-select>
+                           
+                            <div class="option-groups-multiselect mt-3">
+                                <p class="fw-semibold mb-2">Option groups</p>
+                                <spk-ng-select 
+                                [options]="accounts"
+                                [selectClass]="''"
+                                [clearable]="true"
+                                [multiple]="true"
+                                [searchable]="true"
+                                [placeholder]="'Choose a city'"
+                                [additionalProperties]="{}"
+                                (change)="handleSelectChange($event)">
+                                </spk-ng-select>
+                        
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12">
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                Passing Through Options
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <spk-ng-select 
+                            [options]="Passing"
+                            [selectClass]="''"
+                            [clearable]="true"
+                            [multiple]="true"
+                            [defaultValue]="selectedValues"
+                            [hideSelected]="true"
+                            [searchable]="true"
+                            [placeholder]="'Type to Add'"
+                            [additionalProperties]="{}"
+                            (change)="handleSelectChange($event)">
+                            </spk-ng-select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12">
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                Options added via config with no search
+                            </div>
+                        </div>
+                        <div class="card-body" >
+                            <spk-ng-select 
+                    [options]="Options"
+                    [id]="'choices-single-no-search'"
+                    [selectClass]="''"
+                    [clearable]="true"
+                    [hideSelected]="true"
+                    [searchable]="true"
+                    [placeholder]="'Label One'"
+                    [additionalProperties]="{}"
+                    (change)="handleSelectChange($event)">
+                    </spk-ng-select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-6">
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card custom-card">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <h6 class="card-title">Single Select</h6>
+                        </div>
+                        <div class="card-body" >
+                            <p class="fw-semibold mb-2">Default</p>
+                            <spk-ng-select 
+                            [options]="Single"
+                            [selectClass]="''"
+                            [clearable]="true"
+                            [multi]="true"
+                            [searchable]="true"
+                            [placeholder]="'This is a placeholder'"
+                            [additionalProperties]="{}"
+                            (change)="handleSelectChange($event)">
+                            </spk-ng-select>
+                            <p class="fw-semibold mb-2 mt-3">Option groups</p>
+                            <spk-ng-select 
+                            [options]="cityOptions"
+                            [selectClass]="''"
+                            [clearable]="true"
+                            [multi]="true"
+                            [searchable]="true"
+                            [placeholder]="'Select city'"
+                            [additionalProperties]="{}"
+                            (change)="handleSelectChange($event)">
+                            </spk-ng-select>
+                         
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12">
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                Email Address Only
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <tag-input [(ngModel)]="emails" class="border p-1"  [theme]="'bootstrap'" [formControl]="emailFormControl"
+                            [removable]="false">
+                 </tag-input>
+                 @if(emailFormControl.hasError('email') && emailFormControl.touched){
+                    <div
+                      class="text-danger"
+                    >
+                      Only values matching specific conditions can be added
+                    </div>
+                }
+                            <!-- <tag-input [(ngModel)]='emails' 
+                            #tagInput
+                            name="emails" 
+                            #email="ngModel" 
+                            [errorMessages]="errorMessages"
+                            [validators]="validators" 
+                            [editable]='true' 
+                            (onTagEdited)="onTagEdited($event)" 
+                            [separatorKeyCodes]="[32,188,186,13,9]"
+                            [placeholder]="'Add email'" 
+                            [secondaryPlaceholder]="'Enter email address(es)'" 
+                            [clearOnBlur]="true" 
+                            [addOnPaste]="true"
+                            [addOnBlur]="true"
+                            [pasteSplitPattern]="splitPattern"
+                            [theme]="'bootstrap'" 
+                            required >
+                            </tag-input> -->
+                           
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-12">
+                    <div class="card custom-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                Passing Unique Values
+                            </div>
+                        </div>
+                        <div class="card-body" >
+                            <tag-input [(ngModel)]="items" class="border p-1"  [theme]="'bootstrap'"
+                                [removable]="false">
+                     </tag-input>
+                         
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End:: row-4 -->
+
+    <!-- Start::row-1 -->
+    <div class="row row-sm">
+        <div class="col-xl-4">
+            <app-showcode-card [title]="'Default Select'" [prism]="prismCode.formselectTS">
+                <select class="form-select" aria-label="Default select example">
+                  <option selected>Open this select menu
+                  </option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+              </select>
+                </app-showcode-card>
+        </div>
+        <div class="col-xl-4">
+            <app-showcode-card [title]="'Disabled Select'" [prism]="prismCode.formselectTS1">
+                <select class="form-select" aria-label="Disabled select example" disabled="">
+                  <option selected="">Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+              </select>
+              </app-showcode-card>
+        </div>
+        <div class="col-xl-4">
+            <app-showcode-card [title]="'Rounded Select'" [prism]="prismCode.formselectTS2">
+                <select class="form-select rounded-pill" aria-label="Default select example">
+                  <option selected>Open this select menu
+                  </option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+              </select>
+              </app-showcode-card>
+        </div>
+    </div>
+    <!--End::row-1 -->
+
+    <!-- Start:: row-2 -->
+    <div class="row row-sm">
+        <div class="col-xl-6">
+            <app-showcode-card [title]="'Multiple Attribute Select'" [prism]="prismCode.formselectTS3">
+                <select class="form-select" multiple="" aria-label="multiple select example">
+                  <option selected="">Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+              </select>
+              </app-showcode-card>
+              </div>
+        <div class="col-xl-6">
+            <app-showcode-card [title]="'Using Size Attribute'" [prism]="prismCode.formselectTS4
+            ">
+                <select class="form-select" size="4" aria-label="size 3 select example">
+                  <option selected="">Open this select menu</option>
+                  <option value="1">One</option>
+                  <option value="2">Two</option>
+                  <option value="3">Three</option>
+                  <option value="4">Four</option>
+                  <option value="5">Five</option>
+              </select>
+            </app-showcode-card>
+        </div>
+    </div>
+    <!-- End:: row-2 -->
+
+    <!-- Start:: row-3 -->
+    <div class="row row-sm">
+        <div class="col-xl-12">
+            <app-showcode-card [title]="'Select Sizes'" [prism]="prismCode.formselectTS5
+            ">
+              <select class="form-select form-select-sm mb-3" aria-label=".form-select-sm example">
+                <option selected="">Open this select menu</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select><select class="form-select mb-3" aria-label="Default select">
+                <option selected>Open this select menu
+                </option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+            <select class="form-select form-select-lg"
+                aria-label=".form-select-lg example">
+                <option selected="">Open this select menu</option>
+                <option value="1">One</option>
+                <option value="2">Two</option>
+                <option value="3">Three</option>
+            </select>
+            </app-showcode-card>
+        
+        </div>
+    </div>
+    <!-- End:: row-3 -->

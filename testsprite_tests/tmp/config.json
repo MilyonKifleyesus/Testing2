@@ -1,0 +1,8 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:4200/admin/dashboard",
+  "loginUser": "superadmin",
+  "loginPassword": "admin123"
+}

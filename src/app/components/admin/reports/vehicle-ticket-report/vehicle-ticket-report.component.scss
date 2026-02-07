@@ -1,0 +1,17 @@
+// Import shared styles from ticket reports
+@use '../ticket-reports/ticket-reports.component.scss' as *;
+
+// Additional vehicle-specific styles if needed
+.form-select {
+  &:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+  }
+}
+
+small.text-muted {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  font-style: italic;
+}

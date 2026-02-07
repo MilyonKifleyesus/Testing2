@@ -1,0 +1,45 @@
+<footer class="war-room-footer">
+  <div class="footer-left">
+    <div class="footer-section">
+      <span class="footer-label">KERNEL:</span>
+      <div class="kernel-status">
+        <div class="status-dot"></div>
+        <span class="status-text">SYSTEM READY // SECURE</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-center">
+    @if (networkMetrics(); as metrics) {
+      <div class="footer-metric">
+        <span class="metric-label">NETWORK LATENCY</span>
+        <span class="metric-value">
+          {{ metrics.networkLatency }} MS
+          @if (metrics.latencyChange !== undefined && metrics.latencyChange < 0) {
+            <span class="metric-change" style="color: #00FF41;">({{ metrics.latencyChange }})</span>
+          }
+        </span>
+      </div>
+
+      <div class="footer-metric">
+        <span class="metric-label">ENCRYPTION PROTOCOL</span>
+        <span class="metric-value">
+          {{ metrics.encryptionProtocol }}
+          <span class="metric-status">{{ metrics.encryptionStatus }}</span>
+        </span>
+      </div>
+
+      <div class="footer-metric">
+        <span class="metric-label">NODE DENSITY</span>
+        <span class="metric-value">
+          {{ metrics.nodeDensity }}%
+          @if (getNodeDensityStatus(metrics.nodeDensity)) {
+            <span class="metric-status" [class]="getNodeDensityStatusClass(metrics.nodeDensity)">
+              {{ getNodeDensityStatus(metrics.nodeDensity) }}
+            </span>
+          }
+        </span>
+      </div>
+    }
+  </div>
+</footer>

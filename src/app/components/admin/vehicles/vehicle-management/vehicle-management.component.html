@@ -1,0 +1,89 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">Vehicle Management</h1>
+      <p class="mb-0 text-muted fs-13">Drag and drop vehicles to update their status</p>
+    </div>
+    <div class="ms-auto pageheader-btn">
+      <button class="btn btn-primary-light btn-wave btn-sm me-2">
+        <i class="ti ti-filter me-1"></i>Filter
+      </button>
+      <button class="btn btn-success-light btn-wave btn-sm">
+        <i class="ti ti-download me-1"></i>Export
+      </button>
+    </div>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="vehicle-management-board">
+    <div class="board-columns">
+      <div 
+        class="status-column"
+        *ngFor="let column of statusColumns; trackBy: trackByColumnId"
+        [style.--column-color]="column.color">
+        
+        <!-- Column Header -->
+        <div class="column-header">
+          <div class="header-content">
+            <div class="d-flex align-items-center gap-2">
+              <i [class]="'ti ' + column.icon + ' column-icon'"></i>
+              <div>
+                <h3 class="column-title">{{column.title}}</h3>
+                <p class="column-description">{{getCountText(getVehicleCount(column))}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicles Drop Zone -->
+        <div 
+          class="vehicles-container"
+          [id]="column.id"
+          cdkDropList
+          [cdkDropListData]="column.vehicles"
+          [cdkDropListConnectedTo]="connectedDropLists"
+          (cdkDropListDropped)="onVehicleDrop($event)">
+          
+          <!-- Vehicle Cards -->
+          <div 
+            class="vehicle-card"
+            *ngFor="let vehicle of column.vehicles; trackBy: trackByVehicleId"
+            cdkDrag
+            (click)="viewVehicleDetails(vehicle, $event)">
+            
+            <!-- Drag Handle -->
+            <div class="drag-handle" cdkDragHandle>
+              <i class="ti ti-grip-vertical"></i>
+            </div>
+
+            <!-- Vehicle Content -->
+            <div class="vehicle-content">
+              <!-- Bus Illustration -->
+              <div class="bus-illustration">
+                <img src="assets/images/vehicles/yrt40.jpeg" alt="Bus" class="bus-image">
+              </div>
+
+              <!-- Bus Number Badge -->
+              <div class="bus-number">{{vehicle.busNumber}}</div>
+
+              <!-- Bay Number (if in maintenance) -->
+              <div class="bay-number" *ngIf="vehicle.bayNumber">
+                {{vehicle.bayNumber}}
+              </div>
+            </div>
+
+            <!-- Drag Preview -->
+            <div class="vehicle-card-placeholder" *cdkDragPlaceholder></div>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="column.vehicles.length === 0">
+            <i class="ti ti-inbox"></i>
+            <p>No vehicles</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

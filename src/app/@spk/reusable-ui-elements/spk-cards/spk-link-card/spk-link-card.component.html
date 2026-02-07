@@ -1,0 +1,26 @@
+
+    <div [class]="cardBorder ? 'card custom-card border border-info' : 'card custom-card'">
+      <a href="javascript:void(0);" class="card-anchor"></a>
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="me-3">
+            <span class="avatar" [ngClass]="{'avatar-md': !cardBorder, 'avatar-xl': cardBorder}">
+              <img [src]="imageUrl" alt="img">
+            </span>
+          </div>
+          <div>
+            <p [class]="textInfoClass" class="card-text mb-0 fs-14 fw-medium">{{ name }}</p>
+            <div class="card-title text-muted fs-12 mb-0">{{ title }}</div>
+            @if(department){
+
+                <div  class="card-title fs-12 mb-1">{{ department }}</div>
+            }
+            @if(age !== null){
+
+                <div  class="card-title text-muted fs-11 mb-0">{{ age }} Years, {{ gender }}</div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  

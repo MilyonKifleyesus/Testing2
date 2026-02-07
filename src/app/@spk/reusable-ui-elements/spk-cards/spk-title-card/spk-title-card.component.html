@@ -1,0 +1,36 @@
+<div class="card custom-card">
+    <img [src]="imageUrl" class="card-img-top" alt="Card image">
+    <div class="card-body">
+      <h6 class="card-title fw-medium">{{ title }}</h6>
+      <p class="card-text">{{ text }}</p>
+      @if(buttonText){
+
+        <a  href="javascript:void(0);" class="btn btn-primary">{{ buttonText }}</a>
+      }
+    </div>
+    @if(listItems && listItems.length > 0){
+
+      <ul class="list-group list-group-flush">
+        @for(item of listItems;track $index){
+
+          <li class="list-group-item" >{{ item }}</li>
+        }
+      </ul>
+    }
+    @if(links && links.length > 0){
+
+      <div class="card-body">
+        @for(link of links;track $index){
+
+          <a  [href]="link.href" class="card-link" [ngClass]="link.class">{{ link.text }}</a>
+        }
+      </div>
+    }
+    @if(footerText){
+
+      <div class="card-footer">
+        <span class="card-text">{{ footerText }}</span>
+      </div>
+    }
+  </div>
+  

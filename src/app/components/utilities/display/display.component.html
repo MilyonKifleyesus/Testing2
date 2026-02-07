@@ -1,0 +1,45 @@
+<app-page-header [title]="'Display'" [title1]="['Utilities']" [activeitem]="'Display'"></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    <div class="col-xl-12 col-lg-12">
+        <div class="card custom-card" id="basic">
+            <div class="card-body">
+                <div>
+                    <h6 class="main-content-label mb-1">Basic Display</h6>
+                    <p class="text-muted  card-sub-title">The following display utilities classes will set display
+                        property of an element.</p>
+                </div>
+                <div class="table-responsive">
+                    <spk-reusable-tables [columns]="displayColumns" [tableClass]="'main-table-reference mt-0 mb-0'">
+                        @for(displayClass of displayClasses;track $index){
+                        <tr>
+                            <td><code>{{ displayClass.class }}</code></td>
+                            <td>{{ displayClass.description }}</td>
+                        </tr>
+                        }
+                    </spk-reusable-tables>
+                </div>
+            </div>
+        </div>
+        <div class="card custom-card" id="hiding">
+            <div class="card-body">
+                <div>
+                    <h6 class="main-content-label mb-1">Hiding Elements</h6>
+                    <p class="text-muted  card-sub-title">For faster mobile-friendly development, use responsive display
+                        classes for showing and hiding elements by device.</p>
+                </div>
+                <div class="table-responsive">
+                    <spk-reusable-tables [columns]="displayColumns1" [tableClass]="'main-table-reference mt-0 mb-0'">
+                        @for(visibilityClass of visibilityClasses;track $index){
+                        <tr>
+                            <td><code>{{ visibilityClass.class }}</code></td>
+                            <td>{{ visibilityClass.description }}</td>
+                        </tr>
+                        }
+                    </spk-reusable-tables>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

@@ -1,0 +1,7 @@
+::ng-deep {
+    .angular-editor-textarea {
+        &:focus-visible  {
+            outline: none;
+        }
+    }
+}

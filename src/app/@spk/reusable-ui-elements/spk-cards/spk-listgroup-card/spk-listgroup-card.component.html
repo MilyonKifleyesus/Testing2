@@ -1,0 +1,25 @@
+<div class="card custom-card overflow-hidden">
+    <!-- Header -->
+     @if (header) {
+    <div class="card-header" >
+      {{ header }}
+    </div>
+}
+  
+    <!-- List Group -->
+    <ul class="list-group list-group-flush">
+        @for (item of items; track $index) {
+      <li class="list-group-item" >
+        {{ item }}
+      </li>
+    }
+    </ul>
+  
+    <!-- Footer -->
+     @if (footer) {
+    <div class="card-footer border-top-0">
+      {{ footer }}
+    </div>
+}
+  </div>
+  

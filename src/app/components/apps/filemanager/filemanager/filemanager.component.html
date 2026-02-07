@@ -1,0 +1,160 @@
+<app-page-header [title]="'File-Manager'" [title1]="['File-Manager']" [activeitem]="'File-Manager'"></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+  <div class="col-lg-4 col-xl-3">
+    <div class="card custom-card">
+      <div class="d-grid p-4 border-bottom">
+        <a type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"
+          (click)="Openmodal(basic)">
+          Add New File
+        </a>
+        <ng-template #basic let-modal>
+                <div class="modal-header">
+                  <h6 class="modal-title" id="exampleModalLabel1">Add File</h6>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" (click)="modal.close('Cross Click')"
+                    aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <h6>File Upload</h6>
+                  @if(type === 'component'){
+                  <dropzone class="product-Images w-full" [config]="config" [disabled]="disabled"
+                    [message]="'Click or drag images here to upload'" (init)="onUploadInit($event)"
+                    (error)="onUploadError($event)" (success)="onUploadSuccess($event)"></dropzone>
+                  }
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary">Add</button>
+                  <button type="button" class="btn btn-secondary" (click)="modal.close('Cross Click')"
+                    data-bs-dismiss="modal">Cancel</button>
+                </div>
+        </ng-template>
+      </div>
+      <div class="card-body tab-list-items py-3">
+        <div class="main-content-left main-content-left-mail">
+          <div class="main-mail-menu">
+            <nav class="nav main-nav-column mg-b-20">
+              @for(item of navItems;track $index){
+              <a class="nav-link" [class.active]="item.label === 'Video'" href="javascript:void(0);">
+                <i [class]="item.icon"></i> {{ item.label }} <span>{{ item.size }}</span>
+              </a>
+              }
+            </nav>
+          </div><!-- main-mail-menu -->
+        </div>
+      </div>
+      <div class="card-body py-3">
+        <div class="">
+          <div class="main-mail-menu">
+            <label class="main-content-label main-content-label-sm">Label</label>
+            <nav class="nav main-nav-column">
+              @for(item of navItems1;track $index){
+              <a class="nav-link" href="javascript:void(0);">
+                <i [class]="'fe fe-folder fs-10 p-2 br-5 ' + item.bgClass"></i> {{ item.label }}
+              </a>
+              }
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8 col-xl-9">
+    <div class="text-dark mb-2 ms-1 fs-20 fw-medium">All Folders</div>
+    <!-- Row -->
+    <div class="text-muted mb-2 fs-16">Recent Files</div>
+    <div class="row">
+      @for(file of files;track $index){
+      <div class="col-xl-4 col-xxl-3 col-lg-6 col-md-6">
+        <div class="card custom-card">
+          <div class="card-body">
+            <div class="d-flex">
+              <div class="media align-items-center position-relative">
+                <span class="fs-16 lh--7 my-auto">
+                  <i class="{{ file?.icon }} bg-primary-transparent p-2 rounded-50 fs-18 me-2"></i>
+                </span>
+                <div class="media-body ms-3">
+                  {{ file?.title }}
+                  <p class="fs-11 mg-b-0 text-gray-5">Last Opend {{ file?.lastOpened }}</p>
+                </div>
+              </div>
+              <div class="float-end ms-auto position-absolute r-5 t-15 file-drop" ngbDropdown>
+                <a href="javascript:void(0);" class="option-dots" data-bs-toggle="dropdown" ngbDropdownToggle
+                  aria-haspopup="true" aria-expanded="false">
+                  <i class="fe fe-more-vertical"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-start" ngbDropdownMenu>
+                  <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);"><i
+                      class="fe fe-edit me-2"></i>Open</a>
+                  <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);"><i
+                      class="fe fe-download me-2"></i>Download</a>
+                  <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);"><i
+                      class="fe fe-share me-2"></i>Share</a>
+                  <a ngbDropdownItem class="dropdown-item" href="javascript:void(0);"><i
+                      class="fe fe-trash me-2"></i>Delete</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    <div class="text-muted mb-2 fs-16">Folders and Files</div>
+    <div class="row">
+      @for(file of files1;track $index){
+      <div class="col-xl-3 col-md-4 col-sm-6">
+        <div class="card custom-card border p-0 shadow-none">
+          <div class="d-flex align-items-center px-4 pt-2">
+            <label class="form-check">
+              <input class="form-check-input" type="checkbox" [id]="'checkbox-' + file.id" [value]="file.id" />
+              <span class="custom-control-label"></span>
+            </label>
+            <div class="float-end ms-auto file-drop" ngbDropdown>
+              <a href="javascript:void(0);" class="option-dots" ngbDropdownToggle aria-haspopup="true"
+                aria-expanded="false">
+                <i class="fe fe-more-vertical"></i>
+              </a>
+              <div class="dropdown-menu dropdown-menu-start" ngbDropdownMenu>
+                <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">
+                  <i class="fe fe-edit me-2"></i> Edit
+                </a>
+                <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">
+                  <i class="fe fe-share me-2"></i> Share
+                </a>
+                <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">
+                  <i class="fe fe-download me-2"></i> Download
+                </a>
+                <a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">
+                  <i class="fe fe-trash me-2"></i> Delete
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="card-body pt-0 text-center">
+            <a routerLink="/apps/filemanager/filemanager-list" class="open-file">
+              <div class="file-manger-icon">
+                <img [src]="file.imageUrl" alt="file-icon" class="br-7" />
+              </div>
+              <h6 class="mb-1 fw-medium mt-0">{{ file.title }}</h6>
+              <span class="text-muted">{{ file.fileSize }}</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    <nav>
+      <ul class="pagination justify-content-end">
+        <li class="page-item disabled"><a class="page-link" href="javascript:void(0);">Prev</a></li>
+        <li class="page-item active"><a class="page-link" href="javascript:void(0);">1</a></li>
+        <li class="page-item"><a class="page-link" href="javascript:void(0);">2</a></li>
+        <li class="page-item"><a class="page-link" href="javascript:void(0);">3</a></li>
+        <li class="page-item"><a class="page-link" href="javascript:void(0);">4</a></li>
+        <li class="page-item"><a class="page-link" href="javascript:void(0);">5</a></li>
+        <li class="page-item"><a class="page-link" href="javascript:void(0);">Next</a></li>
+      </ul>
+    </nav>
+    <!-- End Row -->
+  </div>
+</div>
+<!--End::row-1 -->

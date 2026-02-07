@@ -1,0 +1,232 @@
+@use '../../war-room.component.scss' as *;
+
+.hub-status-container {
+  padding: 0.5rem 0 0.75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hub-status-header {
+  margin-bottom: 0.625rem;
+}
+
+.section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $zinc-600;
+  margin: 0;
+}
+
+.hub-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.hub-status-card {
+  // Card structure matching website's .card.custom-card
+  position: relative;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.688rem;
+  border: 1px solid transparent;
+  background-color: var(--custom-white, #ffffff);
+  box-shadow: 0 10px 30px 0 var(--primary005, rgba(98, 89, 202, 0.05));
+  margin-block-end: 0;
+  width: 100%;
+  transition: box-shadow 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+  color: var(--default-text-color, #1d212f);
+
+  &.border-tactical-green {
+    border-color: $tactical-green;
+    box-shadow: 0 10px 30px 0 rgba(0, 255, 65, 0.15);
+  }
+
+  &.border-critical-red {
+    border-color: #ef4444;
+    box-shadow: 0 10px 30px 0 rgba(239, 68, 68, 0.2);
+  }
+
+  &.border-zinc-700 {
+    border-color: $zinc-700;
+    box-shadow: 0 10px 30px 0 rgba(63, 63, 70, 0.15);
+  }
+}
+
+.hub-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.2rem 0;
+  color: var(--default-text-color, #1d212f);
+}
+
+.hub-status-value {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0 0 0.2rem 0;
+  color: var(--default-text-color, #1d212f);
+}
+
+.hub-capacity {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: var(--text-muted, #8f8fb1);
+}
+
+.quantum-chart-container {
+  // Card structure matching website's .card.custom-card
+  border-radius: 0.688rem;
+  border: 0;
+  background-color: var(--custom-white, #ffffff);
+  box-shadow: 0 10px 30px 0 var(--primary005, rgba(98, 89, 202, 0.05));
+  position: relative;
+  margin-block-end: 1.25rem;
+  width: 100%;
+  transition: box-shadow 0.3s ease, background 0.3s ease;
+  
+  // Card body padding matching website
+  padding: 1.563rem;
+  color: var(--default-text-color, #1d212f);
+}
+
+.quantum-chart-title {
+  // Chart title matching website's card-title structure
+  position: relative;
+  margin-block-end: 0;
+  font-size: 0.875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--default-text-color, #1d212f);
+  margin: 0 0 1rem 0;
+  transition: color 0.25s ease;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.1em;
+}
+
+.quantum-chart {
+  // Chart area matching website's chart container
+  height: 4rem;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.2rem;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.quantum-bar {
+  // Bar chart bars matching website's chart bar styles
+  flex: 1;
+  background: var(--primary01, rgba(98, 89, 202, 0.1));
+  border-radius: 0.188rem 0.188rem 0 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+  min-height: 4px;
+
+  &:hover {
+    transform: translateY(-2px);
+    background: var(--primary02, rgba(98, 89, 202, 0.2));
+  }
+
+  &.highlighted {
+    background: rgb(var(--primary-rgb));
+    box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.3);
+  }
+}
+
+.quantum-chart-footer {
+  // Chart footer matching website's chart footer styles
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.813rem;
+  font-weight: 400;
+  color: var(--text-muted, #8f8fb1);
+  margin-top: 0.5rem;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.global-override-section {
+  padding: 0.5rem 0 0;
+  margin-top: auto;
+  background: transparent;
+  border-top: none;
+}
+
+.global-override-btn {
+  // Base button structure from website
+  width: 100%;
+  position: relative;
+  font-size: 0.85rem;
+  border-radius: 0.188rem;
+  padding: 0.5rem 0.85rem;
+  box-shadow: none;
+  font-weight: 400;
+  
+  // Primary button styling matching website structure
+  background-color: rgb(var(--primary-rgb)) !important;
+  border-color: rgb(var(--primary-rgb)) !important;
+  color: #fff !important;
+  border: 1px solid rgb(var(--primary-rgb));
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 22%;
+    height: 56%;
+    width: 3px;
+    background: $tactical-green;
+    border-radius: 0 2px 2px 0;
+  }
+
+  // Hover state matching website button structure
+  &:hover {
+    background-color: rgba(var(--primary-rgb), 0.9) !important;
+    border-color: rgb(var(--primary-rgb)) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+  }
+
+  // Active/Focus state matching website button structure
+  &:active {
+    background-color: rgb(var(--primary-rgb)) !important;
+    border-color: rgb(var(--primary-rgb)) !important;
+    color: #fff !important;
+    box-shadow: 0 0.25rem 1rem rgba(var(--primary-rgb), 0.5);
+    outline: 0;
+  }
+
+  &:focus-visible {
+    background-color: rgb(var(--primary-rgb)) !important;
+    border-color: rgb(var(--primary-rgb)) !important;
+    color: #fff !important;
+    box-shadow: 0 0.25rem 1rem rgba(var(--primary-rgb), 0.35);
+    outline: 2px solid rgba(var(--primary-rgb), 0.9);
+    outline-offset: 2px;
+  }
+
+  // Disabled state
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+}

@@ -1,0 +1,12 @@
+<div class="{{ mainClass }}" gallerize>
+    @for(image of imageData;track $index){
+            <div class="{{ image.colClass }}">
+
+                   <a href="javascript:void(0);" class="glightbox card {{image.lightboxClass}}" data-gallery="gallery1">
+                       <img [src]="image.srcUrl" [class]="image.imageClass" alt="image">
+                   </a>
+                   
+                </div>
+            }
+          
+        </div>

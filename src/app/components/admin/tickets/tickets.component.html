@@ -1,0 +1,149 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">Ticket list</h1>
+    </div>
+    <div class="btn-list">
+      <button class="btn btn-success-light btn-wave">
+        <i class="ti ti-plus me-2"></i>New Ticket
+      </button>
+      <button class="btn btn-outline-primary btn-wave">
+        <i class="ti ti-printer me-2"></i>Print
+      </button>
+      <button class="btn btn-outline-secondary btn-wave" (click)="uncheckAll()">Uncheck All</button>
+      <button class="btn btn-outline-secondary btn-wave" (click)="checkAll()">Check All</button>
+      <select class="form-select form-select-sm" style="max-width: 100px;">
+        <option>None</option>
+        <option>Option 1</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="card custom-card mb-3">
+    <div class="card-body">
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <label class="form-label">Project</label>
+          <select class="form-select" [(ngModel)]="filters.project" (ngModelChange)="applyFilters()">
+            <option value="">All Projects</option>
+            <option *ngFor="let project of uniqueProjects" [value]="project">{{project}}</option>
+          </select>
+        </div>
+        <div class="col-lg-6">
+          <label class="form-label">Vehicle</label>
+          <select class="form-select" [(ngModel)]="filters.vehicle" (ngModelChange)="applyFilters()">
+            <option value="">All vehicles</option>
+            <option *ngFor="let vehicle of uniqueVehicles" [value]="vehicle">{{vehicle}}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Bar -->
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div class="position-relative">
+      <button class="btn btn-sm btn-outline-secondary" (click)="toggleColumnMenu()" title="Column visibility">
+        <i class="ti ti-columns-3 me-1"></i>Column visibility
+      </button>
+      <div class="dropdown-menu show" *ngIf="showColumnMenu" style="position: absolute; top: 100%; left: 0; z-index: 1000; min-width: 200px;">
+        <div class="p-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <strong class="fs-13">Show/Hide Columns</strong>
+            <div>
+              <button class="btn btn-sm btn-link p-0 me-2" (click)="resetColumns()" title="Reset to default">
+                <i class="ti ti-refresh fs-14"></i>
+              </button>
+              <button class="btn btn-sm btn-link p-0" (click)="uncheckAllColumns()" title="Uncheck all">
+                <i class="ti ti-x fs-14"></i>
+              </button>
+            </div>
+          </div>
+          <ng-container *ngFor="let col of columns">
+            <div class="form-check" *ngIf="col.key !== 'id'">
+              <input class="form-check-input" type="checkbox" [id]="'col_' + col.key" [(ngModel)]="col.visible">
+              <label class="form-check-label fs-13" [for]="'col_' + col.key">{{col.label}}</label>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+    <div style="max-width: 280px;">
+      <div class="input-group">
+        <span class="input-group-text"><i class="ti ti-search"></i></span>
+        <input class="form-control" placeholder="Search..." [(ngModel)]="filters.search" (ngModelChange)="applyFilters()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="card custom-card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th style="width: 48px;" class="text-center"><input type="checkbox" class="form-check-input" [checked]="allSelected" (change)="toggleAll($event)"></th>
+              <th *ngIf="isColumnVisible('id')">Ticket #</th>
+              <th *ngIf="isColumnVisible('client')">Client</th>
+              <th *ngIf="isColumnVisible('status')">Status</th>
+              <th *ngIf="isColumnVisible('project')">Project</th>
+              <th *ngIf="isColumnVisible('vehicle')">Vehicle</th>
+              <th *ngIf="isColumnVisible('safetyCritical')">Safety Critical</th>
+              <th *ngIf="isColumnVisible('repeater')">Repeater</th>
+              <th *ngIf="isColumnVisible('createdDate')">Created Date</th>
+              <th *ngIf="isColumnVisible('defectType')">Defect Type</th>
+              <th *ngIf="isColumnVisible('defectLocation')">Defect Location</th>
+              <th *ngIf="isColumnVisible('description')">Description</th>
+              <th *ngIf="isColumnVisible('hasImages')">Images</th>
+              <th *ngIf="isColumnVisible('assignedBy')">Assign By</th>
+              <th *ngIf="isColumnVisible('assignedTo')">Assign To</th>
+              <th *ngIf="isColumnVisible('station')">Station</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let ticket of filteredTickets" [class.table-active]="ticket.selected">
+              <td class="text-center">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="ticket.selected" (change)="updateSelection()">
+              </td>
+              <td class="fw-semibold text-primary" *ngIf="isColumnVisible('id')">{{ticket.id}}</td>
+              <td *ngIf="isColumnVisible('client')">{{ticket.client}}</td>
+              <td *ngIf="isColumnVisible('status')">
+                <span class="badge" [ngClass]="getStatusBadgeClass(ticket.status || '')">
+                  {{ticket.status | titlecase}}
+                </span>
+              </td>
+              <td *ngIf="isColumnVisible('project')"><span class="badge bg-info-transparent">{{ticket.project}}</span></td>
+              <td *ngIf="isColumnVisible('vehicle')" class="text-muted">{{ticket.vehicle}}</td>
+              <td *ngIf="isColumnVisible('safetyCritical')">
+                <span class="badge" [class.bg-danger]="ticket.safetyCritical" [class.bg-light]="!ticket.safetyCritical" [style.color]="ticket.safetyCritical ? 'white' : '#666'">
+                  {{ticket.safetyCritical ? 'True' : 'False'}}
+                </span>
+              </td>
+              <td *ngIf="isColumnVisible('repeater')">
+                <span class="badge" [class.bg-warning]="ticket.repeater" [class.bg-light]="!ticket.repeater" [style.color]="ticket.repeater ? 'white' : '#666'">
+                  {{ticket.repeater ? 'True' : 'False'}}
+                </span>
+              </td>
+              <td *ngIf="isColumnVisible('createdDate')" class="text-muted fs-13">{{ticket.createdDate | date:'short'}}</td>
+              <td *ngIf="isColumnVisible('defectType')">{{ticket.defectType}}</td>
+              <td *ngIf="isColumnVisible('defectLocation')">{{ticket.defectLocation}}</td>
+              <td *ngIf="isColumnVisible('description')" class="text-truncate" style="max-width: 200px;" [title]="ticket.description">{{ticket.description}}</td>
+              <td *ngIf="isColumnVisible('hasImages')">
+                <i class="ti" [ngClass]="ticket.hasImages ? 'ti-photo text-warning' : 'ti-photo-off text-muted'" style="cursor: pointer;"></i>
+              </td>
+              <td *ngIf="isColumnVisible('assignedBy')">{{ticket.assignedBy}}</td>
+              <td *ngIf="isColumnVisible('assignedTo')">{{ticket.assignedTo}}</td>
+              <td *ngIf="isColumnVisible('station')" class="text-muted fs-13">{{ticket.station}}</td>
+            </tr>
+            <tr *ngIf="filteredTickets.length === 0">
+              <td [attr.colspan]="getVisibleColumnsCount() + 1" class="text-center py-4 text-muted">No tickets match your filters.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,89 @@
+<app-page-header [title]="'Ngx-Easy-Tables'" [title1]="['Tables']" [activeitem]="'Ngx-Easy-Tables'"></app-page-header>
+
+<!-- Start::row-1 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Basic Datatable
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <app-ngx-reusable-table tableId="responsivemodal-DataTable"
+                        tableTitle="table table-bordered text-nowrap w-100" [paginationEnabled]="false"
+                        [showSearch]="false" [basicTable]="true">
+                    </app-ngx-reusable-table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->
+
+<!-- Start:: row-2 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Table with Pagination
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                <app-ngx-reusable-table tableId="responsiveDataTable"
+                    tableTitle="ngx-tables table table-bordered text-nowrap w-100" [paginationEnabled]="true"
+                    [showSearch]="false" [basicTable]="false">
+                </app-ngx-reusable-table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-2 -->
+
+<!-- Start:: row-3 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Table With Search
+                </div>
+            </div>
+            <div class="card-body overflow-auto">
+                <div id="grid-search">
+                <div class="table-responsive">
+                    <app-ngx-reusable-table tableId="responsivemodal-DataTable"
+                        tableTitle="table table-bordered text-nowrap w-100" [paginationEnabled]="false"
+                        [showSearch]="true" [basicTable]="false">
+                    </app-ngx-reusable-table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-3 -->
+
+<!-- Start:: row-4 -->
+<div class="row">
+    <div class="col-xl-12">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Dragable Row and Columns</div>
+            </div>
+            <div class="card-body overflow-auto">
+                <div class="table-responsive">
+                    <app-ngx-reusable-table tableId="file-export" tableTitle="table table-bordered text-nowrap w-100"
+                       [showSearch]="false" [basicTable]="false">
+                    </app-ngx-reusable-table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-4 -->

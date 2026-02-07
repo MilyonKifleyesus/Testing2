@@ -1,0 +1,22 @@
+.page-header-breadcrumb {
+  margin-left: 1.5rem;
+  padding-left: 0;
+
+  @media (max-width: 768px) {
+    margin-left: 1rem;
+  }
+
+  @media (max-width: 576px) {
+    margin-left: 0.75rem;
+  }
+
+  > div:first-child {
+    h2.main-content-title {
+      margin-left: 0;
+    }
+
+    .breadcrumb {
+      margin-left: 0;
+    }
+  }
+}

@@ -1,0 +1,24 @@
+
+    <div class="card custom-card pricingTable2" >
+      <div class="pricingTable2-header">
+        <h3>{{ title }}</h3>
+        <span>{{ subtitle }}</span>
+      </div>
+      <div class="pricing-plans " [ngClass]="bgClass">
+        <span class="price-value1">
+          <i class="fa fa-usd"></i><span>{{ price }}</span>
+        </span>
+        <span class="month">{{ ' /month' }}</span>
+      </div>
+      <div class="pricingContent2">
+        <ul>
+            @for(feature of features;track $index){
+
+                <li><b>{{ feature.label }}</b> {{ feature.detail }}</li>
+            }
+        </ul>
+      </div>
+      <div class="pricingTable2-sign-up">
+        <a href="javascript:void(0);" class="btn btn-block" [ngClass]="buttonClass">sign up</a>
+      </div>
+    </div>

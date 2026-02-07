@@ -1,0 +1,40 @@
+<div class="card custom-card">
+    <a href="javascript:void(0);" class="card-anchor"></a>
+    <div class="row g-0">
+        @if(imagePlacementStart){
+            <div class="col-md-4">
+                <img [src]="image" class="img-fluid rounded-start h-100 w-100" alt="...">
+            </div>
+        }
+        <div class="col-md-8">
+            @if(headerTitle){
+
+                <div class="card-header">
+                    <div class="card-title">{{headerTitle}}</div>
+                </div>
+            }
+            <div class="card-body">
+                <h6 class="card-title fw-medium mb-2">{{subtitle}}</h6>
+                @if(title){
+
+                    <div class="card-title mb-3">Horizontal cards are awesome!</div>
+                }
+                <p class="card-text">{{discription}}</p>
+                @if(bodyText){
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                }
+            </div>
+            @if(status){
+
+                <div class="card-footer">
+                    <p class="card-text"><small class="text-muted">{{status}}</small></p>
+                </div>
+            }
+        </div>
+        @if(imagePlacementEnd){
+        <div class="col-md-4">
+            <img [src]="image" class="img-fluid rounded-end h-100 w-100" alt="...">
+        </div>
+    }
+    </div>
+</div>

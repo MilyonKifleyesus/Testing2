@@ -1,0 +1,32 @@
+<div class="card custom-card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="d-flex">
+            <div class="settings-main-icon me-4">
+              <div class="avatar avatar-md bg-primary-transparent text-primary">
+                <i [class]="icon + ' fs-18'"></i>
+              </div>
+            </div>
+            <div>
+              <h5 class="fs-14 d-flex text-dark text-uppercase">{{ title }}</h5>
+              <p class="fs-13 text-muted mb-0">{{ description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-footer rounded-0">
+      <a href="javascript:void(0)" class="fs-14 mb-0">Go to Settings</a>
+      <div class="form-check form-check-md form-switch float-end mb-0">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          role="switch"
+          [id]="switchId"
+          [checked]="isChecked"
+        />
+        <label class="form-check-label" [for]="switchId">Restore default</label>
+      </div>
+    </div>
+  </div>

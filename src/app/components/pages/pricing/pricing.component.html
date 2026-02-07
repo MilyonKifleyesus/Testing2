@@ -1,0 +1,122 @@
+<app-page-header [title]="'Pricing '" [title1]="['Pages']" [activeitem]="'Pricing '"></app-page-header>
+
+   <!-- Start::row-1 -->
+   <div class="row row-sm">
+    @for(plan of pricingPlans;track $index){
+        <div class="col-xl-3 col-md-6 col-sm-12 col-lg-6">
+        <spk-pricing   [title]="plan.title"
+        [subtitle]="plan.subtitle"
+        [price]="plan.price"
+        [features]="plan.features"
+        [bgClass]="plan.bgClass"
+        [buttonClass]="plan.buttonClass" ></spk-pricing>
+        </div>
+    }
+
+</div>
+<!--End::row-1 -->
+
+<!-- Start::row-2 -->
+<div class="row row-sm">
+    @for(plan of pricingPlans1;track $index){
+        <div class="col-xl-3 col-lg-6 col-sm-6">
+        <spk-pricing1
+        [title]="plan.title"
+        [price]="plan.price"
+        [features]="plan.features"
+        [cardClass]="plan.cardClass"
+        [isPrimary]="plan.isPrimary"
+        [isPremium]="plan.isPremium">
+      </spk-pricing1>
+      </div>
+    }
+</div>
+<!--End::row-2 -->
+
+<!-- Start::row-3 -->
+<div class="row row-sm">
+    @for(plan of pricingPlans2;track $index){
+        <div class="col-sm-12 col-md-4">
+        <spk-pricing2
+        [title]="plan.title"
+        [price]="plan.price"
+        [features]="plan.features"
+        [icon]="plan.icon"
+        [iconClass]="plan.iconClass"
+        [iconBg]="plan.iconBg"
+        [btnClass]="plan.btnClass"
+        [buttonText]="plan.buttonText">
+      </spk-pricing2>
+      </div>
+    }
+   
+</div>
+<!--End::row-3 -->
+
+<!-- Start::row-4 -->
+<div class="row row-sm">
+    <div class="col-xl-12 col-lg-12">
+        <div class="card custom-card">
+            <div class="card-body">
+                <div>
+                    <h6 class="main-content-label mb-1">Tabs Pricing Tables</h6>
+                    <p class="text-muted">Below is the Using tabs year & month pricing Tables example</p>
+                </div>
+                <div class="pricing-tabs">
+                    <div class="text-center">
+                        <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav nav-price justify-content-center" role="tablist">
+                            <li [ngbNavItem]="1">
+                                <a class="" ngbNavLink data-bs-toggle="tab" role="tab" href="#service1-justified">Year</a>
+                                <ng-template ngbNavContent>
+                                    <div class="tab-pane show active text-muted p-0" id="service1-justified"
+                                    role="tabpanel">
+                                    <div class="row">
+                                        @for(plan of pricingPlans3;track $index){
+                                            <div class="col-sm-6 col-lg-6 col-xl-3 mg-t-10 mg-lg-t-0">
+                                            <spk-tabs-pricing
+                                            [plan]="plan.plan"
+                                            [price]="plan.price"
+                                            [features]="plan.features"
+                                            [bgClass]="plan.bgClass"
+                                            [buttonClass]="plan.buttonClass"
+                                            [buttonText]="'Buy Now'">
+                                          </spk-tabs-pricing>
+                                          </div>
+                                        }
+                                 
+                                    </div>
+                                </div>
+                                    </ng-template>
+                                </li>
+                            <li [ngbNavItem]="2"><a ngbNavLink class="" data-bs-toggle="tab" role="tab" href="#license1-justified">Month</a>
+                                <ng-template ngbNavContent>
+                                    <div class="tab-pane text-muted p-0" id="license1-justified" role="tabpanel">
+                                        <div class="row">
+                                            @for(plan of pricingPlans4;track $index){
+                                                <div class="col-sm-6 col-lg-6 col-xl-3 mg-t-10 mg-lg-t-0">
+                                                <spk-tabs-pricing
+                                                [plan]="plan.plan"
+                                                [price]="plan.price"
+                                                [features]="plan.features"
+                                                [bgClass]="plan.bgClass"
+                                                [buttonClass]="plan.buttonClass"
+                                                [buttonText]="'Buy Now'">
+                                              </spk-tabs-pricing>
+                                              </div>
+                                            }
+                                        </div>
+                                    </div>
+                                    </ng-template>
+                            </li>
+                        </ul>
+                        <div class="tab-content"[ngbNavOutlet]="nav">
+                          
+                           
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-4 -->

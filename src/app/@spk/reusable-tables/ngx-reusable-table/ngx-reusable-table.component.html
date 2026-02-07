@@ -1,0 +1,13 @@
+@if(showSearch){
+
+    <input class="form-input mb-3" type="text" id="globalSearch" (input)="onChange($event)" 
+ placeholder="Search" /> }
+<ngx-table
+    [id]="tableId"
+    [class]="tableClass"
+    [configuration]="getConfiguration()"
+    [data]="data"
+    [columns]="columns"
+    #table
+  >
+  </ngx-table>

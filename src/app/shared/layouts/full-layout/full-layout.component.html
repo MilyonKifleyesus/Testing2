@@ -1,0 +1,35 @@
+
+
+    <!-- customizer -->
+    <!-- /customizer -->
+    <div class="page">
+        <!-- Header -->
+        <app-header></app-header>
+        <!-- /Header -->
+
+        <!-- Sidemenu -->
+        <app-sidemenu appHoverEffectSidebar></app-sidemenu>
+        <!-- /Sidemenu -->
+
+
+        <!-- Main Content -->
+        <div class="main-content app-content" (click)="clickOnBody()" >
+            <div class="container-fluid"  >
+                <!-- <div class="inner-body"   (click)="clickonBody()"> -->
+                    <router-outlet>
+                        <!-- <app-loader></app-loader> -->
+                    </router-outlet>
+                <!-- </div> -->
+            </div>
+        </div>
+        <!-- /Main Content -->
+
+        <!-- Footer -->
+        <app-footer></app-footer>
+        <!-- /Footer -->
+        <!-- Notification-sidebar -->
+        <app-notification-sidebar></app-notification-sidebar>
+        <!-- /Notification-sidebar -->
+        <app-tap-to-top></app-tap-to-top>
+    </div>
+<!-- </div> -->

@@ -1,0 +1,404 @@
+<div class="main-container container-fluid px-0">
+  <!-- Breadcrumb/Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-4 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-20 mb-0">Project</h1>
+      <p class="mb-0 text-muted fs-13">Project View</p>
+    </div>
+    <div class="btn-list">
+      <button class="btn btn-success btn-wave" (click)="closeProject()" [disabled]="project.status==='Closed'">
+        <i class="ti ti-lock me-2"></i>{{ project.status==='Closed' ? 'Project Closed' : 'Close Project' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="card custom-card mb-3">
+    <div class="card-body p-0">
+      <ul class="nav nav-tabs px-3 pt-3" role="tablist">
+        <li class="nav-item" *ngFor="let tab of tabs">
+          <a class="nav-link" [class.active]="activeTab === tab.key" href="javascript:void(0);" (click)="setTab(tab.key)">{{ tab.label }}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Tab Content: Project -->
+  <div class="card custom-card" *ngIf="activeTab==='project'">
+    <div class="card-body">
+      <div class="row gy-3">
+        <div class="col-xl-6">
+          <label class="form-label fw-semibold">Client</label>
+          <input type="text" class="form-control" [value]="project.client" disabled>
+        </div>
+        <div class="col-xl-6">
+          <label class="form-label fw-semibold">Name</label>
+          <input type="text" class="form-control" [value]="project.name" disabled>
+        </div>
+        <div class="col-xl-6">
+          <label class="form-label fw-semibold">Contract</label>
+          <input type="text" class="form-control" [value]="project.contract" disabled>
+        </div>
+        <div class="col-xl-6">
+          <label class="form-label fw-semibold">Location</label>
+          <input type="text" class="form-control" [value]="project.location" disabled>
+        </div>
+        <div class="col-xl-6">
+          <label class="form-label fw-semibold">Type</label>
+          <input type="text" class="form-control" [value]="project.type" disabled>
+        </div>
+        <div class="col-xl-6 d-flex align-items-center">
+          <div class="form-check mt-4">
+            <input class="form-check-input" type="checkbox" [checked]="project.hasRoadTest" disabled>
+            <label class="form-check-label">Has Road Test?</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button class="btn btn-primary" (click)="editProject()">
+          <i class="ti ti-pencil me-2"></i>Edit
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Content: Vehicles -->
+  <div class="card custom-card" *ngIf="activeTab==='vehicles'">
+    <div class="card-header d-flex align-items-center justify-content-between">
+      <h6 class="card-title mb-0">Project Vehicles</h6>
+      <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-primary-light" (click)="toggleVehicleView()">
+          <i [class]="vehicleViewMode === 'grid' ? 'ti ti-layout-list' : 'ti ti-layout-grid'"></i>
+          {{ vehicleViewMode === 'grid' ? 'List View' : 'Grid View' }}
+        </button>
+        <button class="btn btn-sm btn-primary" (click)="addVehicle()">
+          <i class="ti ti-plus me-1"></i>Add Vehicle
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="card-body border-bottom">
+      <div class="row g-3">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+          <div class="card custom-card border shadow-none mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-top justify-content-between">
+                <div>
+                  <span class="avatar avatar-md avatar-rounded bg-primary">
+                    <i class="ti ti-car fs-18"></i>
+                  </span>
+                </div>
+                <div class="flex-fill ms-3">
+                  <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div>
+                      <p class="text-muted mb-0">Total Vehicles</p>
+                      <h4 class="fw-semibold mt-1 mb-0">{{ projectVehicles.length }}</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+          <div class="card custom-card border shadow-none mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-top justify-content-between">
+                <div>
+                  <span class="avatar avatar-md avatar-rounded bg-success">
+                    <i class="ti ti-checkbox fs-18"></i>
+                  </span>
+                </div>
+                <div class="flex-fill ms-3">
+                  <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div>
+                      <p class="text-muted mb-0">Completed</p>
+                      <h4 class="fw-semibold mt-1 mb-0">{{ getVehiclesByStatus('completed').length }}</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+          <div class="card custom-card border shadow-none mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-top justify-content-between">
+                <div>
+                  <span class="avatar avatar-md avatar-rounded bg-warning">
+                    <i class="ti ti-progress fs-18"></i>
+                  </span>
+                </div>
+                <div class="flex-fill ms-3">
+                  <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div>
+                      <p class="text-muted mb-0">In Progress</p>
+                      <h4 class="fw-semibold mt-1 mb-0">{{ getVehiclesByStatus('in-progress').length }}</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-12">
+          <div class="card custom-card border shadow-none mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-top justify-content-between">
+                <div>
+                  <span class="avatar avatar-md avatar-rounded bg-info">
+                    <i class="ti ti-clock fs-18"></i>
+                  </span>
+                </div>
+                <div class="flex-fill ms-3">
+                  <div class="d-flex align-items-center justify-content-between flex-wrap">
+                    <div>
+                      <p class="text-muted mb-0">Pending</p>
+                      <h4 class="fw-semibold mt-1 mb-0">{{ getVehiclesByStatus('pending').length }}</h4>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="card-body border-bottom">
+      <div class="row g-3">
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <input type="text" class="form-control" placeholder="Search by VIN, Fleet #..." [(ngModel)]="vehicleFilters.search" (input)="filterVehicles()">
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-6">
+          <select class="form-select" [(ngModel)]="vehicleFilters.status" (change)="filterVehicles()">
+            <option value="">All Status</option>
+            <option value="completed">Completed</option>
+            <option value="in-progress">In Progress</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+          </select>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-6">
+          <select class="form-select" [(ngModel)]="vehicleFilters.propulsion" (change)="filterVehicles()">
+            <option value="">All Propulsion</option>
+            <option value="Electric">Electric</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Hybrid">Hybrid</option>
+            <option value="CNG">CNG</option>
+          </select>
+        </div>
+        <div class="col-xl-2 col-lg-3 col-md-6">
+          <select class="form-select" [(ngModel)]="vehicleFilters.inspector" (change)="filterVehicles()">
+            <option value="">All Inspectors</option>
+            <option value="John Doe">John Doe</option>
+            <option value="Jane Smith">Jane Smith</option>
+            <option value="Mike Johnson">Mike Johnson</option>
+          </select>
+        </div>
+        <div class="col-xl-3 col-lg-4 col-md-6">
+          <button class="btn btn-light w-100" (click)="resetFilters()">
+            <i class="ti ti-refresh me-1"></i>Reset Filters
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid View -->
+    <div class="card-body" *ngIf="vehicleViewMode === 'grid'">
+      <div class="row" *ngIf="filteredProjectVehicles.length > 0; else noVehicles">
+        <div class="col-xl-4 col-lg-6 col-md-6 col-sm-12" *ngFor="let vehicle of filteredProjectVehicles">
+          <div class="card custom-card border shadow-sm vehicle-card">
+            <div class="card-body p-0">
+              <!-- Vehicle Image -->
+              <div class="position-relative">
+                <img [src]="vehicle.imageUrl || 'assets/images/vehicle-placeholder.jpg'" class="card-img-top vehicle-image" alt="Vehicle">
+                <span class="badge position-absolute top-0 end-0 m-2" [ngClass]="getStatusBadgeClass(vehicle.status)">
+                  {{ vehicle.status | titlecase }}
+                </span>
+                <span class="badge bg-primary-transparent position-absolute top-0 start-0 m-2">
+                  <i class="ti ti-car me-1"></i>{{ vehicle.fleetNumber }}
+                </span>
+              </div>
+
+              <!-- Vehicle Details -->
+              <div class="p-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <h6 class="fw-semibold mb-1">{{ vehicle.make }} {{ vehicle.model }}</h6>
+                    <p class="text-muted fs-12 mb-0">VIN: {{ vehicle.vin }}</p>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between mt-3 pt-3 border-top">
+                  <div class="d-flex align-items-center">
+                    <span class="avatar avatar-sm avatar-rounded me-2">
+                      <i class="ti ti-zap fs-16"></i>
+                    </span>
+                    <span class="fs-12 text-muted">{{ vehicle.propulsion }}</span>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <span class="avatar avatar-sm avatar-rounded me-2">
+                      <i class="ti ti-calendar fs-16"></i>
+                    </span>
+                    <span class="fs-12 text-muted">{{ vehicle.inspectionDate || 'Not scheduled' }}</span>
+                  </div>
+                </div>
+
+                <div class="d-flex align-items-center mt-2">
+                  <span class="avatar avatar-sm avatar-rounded me-2">
+                    <img [src]="vehicle.inspectorAvatar || 'assets/images/avatar-placeholder.jpg'" alt="Inspector">
+                  </span>
+                  <span class="fs-12 text-muted">{{ vehicle.inspector }}</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2 mt-3">
+                  <button class="btn btn-sm btn-primary-light flex-fill" [routerLink]="['/admin/vehicles/view', vehicle.id]">
+                    <i class="ti ti-eye me-1"></i>View
+                  </button>
+                  <button class="btn btn-sm btn-success-light flex-fill" (click)="inspectVehicle(vehicle.id)">
+                    <i class="ti ti-clipboard-check me-1"></i>Inspect
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noVehicles>
+        <div class="text-center py-5">
+          <div class="avatar avatar-xxl avatar-rounded bg-primary-transparent mb-3">
+            <i class="ti ti-car fs-1"></i>
+          </div>
+          <h5 class="fw-semibold mb-2">No Vehicles Found</h5>
+          <p class="text-muted mb-3">No vehicles match your current filters. Try adjusting your search criteria.</p>
+          <button class="btn btn-primary" (click)="addVehicle()">
+            <i class="ti ti-plus me-2"></i>Add First Vehicle
+          </button>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Table View -->
+    <div class="card-body p-0" *ngIf="vehicleViewMode === 'table'">
+      <div class="table-responsive" *ngIf="filteredProjectVehicles.length > 0">
+        <table class="table table-hover text-nowrap mb-0">
+          <thead>
+            <tr>
+              <th scope="col" class="ps-4">Fleet #</th>
+              <th scope="col">Vehicle</th>
+              <th scope="col">VIN</th>
+              <th scope="col">Propulsion</th>
+              <th scope="col">Status</th>
+              <th scope="col">Inspector</th>
+              <th scope="col">Inspection Date</th>
+              <th scope="col">Progress</th>
+              <th scope="col" class="text-end pe-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let vehicle of filteredProjectVehicles" class="vehicle-table-row">
+              <td class="ps-4">
+                <span class="badge bg-primary-transparent">{{ vehicle.fleetNumber }}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="me-2">
+                    <span class="avatar avatar-sm avatar-rounded">
+                      <img [src]="vehicle.imageUrl || 'assets/images/vehicle-placeholder.jpg'" alt="Vehicle">
+                    </span>
+                  </div>
+                  <div>
+                    <p class="mb-0 fw-semibold">{{ vehicle.make }} {{ vehicle.model }}</p>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="text-muted fs-12">{{ vehicle.vin }}</span>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark">
+                  <i class="ti ti-zap me-1"></i>{{ vehicle.propulsion }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="getStatusBadgeClass(vehicle.status)">
+                  {{ vehicle.status | titlecase }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <span class="avatar avatar-xs avatar-rounded me-2">
+                    <img [src]="vehicle.inspectorAvatar || 'assets/images/avatar-placeholder.jpg'" alt="Inspector">
+                  </span>
+                  <span>{{ vehicle.inspector }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="text-muted">{{ vehicle.inspectionDate || 'Not scheduled' }}</span>
+              </td>
+              <td>
+                <div class="progress progress-xs">
+                  <div class="progress-bar" [class]="getProgressBarClass(vehicle.progress)" [style.width.%]="vehicle.progress" role="progressbar"></div>
+                </div>
+                <span class="fs-11 text-muted">{{ vehicle.progress }}%</span>
+              </td>
+              <td class="text-end pe-4">
+                <div class="btn-list">
+                  <button class="btn btn-sm btn-icon btn-primary-light" [routerLink]="['/admin/vehicles/view', vehicle.id]" title="View Details">
+                    <i class="ti ti-eye"></i>
+                  </button>
+                  <button class="btn btn-sm btn-icon btn-success-light" (click)="inspectVehicle(vehicle.id)" title="Start Inspection">
+                    <i class="ti ti-clipboard-check"></i>
+                  </button>
+                  <button class="btn btn-sm btn-icon btn-danger-light" (click)="removeVehicle(vehicle.id)" title="Remove">
+                    <i class="ti ti-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State for Table View -->
+      <div class="text-center py-5" *ngIf="filteredProjectVehicles.length === 0">
+        <div class="avatar avatar-xxl avatar-rounded bg-primary-transparent mb-3">
+          <i class="ti ti-car fs-1"></i>
+        </div>
+        <h5 class="fw-semibold mb-2">No Vehicles Found</h5>
+        <p class="text-muted mb-3">No vehicles match your current filters. Try adjusting your search criteria.</p>
+        <button class="btn btn-primary" (click)="addVehicle()">
+          <i class="ti ti-plus me-2"></i>Add First Vehicle
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Placeholder Tab Content: Inspection Categories -->
+  <div class="card custom-card" *ngIf="activeTab==='inspection-categories'">
+    <div class="card-body">
+      <p class="mb-0 text-muted fs-13">Inspection categories coming soon...</p>
+    </div>
+  </div>
+
+  <!-- Placeholder Tab Content: Inspection Tasks -->
+  <div class="card custom-card" *ngIf="activeTab==='inspection-tasks'">
+    <div class="card-body">
+      <p class="mb-0 text-muted fs-13">Inspection tasks coming soon...</p>
+    </div>
+  </div>
+
+  <!-- Placeholder Tab Content: Files -->
+  <div class="card custom-card" *ngIf="activeTab==='files'">
+    <div class="card-body">
+      <p class="mb-0 text-muted fs-13">Files coming soon...</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,32 @@
+<div class="card custom-card">
+    <!-- Card Header -->
+    <div class="card-header">
+      <div class="d-flex w-100">
+        <div class="me-4">
+          <span class="avatar avatar-lg avatar-rounded">
+            <img [src]="avatar" alt="avatar">
+          </span>
+        </div>
+        <div class="d-flex align-items-center justify-content-between w-100 flex-wrap">
+            @for (stat of stats; track $index) {
+          <div  class="me-3">
+            <p class="text-muted mb-0">{{ stat.label }}</p>
+            <p class="fw-medium fs-16 mb-0">{{ stat.value }}</p>
+          </div>
+        }
+        </div>
+      </div>
+    </div>
+  
+    <!-- Card Body -->
+    <div class="card-body">
+      <div class="fw-medium fs-16">{{ name }}</div>
+      <div class="text-muted fs-11 mb-4">{{ jobTitle }}</div>
+      <p class="fs-14 fw-medium mb-1">About:</p>
+      <p class="mb-0 card-text">{{ aboutText }}</p>
+      @if (additionalText) {
+      <p class="mb-0 card-text">{{ additionalText }}</p>
+      }
+    </div>
+  </div>
+  

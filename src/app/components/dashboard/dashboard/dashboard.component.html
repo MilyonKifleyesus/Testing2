@@ -1,0 +1,474 @@
+<app-page-header [title]="'Welcome To Dashboard'" [title1]="['Home']" [activeitem]="'Project Dashboard'"></app-page-header>
+<!-- War Room -->
+<div class="row row-sm">
+  <div class="col-12">
+    <app-war-room></app-war-room>
+  </div>
+</div>
+
+
+<!--Row-->
+<div class="row row-sm">
+    <div class="col-sm-12 col-lg-12 col-xl-8">
+
+        <!--Row-->
+        <div class="row row-sm banner-img">
+            <div class="col-sm-12 col-lg-12 col-xl-12">
+                <div class="card bg-primary custom-card card-box">
+                    <div class="card-body p-4">
+                        <div class="row align-items-center justify-content-end">
+                            <div class="offset-xl-3 offset-sm-6 col-xxl-9 col-xl-6 col-sm-6 col-12 img-bg ">
+                                <h4 class="d-flex  mb-3">
+                                    <span class="fw-bold text-fixed-white">Sonia Taylor!</span>
+                                </h4>
+                                <p class="tx-white-7 mb-1">You have two projects to finish, you had completed <b
+                                        class="text-warning">57%</b> from your montly level,
+                                    Keep going to your level
+                                </p>
+                            </div>
+                            <img src="./assets/images/pngs/29.png" alt="user-img" class="wd-200">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Row -->
+
+        <!--Row-->
+        <div class="row row-sm">
+            @for(card of cards;track $index){
+                <div class="col-sm-12 col-md-6 col-lg-6 col-xl-4">
+                    <spk-dashboard [card]="card"></spk-dashboard>
+                </div>
+            }
+        </div>
+        <!--End row-->
+
+        <!--row-->
+        <div class="row row-sm">
+            <div class="col-sm-12 col-lg-12 col-xl-12">
+                <div class="card custom-card overflow-hidden">
+                    <div class="card-header border-bottom-0">
+                        <div>
+                            <label class="main-content-label mb-2">Project Budget</label> <span
+                                class="d-block fs-12 mb-0 text-muted">The Project Budget is a tool used by project
+                                managers to estimate the total cost of a project</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="project">
+                            <shared-project-budget-chart [chartOptions]="ChartOptions"></shared-project-budget-chart>
+
+                        </div>
+                    </div>
+                </div>
+            </div><!-- col end -->
+            <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                <div class="card custom-card overflow-hidden">
+                    <div class="card-header d-block border-bottom-0 pb-0">
+                        <div>
+                            <div class="d-md-flex">
+                                <label class="main-content-label my-auto pt-2">Today tasks</label>
+                                <div class="ms-auto mt-3 d-flex">
+                                    <div class="me-3 d-flex text-muted fs-13"><span
+                                            class="legend bg-primary rounded-circle"></span>Project
+                                    </div>
+                                    <div class="d-flex text-muted fs-13"><span
+                                            class="legend bg-light rounded-circle"></span>Inprogress
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="d-block fs-12 mt-2 mb-0 text-muted"> UX UI & Backend
+                                Developement. </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-6 my-auto">
+                                <h6 class="mb-3 fs-14 fw-normal">Project-Budget</h6>
+                                <div class="text-start">
+                                    <h3 class="fw-bold me-3 mb-2 text-primary">$5,240</h3>
+                                    <p class="fs-13 my-auto text-muted">May 28 - June 01 (2018)</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6 my-auto">
+                                <div id="todaytask">  
+                                    <shared-today-tasks-chart [chartOptions]="ChartOptions1"></shared-today-tasks-chart>
+                                  </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- col end -->
+         
+            <div class="col-sm-12 col-md-6 col-lg-6 col-xl-6">
+                <div class="card custom-card">
+                    <div class="card-header  border-bottom-0 pb-0">
+                        <div>
+                            <div class="d-flex">
+                                <label class="main-content-label my-auto pt-2">Top Inquiries</label>
+                            </div>
+                            <span class="d-block fs-12 mt-2 mb-0 text-muted"> project work involves
+                                a group of students investigating . </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mt-1">
+                            <div class="col-5">
+                                <span class="">Brand identity</span>
+                            </div>
+                            <div class="col-3 my-auto">
+                                <div class="progress ht-6 my-auto progress-animate">
+                                    <div class="progress-bar ht-6 wd-80p" role="progressbar"
+                                        aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="d-flex">
+                                    <span class="fs-13"><i
+                                            class="text-success fe fe-arrow-up"></i><b>24.75%</b></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-5">
+                                <span class="">UI & UX design</span>
+                            </div>
+                            <div class="col-3 my-auto">
+                                <div class="progress ht-6 my-auto progress-animate">
+                                    <div class="progress-bar ht-6 wd-70p" role="progressbar"
+                                        aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="d-flex">
+                                    <span class="fs-13"><i
+                                            class="text-danger fe fe-arrow-down"></i><b>12.34%</b></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-5">
+                                <span class="">Product design</span>
+                            </div>
+                            <div class="col-3 my-auto">
+                                <div class="progress ht-6 my-auto progress-animate">
+                                    <div class="progress-bar ht-6 wd-40p" role="progressbar"
+                                        aria-valuenow="15" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="d-flex">
+                                    <span class="fs-13"><i
+                                            class="text-success  fe fe-arrow-up"></i><b>12.75%</b></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- col end -->
+            <div class="col-lg-12">
+                <div class="card custom-card mg-b-20 tasks">
+                    <div class="card-body">
+                        <div class="card-header border-bottom-0 pt-0 ps-0 pe-0 pb-2 d-flex">
+                            <div>
+                                <div class="card-title">Tasks</div> 
+                                <p class="mb-0 fs-12 mb-3 text-muted">A task is accomplished by
+                                    a set deadline, and must contribute toward work-related
+                                    objectives.</p>
+                            </div>
+                            <div class="ms-auto d-flex flex-wrap gap-2">
+                                <div class="contact-search3 me-3 ">
+                                    <button type="button" class="btn border-0"><i class="fe fe-search fw-semibold text-muted" aria-hidden="true"></i></button>
+                                    <input type="text" class="form-control h-6" id="typehead1" placeholder="Search here..." autocomplete="off">
+                                </div>
+                                <div class="ms-auto d-flex dropdown" ngbDropdown>
+                                    <a href="javascript:void(0);" ngbDropdownToggle class="btn dropdown-toggle btn-sm btn-wave waves-effect waves-light btn-primary d-inline-flex align-items-center" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false"><i class="ri-equalizer-line me-1"></i>Sort by</a>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1" ngbDropdownMenu>
+                                        <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Task</a></li>
+                                        <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Team</a></li>
+                                        <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);">Status</a></li>
+                                        <li class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" ngbDropdownItem href="javascript:void(0);"><i class="fa fa-cog me-2"></i>Settings</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive tasks">
+                            <spk-reusable-tables [columns]="taskColumns"  [tableClass]="'table card-table table-vcenter text-nowrap mb-0 border'"
+                            [showCheckbox]="false" >
+                            @for(task of tasks;track $index){
+                                <tr>
+                                    <td class="fw-medium">
+                                      <div class="form-check">
+                                        <input 
+                                          type="checkbox" 
+                                          class="form-check-input me-4 rounded" 
+                                          [checked]="task.checked">
+                                        <label class="form-check-label">{{ task.name }}</label>
+                                      </div>
+                                    </td>
+                                    <td class="text-nowrap">
+                                      <div class="avatar-list-stacked my-auto float-end">
+                                        @for(avatar of task.avatars;track $index){
+
+                                            <div 
+                                              class="avatar avatar-rounded avatar-sm" >
+                                              <img 
+                                                alt="avatar" 
+                                                class="rounded-circle" 
+                                                [src]="avatar">
+                                            </div>
+                                        }
+                                      </div>
+                                    </td>
+                                    <td class="text-center">{{ task.comments }}</td>
+                                    <td [class]="task.priorityClass">{{ task.priority }}</td>
+                                    <td>
+                                      <span 
+                                        class="badge bg-pill rounded-pill" 
+                                        [class]="task.statusClass">{{ task.status }}</span>
+                                    </td>
+                                  </tr>
+                            }
+                            </spk-reusable-tables>
+                        </div>
+                        <div class="float-end mt-3">
+                            <nav aria-label="Page navigation" class="pagination-style-3">
+                                <ul class="pagination mb-0 flex-wrap">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="javascript:void(0);">
+                                            Prev
+                                        </a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="javascript:void(0);">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="javascript:void(0);">2</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="javascript:void(0);">
+                                            <i class="bi bi-three-dots"></i>
+                                        </a>
+                                    </li>
+                                    <li class="page-item"><a class="page-link" href="javascript:void(0);">16</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link text-primary" href="javascript:void(0);">
+                                            next
+                                        </a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- col end -->
+        </div><!-- Row end -->
+    </div><!-- col end -->
+    <div class="col-sm-12 col-lg-12 col-xl-4 mt-xl-4">
+        <div class="card custom-card card-dashboard-calendar">
+            <label class="main-content-label mb-2 pt-1">Recent transactions</label>
+            <span class="d-block fs-12 mb-2 text-muted">Projects where development work is on
+                completion</span>
+                <spk-reusable-tables  [tableClass]="'table  m-b-0 transcations mt-2'"
+                [showCheckbox]="false" >
+                @for (transaction of transactions; track transaction) {
+                    <tr>
+                        <td class="wd-5p {{transaction.cell}}">
+                          <div class="main-img-user avatar-md">
+                            <img alt="avatar" class="rounded-circle me-3" [src]="transaction.avatar">
+                          </div>
+                        </td>
+                        <td class="{{transaction.cell}}">
+                          <div class="d-flex align-middle ms-3">
+                            <div class="d-inline-block">
+                              <h6 class="mb-1">{{ transaction.name }}</h6>
+                              <p class="mb-0 fs-13 text-muted">{{ transaction.description }}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="text-end {{transaction.cell}}">
+                          <div class="d-inline-block">
+                            <h6 class="mb-2 fs-15 font-weight-semibold">
+                              {{ transaction.amount }}
+                              <i class="fas fa-level-{{transaction.trendClass}} ms-2  m-l-10"></i>
+                            </h6>
+                            <p class="mb-0 tx-11 text-muted">{{ transaction.date }}</p>
+                          </div>
+                        </td>
+                      </tr>
+                }
+                </spk-reusable-tables>
+        </div>
+                <!-- Tickets horizontal bar chart (placed in shaded right section) -->
+                <div class="card custom-card">
+                        <div class="card-header border-bottom-0 pb-0 d-flex ps-3 ms-1">
+                                <div>
+                                        <label class="main-content-label mb-2 pt-2">Tickets by Status</label>
+                                        <span class="d-block fs-12 mb-2 text-muted">Current distribution of support tickets</span>
+                                </div>
+                        </div>
+                        <div class="card-body pt-2 mt-0">
+                                <div id="tickets-status-chart">
+                                        <shared-tickets-bar-chart [chartOptions]="ticketsBarOptions"></shared-tickets-bar-chart>
+                                </div>
+                        </div>
+                </div>
+        <div class="card custom-card">
+            <div class="card-body">
+                <div class="row row-sm">
+                    <div class="col-6">
+                        <div class="card-item-title">
+                            <label class="main-content-label fs-13 font-weight-bold mb-2">Project Launch</label>
+                            <span class="d-block fs-12 mb-0 text-muted">the project is going to launch</span>
+                        </div>
+                        <p class="mb-0 fs-24 mt-2"><b class="text-primary">145 days</b></p>
+                        <a href="javascript:;" class="text-muted">12 Monday, Oct 2020 </a>
+                    </div>
+                    <div class="col-6">
+                        <img src="./assets/images/pngs/28.png" alt="image" class="best-emp">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card custom-card">
+            <div class="card-header border-bottom-0 pb-0 d-flex ps-3 ms-1">
+                <div>
+                    <label class="main-content-label mb-2 pt-2">On going projects</label>
+                    <span class="d-block fs-12 mb-2 text-muted">Projects where development work is on completion</span>
+                </div>
+            </div>
+            <div class="card-body pt-2 mt-0">
+                <div class="list-card">
+                    <div class="d-flex">
+                        <div class="avatar-list-stacked d-flex align-items-center">
+                            <div class="avatar avatar-rounded avatar-xs">
+                                <img alt="avatar" class="rounded-circle" src="./assets/images/faces/1.jpg">
+                            </div>
+                            <div class="avatar avatar-rounded avatar-xs">
+                                <img alt="avatar" class="rounded-circle" src="./assets/images/faces/2.jpg">
+                            </div>
+                            <div class="avatar avatar-rounded avatar-xs">
+                                <img alt="avatar" class="rounded-circle" src="./assets/images/faces/3.jpg">
+                            </div>
+                            <div class="avatar avatar-rounded avatar-xs">
+                                <img alt="avatar" class="rounded-circle" src="./assets/images/faces/4.jpg">
+                            </div>
+                            <div class="ms-3">Design team</div>
+                        </div>
+                        <div class="ms-auto float-end">
+                            <div ngbDropdown class="file-drop">
+                                <a href="javascript:;" class="option-dots" ngbDropdownToggle aria-haspopup="true"
+                                    aria-expanded="false"><i class="fe fe-more-horizontal"></i></a>
+                                <div ngbDropdownMenu class="dropdown-menu-end">
+                                    <a ngbDropdownItem href="javascript:;">Today</a>
+                                    <a ngbDropdownItem href="javascript:;">Last Week</a>
+                                    <a ngbDropdownItem href="javascript:;">Last Month</a>
+                                    <a ngbDropdownItem href="javascript:;">Last Year</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-item mt-2">
+                        <div class="card-item-body">
+                            <div class="card-item-stat">
+                                <small class="fs-10 text-primary fw-semibold">25 August
+                                    2020</small>
+                                <h6 class=" mt-2">Mobile app design</h6>
+                            </div>
+                            <div id="ongoingprojects">
+                                <shared-ongoing-projects-chart [chartOptions]="circleOptions"></shared-ongoing-projects-chart>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="list-card mb-0">
+                    <div class="d-flex">
+                        <div class="avatar-list-stacked d-flex align-items-center">
+                            <div class="avatar avatar-rounded avatar-xs">
+                                <img alt="avatar" class="rounded-circle" src="./assets/images/faces/5.jpg">
+                            </div>
+                            <div class="avatar avatar-rounded avatar-xs">
+                                <img alt="avatar" class="rounded-circle" src="./assets/images/faces/6.jpg">
+                            </div>
+                            <div class="avatar avatar-rounded avatar-xs">
+                                <img alt="avatar" class="rounded-circle" src="./assets/images/faces/7.jpg">
+                            </div>
+                            <div class="avatar avatar-rounded avatar-xs">
+                                <img alt="avatar" class="rounded-circle" src="./assets/images/faces/8.jpg">
+                            </div>
+                            <div class="ms-3">Design team</div>
+                        </div>
+                        <div class="ms-auto float-end">
+                            <div ngbDropdown class="file-drop">
+                                <a href="javascript:;" class="option-dots" ngbDropdownToggle aria-haspopup="true"
+                                    aria-expanded="false"><i class="fe fe-more-horizontal"></i></a>
+                                <div ngbDropdownMenu class="dropdown-menu-end">
+                                    <a ngbDropdownItem href="javascript:;">Today</a>
+                                    <a ngbDropdownItem href="javascript:;">Last Week</a>
+                                    <a ngbDropdownItem href="javascript:;">Last Month</a>
+                                    <a ngbDropdownItem href="javascript:;">Last Year</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-item mt-2">
+                        <div class="card-item-body">
+                            <div class="card-item-stat">
+                                <small class="fs-10 text-primary fw-semibold">12 JUNE
+                                    2020</small>
+                                <h6 class=" mt-2">Website Redesign</h6>
+                            </div>
+                            <div id="ongoingprojects2">
+                                <shared-ongoing-projects2-chart [chartOptions]="circleOptions1"></shared-ongoing-projects2-chart>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card custom-card">
+            <div class="card-body">
+                <div class="d-flex">
+                    <label class="main-content-label my-auto">Website Design</label>
+                    <div class="ms-auto  d-flex">
+                        <div class="me-3 d-flex text-muted fs-13">Running</div>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div>
+                        <span class="fs-15 text-muted">Task completed : 7/10</span>
+                    </div>
+                    <div id="websitedesign">
+                        <shared-website-design-chart [chartOptions]="ChartOptions2"></shared-website-design-chart>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="mt-3">
+                            <div class="d-flex mb-2">
+                                <h5 class="fs-15 my-auto text-muted fw-normal">Client :
+                                </h5>
+                                <h5 class="fs-15 my-auto ms-3">John Deo</h5>
+                            </div>
+                            <div class="d-flex mb-0">
+                                <h5 class="fs-13 my-auto text-muted fw-normal">Deadline :
+                                </h5>
+                                <h5 class="fs-13 my-auto text-muted ms-2">25 Dec 2020</h5>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-auto">
+                        <div class="mt-2">
+                            <div class="">
+                                <img alt="" class="ht-50"
+                                    src="./assets/images/pngs/21.png">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- col end -->
+</div><!-- Row end -->

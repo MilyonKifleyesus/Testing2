@@ -1,0 +1,532 @@
+<div class="main-container container-fluid px-0">
+  <!-- Page Header -->
+  <div class="d-md-flex d-block align-items-center justify-content-between my-3 page-header-breadcrumb">
+    <div>
+      <h1 class="page-title fw-semibold fs-18 mb-0">Vehicle Details</h1>
+      <nav>
+        <ol class="breadcrumb mb-0">
+          <li class="breadcrumb-item"><a [routerLink]="['/admin/dashboard']">Home</a></li>
+          <li class="breadcrumb-item"><a [routerLink]="['/admin/vehicles/list']">Vehicles</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{vehicle?.fleetNumber}}</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="ms-auto pageheader-btn">
+      <button class="btn btn-primary-light btn-wave btn-sm me-2">
+        <i class="ti ti-edit me-1"></i>Edit
+      </button>
+      <button class="btn btn-success-light btn-wave btn-sm" (click)="exportReport()">
+        <i class="ti ti-download me-1"></i>Export
+      </button>
+    </div>
+  </div>
+
+  <div class="row g-3" *ngIf="vehicle">
+    <!-- Full Width Content (Remove Sidebar) -->
+    <div class="col-12 col-xl-8 col-xxl-9">
+      <!-- Vehicle Insight Section -->
+      <div id="vehicle-insight" class="card custom-card section-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="ti ti-chart-line me-2 text-primary"></i>Vehicle Insight
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row g-3">
+            <!-- KPI Cards -->
+            <div class="col-6 col-md-3">
+              <div class="insight-card bg-primary-transparent">
+                <div class="insight-icon">
+                  <i class="ti ti-alert-triangle"></i>
+                </div>
+                <div class="insight-data">
+                  <h4>{{getTotalDefects()}}</h4>
+                  <p>Defects</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="insight-card bg-success-transparent">
+                <div class="insight-icon">
+                  <i class="ti ti-ticket"></i>
+                </div>
+                <div class="insight-data">
+                  <h4>{{vehicle.tickets.length}}</h4>
+                  <p>Tickets</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="insight-card bg-warning-transparent">
+                <div class="insight-icon">
+                  <i class="ti ti-tool"></i>
+                </div>
+                <div class="insight-data">
+                  <h4>{{vehicle.snags.length}}</h4>
+                  <p>Snags</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="insight-card bg-info-transparent">
+                <div class="insight-icon">
+                  <i class="ti ti-clock"></i>
+                </div>
+                <div class="insight-data">
+                  <h4>{{vehicle.inspectionData.duration}}</h4>
+                  <p>Duration</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Defect Severity Chart - Inline -->
+          <div class="mt-3">
+            <apx-chart
+              [series]="defectSeverityChart.series!"
+              [chart]="defectSeverityChart.chart!"
+              [plotOptions]="defectSeverityChart.plotOptions!"
+              [labels]="defectSeverityChart.labels!"
+              [colors]="defectSeverityChart.colors!">
+            </apx-chart>
+          </div>
+        </div>
+      </div>
+
+      <!-- General Information Section -->
+      <div id="general-info" class="card custom-card section-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="ti ti-info-circle me-2 text-success"></i>General Info
+          </div>
+        </div>
+        <div class="card-body p-2">
+          <div class="row g-2">
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">Fleet Number</label>
+                <div class="info-value">{{vehicle.fleetNumber}}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">VIN</label>
+                <div class="info-value"><code>{{vehicle.vin}}</code></div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">License Plate</label>
+                <div class="info-value"><code>{{vehicle.licensePlate}}</code></div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">Make & Model</label>
+                <div class="info-value">{{vehicle.make}} {{vehicle.model}}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">Year</label>
+                <div class="info-value">{{vehicle.year}}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">Color</label>
+                <div class="info-value">{{vehicle.color}}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">Propulsion</label>
+                <div class="info-value">{{vehicle.propulsion}}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">Mileage</label>
+                <div class="info-value">{{vehicle.inspectionData.mileage | number}} {{vehicle.mileageType}}</div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="info-group">
+                <label class="info-label">Status</label>
+                <div class="info-value"><span class="badge bg-success">{{vehicle.status | titlecase}}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-12">
+          <!-- Timeline Section (inhouse vtimeline style) -->
+          <div id="timeline" class="card custom-card section-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="ti ti-timeline me-2 text-info"></i>Timeline
+              </div>
+            </div>
+            <div class="card-body p-2">
+              <div class="vtimeline">
+                <div
+                  *ngFor="let item of timeline; let i = index"
+                  class="timeline-wrapper"
+                  [ngClass]="[i % 2 ? 'timeline-inverted' : '',
+                              (item.status || '').toLowerCase() === 'delayed' ? 'timeline-wrapper-danger' :
+                              (item.status || '').toLowerCase() === 'pending' ? 'timeline-wrapper-warning' :
+                              (item.status || '').toLowerCase() === 'in progress' ? 'timeline-wrapper-info' :
+                              'timeline-wrapper-success']">
+                  <div class="timeline-badge"></div>
+                  <div class="timeline-panel">
+                    <div class="timeline-heading">
+                      <h6 class="timeline-title mb-0">{{item.event}}</h6>
+                      <span class="timeline-meta">{{item.date}} · {{item.time || '12:00 PM'}}</span>
+                    </div>
+                    <div class="timeline-body">
+                      <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="avatar avatar-sm online">
+                          <img [src]="item.avatar || 'assets/images/faces/4.jpg'" alt="img">
+                        </div>
+                        <span class="text-muted">{{item.user}}</span>
+                      </div>
+                    </div>
+                    <div class="timeline-footer d-flex align-items-center flex-wrap gap-2">
+                      <span class="badge bg-success-transparent fs-11 text-uppercase">{{item.status || 'Completed'}}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-12">
+          <!-- Defects Analysis Section -->
+          <div id="defects" class="card custom-card section-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="ti ti-alert-circle me-2 text-danger"></i>Defects Analysis
+                <span class="badge bg-danger-transparent ms-3">{{getTotalDefects()}} Total</span>
+              </div>
+            </div>
+            <div class="card-body p-2">
+              <!-- Defect Details Table -->
+              <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                  <thead>
+                    <tr>
+                      <th>Area</th>
+                      <th>Count</th>
+                      <th>Level</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let defect of vehicle.defects">
+                      <td class="fs-12">{{defect.area}}</td>
+                      <td class="fs-12 text-center">{{defect.count}}</td>
+                      <td class="text-center">
+                        <span [class]="getSeverityBadgeClass(defect.severity)" class="fs-11">
+                          {{defect.severity | uppercase}}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-12">
+          <!-- Snag by Area Section -->
+          <div id="snag-area" class="card custom-card section-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="ti ti-chart-bar me-2 text-warning"></i>Snag Summary
+              </div>
+            </div>
+            <div class="card-body p-2 snag-chart-container">
+              <apx-chart
+                [series]="snagByAreaChart.series!"
+                [chart]="snagByAreaChart.chart!"
+                [plotOptions]="snagByAreaChart.plotOptions!"
+                [colors]="snagByAreaChart.colors!"
+                [dataLabels]="snagByAreaChart.dataLabels!"
+                [xaxis]="snagByAreaChart.xaxis!"
+                [yaxis]="snagByAreaChart.yaxis!"
+                [tooltip]="snagByAreaChart.tooltip!">
+              </apx-chart>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <!-- List Tickets Section -->
+          <div id="tickets" class="card custom-card section-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="ti ti-ticket me-2 text-danger"></i>List Tickets
+                <span class="badge bg-danger-transparent ms-2">{{vehicle.tickets.length}}</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Ticket ID</th>
+                      <th>Title</th>
+                      <th>Priority</th>
+                      <th>Status</th>
+                      <th>Created</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let ticket of vehicle.tickets">
+                      <td><code>{{ticket.id}}</code></td>
+                      <td>{{ticket.title}}</td>
+                      <td>
+                        <span [class]="getTicketPriorityClass(ticket.priority)">
+                          {{ticket.priority | uppercase}}
+                        </span>
+                      </td>
+                      <td>
+                        <span [class]="getTicketStatusClass(ticket.status)">
+                          {{ticket.status | titlecase}}
+                        </span>
+                      </td>
+                      <td>{{ticket.createdDate}}</td>
+                      <td>
+                        <button class="btn btn-sm btn-primary-light">
+                          <i class="ti ti-eye"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2">
+        <div class="col-12">
+          <!-- List Snags Section -->
+          <div id="snags" class="card custom-card section-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="ti ti-alert-triangle me-2 text-warning"></i>List Snags
+                <span class="badge bg-warning-transparent ms-2">{{vehicle.snags.length}}</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="snag-list">
+                <div class="snag-item" *ngFor="let snag of vehicle.snags">
+                  <div class="snag-header">
+                    <span class="snag-id"><code>{{snag.id}}</code></span>
+                    <span [class]="getSeverityBadgeClass(snag.severity)">
+                      {{snag.severity | uppercase}}
+                    </span>
+                  </div>
+                  <div class="snag-description">{{snag.description}}</div>
+                  <div class="snag-footer">
+                    <span class="snag-location">
+                      <i class="ti ti-map-pin me-1"></i>{{snag.location}}
+                    </span>
+                    <span [class]="getTicketStatusClass(snag.status)">
+                      {{snag.status | titlecase}}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-12">
+          <!-- Media Section -->
+          <div id="media" class="card custom-card section-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="ti ti-video me-2 text-info"></i>Media
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row g-3">
+                <div class="col-12">
+                  <div class="media-box">
+                    <div class="media-icon">
+                      <i class="ti ti-video"></i>
+                    </div>
+                    <h6>Interior Video</h6>
+                    <p class="text-muted mb-3">Complete interior inspection footage</p>
+                    <button class="btn btn-primary btn-sm btn-wave">
+                      <i class="ti ti-player-play me-1"></i>Play Video
+                    </button>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="media-box">
+                    <div class="media-icon">
+                      <i class="ti ti-video"></i>
+                    </div>
+                    <h6>Exterior Video</h6>
+                    <p class="text-muted mb-3">Complete exterior inspection footage</p>
+                    <button class="btn btn-primary btn-sm btn-wave">
+                      <i class="ti ti-player-play me-1"></i>Play Video
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Sidebar - General Details -->
+    <div class="col-12 col-xl-4 col-xxl-3">
+      <div class="row g-2">
+        <!-- Front Picture Box -->
+        <div class="col-12 col-md-6 col-xl-12">
+          <div class="card custom-card">
+            <div class="card-header">
+              <div class="card-title">Pic Front</div>
+            </div>
+            <div class="card-body p-0">
+              <div class="vehicle-front-pic">
+                <img [src]="vehicle.images.front" alt="Front View" class="img-fluid">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inspector Details -->
+        <div class="col-12 col-md-6 col-xl-12">
+          <div id="inspector" class="card custom-card">
+            <div class="card-header">
+              <div class="card-title">
+                <i class="ti ti-user-check me-2"></i>Inspector
+              </div>
+            </div>
+            <div class="card-body text-center">
+              <div class="inspector-circles mb-3">
+                <div class="inspector-avatar-large">
+                  {{vehicle.inspector.avatar}}
+                </div>
+              </div>
+              <h6 class="mb-1">{{vehicle.inspector.name}}</h6>
+              <p class="text-muted mb-2 small">{{vehicle.inspector.email}}</p>
+              <div class="inspector-stats">
+                <div class="stat-item">
+                  <i class="ti ti-calendar me-1"></i>
+                  <span>{{vehicle.inspectionData.date}}</span>
+                </div>
+                <div class="stat-item mt-2">
+                  <i class="ti ti-clock me-1"></i>
+                  <span>Duration: {{vehicle.inspectionData.duration}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- General Details -->
+      <div class="card custom-card">
+        <div class="card-header">
+          <div class="card-title">General Details</div>
+        </div>
+        <div class="card-body">
+          <div class="detail-row">
+            <span class="detail-label">VIN</span>
+            <span class="detail-value"><code>{{vehicle.vin}}</code></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Fleet #</span>
+            <span class="detail-value fw-semibold">{{vehicle.fleetNumber}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Frame #</span>
+            <span class="detail-value"><code>{{vehicle.frameNumber}}</code></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Make</span>
+            <span class="detail-value">{{vehicle.make}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Model</span>
+            <span class="detail-value">{{vehicle.model}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Year</span>
+            <span class="detail-value">{{vehicle.year}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Color</span>
+            <span class="detail-value">{{vehicle.color}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Propulsion</span>
+            <span class="detail-value">
+              <span class="badge bg-success-transparent">
+                <i class="ti ti-bolt me-1"></i>{{vehicle.propulsion}}
+              </span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Mileage</span>
+            <span class="detail-value">{{vehicle.inspectionData.mileage | number}} {{vehicle.mileageType}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status</span>
+            <span class="detail-value">
+              <span class="badge bg-success">
+                <i class="ti ti-circle-check me-1"></i>{{vehicle.status | titlecase}}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inspector Details -->
+      <!-- Shipping Detail -->
+      <div id="shipping" class="card custom-card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="ti ti-truck me-2"></i>Shipping Detail
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="shipping-locations">
+            <div class="location-item">
+              <i class="ti ti-map-pin text-primary"></i>
+              <div class="location-info">
+                <span class="location-label">Front, Curb</span>
+                <span class="location-value">{{vehicle.shippingDetail.frontCurb}}</span>
+              </div>
+            </div>
+            <div class="location-item">
+              <i class="ti ti-road text-success"></i>
+              <div class="location-info">
+                <span class="location-label">Back, Street</span>
+                <span class="location-value">{{vehicle.shippingDetail.backStreet}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

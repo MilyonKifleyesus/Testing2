@@ -1,0 +1,59 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "Angular",
+    "SCSS",
+    "JavaScript",
+    "jsVectorMap"
+  ],
+  "features": [
+    {
+      "name": "War Room map view",
+      "description": "Interactive map with markers, zoom, and view toggles for subsidiaries and factories.",
+      "files": [
+        "src/app/shared/features/war-room/components/war-room-map/war-room-map.component.ts",
+        "src/app/shared/features/war-room/war-room.component.ts"
+      ]
+    },
+    {
+      "name": "Add company modal",
+      "description": "Modal form to register a new subsidiary and optional connection source.",
+      "files": [
+        "src/app/shared/features/war-room/components/add-company-modal/add-company-modal.component.ts",
+        "src/app/shared/features/war-room/components/add-company-modal/add-company-modal.component.html",
+        "src/app/shared/features/war-room/components/add-company-modal/add-company-modal.component.scss"
+      ]
+    },
+    {
+      "name": "Activity log",
+      "description": "Side panel listing recent War Room activity entries.",
+      "files": [
+        "src/app/shared/features/war-room/components/war-room-activity-log/war-room-activity-log.component.scss",
+        "src/app/shared/features/war-room/war-room.component.ts"
+      ]
+    },
+    {
+      "name": "Hub status panel",
+      "description": "Displays hub status and metrics for active hubs.",
+      "files": [
+        "src/app/shared/features/war-room/components/war-room-hub-status/war-room-hub-status.component.scss",
+        "src/app/shared/features/war-room/war-room.component.ts"
+      ]
+    },
+    {
+      "name": "War Room data services",
+      "description": "Data access and real-time updates for War Room entities.",
+      "files": [
+        "src/app/shared/services/war-room.service.ts",
+        "src/app/shared/services/war-room-realtime.service.ts"
+      ]
+    },
+    {
+      "name": "War Room seed data",
+      "description": "Static seed data for map markers and entities.",
+      "files": [
+        "public/assets/data/war-room-data.json"
+      ]
+    }
+  ]
+}

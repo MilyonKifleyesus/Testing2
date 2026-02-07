@@ -1,0 +1,27 @@
+<div class="card custom-card our-team">
+    <div class="card-body">
+      <div class="picture avatar-lg online text-center">
+        <img [src]="avatar" alt="avatar" class="rounded-circle">
+      </div>
+      <div class="text-center mt-3">
+        <a routerLink="/pages/profile">
+          <h5 class="pro-user-username text-dark mt-2 mb-0">{{ name }}</h5>
+        </a>
+        <p class="pro-user-desc text-muted mb-1">{{ title }}</p>
+        <div class="text-center fs-14 mb-3">{{ description }}</div>
+      </div>
+      <div class="text-center mt-3">
+        @for(link of socialLinks;track $index){
+
+            <a 
+               [href]="link.url"
+               target="_blank"
+               class="btn btn-sm ripple rounded-circle me-1"
+               [ngClass]="link.buttonClass">
+              <i [class]="link.iconClass"></i>
+            </a>
+        }
+      </div>
+    </div>
+  </div>
+  

@@ -1,0 +1,12 @@
+
+    <div class="card-body text-center">
+      <h6 class="mb-0">{{ title }}</h6>
+      <h2 class="mb-1 mt-2 number-font"><span class="counter">{{ value }}</span>%</h2>
+      <p class="mb-0 text-muted">
+        <span [class]="'mb-0 fs-13 ms-1 ' + changeClass">
+          <i [class]="iconClass"></i> {{ changeValue }}%
+        </span>
+        for Last month
+      </p>
+    </div>
+  

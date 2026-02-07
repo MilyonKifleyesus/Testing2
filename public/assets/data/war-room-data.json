@@ -1,0 +1,740 @@
+{
+  "nodes": [],
+  "transitRoutes": [
+    {
+      "id": "route-nf-fleetzero",
+      "from": "new-flyer",
+      "to": "fleetzero",
+      "fromCoordinates": {
+        "latitude": 49.8951,
+        "longitude": -97.1384
+      },
+      "toCoordinates": {
+        "latitude": 43.6532,
+        "longitude": -79.3832
+      },
+      "animated": true,
+      "strokeColor": "#00FF41",
+      "strokeWidth": 2
+    },
+    {
+      "id": "route-nova-fleetzero",
+      "from": "nova",
+      "to": "fleetzero",
+      "fromCoordinates": {
+        "latitude": 45.565,
+        "longitude": -73.9055
+      },
+      "toCoordinates": {
+        "latitude": 43.6532,
+        "longitude": -79.3832
+      },
+      "animated": true,
+      "strokeColor": "#00FF41",
+      "strokeWidth": 2
+    },
+    {
+      "id": "route-ad-fleetzero",
+      "from": "alex-dennis",
+      "to": "fleetzero",
+      "fromCoordinates": {
+        "latitude": 26.1276,
+        "longitude": -80.2331
+      },
+      "toCoordinates": {
+        "latitude": 43.6532,
+        "longitude": -79.3832
+      },
+      "animated": true,
+      "strokeColor": "#00FF41",
+      "strokeWidth": 2
+    },
+    {
+      "id": "route-karsan-fleetzero",
+      "from": "karsan",
+      "to": "fleetzero",
+      "fromCoordinates": {
+        "latitude": 40.1828,
+        "longitude": 29.0665
+      },
+      "toCoordinates": {
+        "latitude": 43.6532,
+        "longitude": -79.3832
+      },
+      "animated": true,
+      "strokeColor": "#00FF41",
+      "strokeWidth": 2
+    },
+    {
+      "id": "route-yutong-fleetzero",
+      "from": "yutong",
+      "to": "fleetzero",
+      "fromCoordinates": {
+        "latitude": 34.7466,
+        "longitude": 113.6254
+      },
+      "toCoordinates": {
+        "latitude": 43.6532,
+        "longitude": -79.3832
+      },
+      "animated": true,
+      "strokeColor": "#00FF41",
+      "strokeWidth": 2
+    },
+    {
+      "id": "route-marcopolo-fleetzero",
+      "from": "marcopolo",
+      "to": "fleetzero",
+      "fromCoordinates": {
+        "latitude": -29.1686,
+        "longitude": -51.1797
+      },
+      "toCoordinates": {
+        "latitude": 43.6532,
+        "longitude": -79.3832
+      },
+      "animated": true,
+      "strokeColor": "#00FF41",
+      "strokeWidth": 2
+    }
+  ],
+  "activityLogs": [
+    {
+      "id": "log-001",
+      "timestamp": "2026-01-30T14:20:00Z",
+      "status": "ACTIVE",
+      "title": "NEW FLYER | WINNIPEG",
+      "description": "CHARGE CYCLE COMPLETE // FLEET READY",
+      "parentGroupId": "namg",
+      "subsidiaryId": "new-flyer",
+      "factoryId": "new-flyer-winnipeg",
+      "location": "Winnipeg, Canada",
+      "logo": "/assets/images/New-Flyer.jpg"
+    },
+    {
+      "id": "log-002",
+      "timestamp": "2026-01-30T13:42:00Z",
+      "status": "INFO",
+      "title": "NOVA BUS | SAINT-EUSTACHE",
+      "description": "ASSEMBLY LINE OPTIMIZED // THROUGHPUT +6%",
+      "parentGroupId": "namg",
+      "subsidiaryId": "nova",
+      "factoryId": "nova-saint-eustache",
+      "location": "Saint-Eustache, Canada",
+      "logo": "/assets/images/Nova-Bus.png"
+    },
+    {
+      "id": "log-003",
+      "timestamp": "2026-01-30T12:10:00Z",
+      "status": "WARNING",
+      "title": "NEW FLYER | ANNISTON",
+      "description": "SCHEDULE SLIP DETECTED // MAINTENANCE QUEUE",
+      "parentGroupId": "namg",
+      "subsidiaryId": "new-flyer",
+      "factoryId": "new-flyer-anniston",
+      "location": "Anniston, Alabama",
+      "logo": "/assets/images/New-Flyer.jpg"
+    },
+    {
+      "id": "log-004",
+      "timestamp": "2026-01-30T11:25:00Z",
+      "status": "ERROR",
+      "title": "ALEXANDER DENNIS | PLANTATION",
+      "description": "LINE PAUSED // TOOLING RESET REQUIRED",
+      "parentGroupId": "namg",
+      "subsidiaryId": "alex-dennis",
+      "factoryId": "alex-dennis-plantation",
+      "location": "Plantation, Florida",
+      "logo": "/assets/images/alexander-dennis.jpg"
+    },
+    {
+      "id": "log-005",
+      "timestamp": "2026-01-30T10:05:00Z",
+      "status": "ACTIVE",
+      "title": "KARSAN | BURSA",
+      "description": "EUROPE LINE ACTIVE // EXPORT RUN CONFIRMED",
+      "parentGroupId": "namg",
+      "subsidiaryId": "karsan",
+      "factoryId": "karsan-bursa",
+      "location": "Bursa, Turkey",
+      "logo": "/assets/images/KARSAN.jpg"
+    },
+    {
+      "id": "log-006",
+      "timestamp": "2026-01-30T09:15:00Z",
+      "status": "ACTIVE",
+      "title": "YUTONG | ZHENGZHOU",
+      "description": "ASIA PACIFIC LINE ACTIVE // OUTPUT TARGET MET",
+      "parentGroupId": "namg",
+      "subsidiaryId": "yutong",
+      "factoryId": "yutong-zhengzhou",
+      "location": "Zhengzhou, China",
+      "logo": "/assets/images/svgs/user.svg"
+    },
+    {
+      "id": "log-007",
+      "timestamp": "2026-01-30T08:25:00Z",
+      "status": "WARNING",
+      "title": "MARCOPOLO | CAXIAS DO SUL",
+      "description": "LATAM LINE DEGRADED // SUPPLY HOLD",
+      "parentGroupId": "namg",
+      "subsidiaryId": "marcopolo",
+      "factoryId": "marcopolo-caxias",
+      "location": "Caxias do Sul, Brazil",
+      "logo": "/assets/images/svgs/user.svg"
+    },
+    {
+      "id": "log-008",
+      "timestamp": "2026-01-30T17:40:00Z",
+      "status": "ACTIVE",
+      "title": "FLEETZERO | TORONTO",
+      "description": "HUB ONLINE // SYNCHRONIZING GLOBAL OPERATIONS",
+      "parentGroupId": "namg",
+      "subsidiaryId": "fleetzero",
+      "factoryId": "fleetzero-toronto",
+      "location": "Toronto, Ontario",
+      "logo": "/assets/images/FleetZero.png"
+    }
+  ],
+  "networkMetrics": {
+    "dataFlowIntegrity": 98.7,
+    "fleetSyncRate": 642,
+    "networkLatency": 5,
+    "latencyChange": -8.2,
+    "nodeDensity": 92.4,
+    "encryptionProtocol": "QUANTUM-X",
+    "encryptionStatus": "ACTIVE"
+  },
+  "networkThroughput": {
+    "bars": [
+      35,
+      55,
+      72,
+      68,
+      84,
+      90,
+      78
+    ],
+    "channelStatus": "L-CHANNEL: ACTIVE",
+    "throughput": "3.9 GBPS"
+  },
+  "geopoliticalHeatmap": {
+    "grid": [
+      [
+        10,
+        25,
+        30,
+        15
+      ],
+      [
+        5,
+        40,
+        20,
+        18
+      ],
+      [
+        22,
+        12,
+        35,
+        28
+      ]
+    ],
+    "rows": 3,
+    "cols": 4
+  },
+  "satelliteStatuses": [
+    {
+      "id": "sat-01",
+      "name": "SAT-01",
+      "type": "GEO",
+      "status": "LOCKED"
+    },
+    {
+      "id": "sat-02",
+      "name": "SAT-02",
+      "type": "LEO",
+      "status": "ACQUIRING"
+    },
+    {
+      "id": "sat-03",
+      "name": "SAT-03",
+      "type": "MEO",
+      "status": "LOCKED"
+    }
+  ],
+  "parentGroups": [
+    {
+      "id": "namg",
+      "name": "North America Mobility Group",
+      "status": "ACTIVE",
+      "metrics": {
+        "assetCount": 1330,
+        "incidentCount": 23,
+        "syncStability": 96.4
+      },
+      "description": "Primary manufacturing and service umbrella for North America.",
+      "logo": null,
+      "subsidiaries": [
+        {
+          "id": "new-flyer",
+          "parentGroupId": "namg",
+          "name": "New Flyer Industries",
+          "status": "ACTIVE",
+          "metrics": {
+            "assetCount": 420,
+            "incidentCount": 4,
+            "syncStability": 96.9
+          },
+          "description": "Zero-emission bus manufacturing and retrofits.",
+          "location": "Winnipeg, Canada",
+          "logo": "/assets/images/New-Flyer.jpg",
+          "quantumChart": {
+            "dataPoints": [
+              72,
+              88,
+              90,
+              82,
+              95,
+              87
+            ],
+            "highlightedIndex": 4
+          },
+          "hubs": [
+            {
+              "id": "hub-nf-01",
+              "code": "WIN",
+              "companyId": "new-flyer",
+              "companyName": "New Flyer Industries",
+              "status": "ONLINE",
+              "capacity": "82% CAP",
+              "capacityPercentage": 82,
+              "statusColor": "#6ee755",
+              "capColor": "#6ee755"
+            },
+            {
+              "id": "hub-nf-02",
+              "code": "ANN",
+              "companyId": "new-flyer",
+              "companyName": "New Flyer Industries",
+              "status": "ACTIVE",
+              "capacity": "76% CAP",
+              "capacityPercentage": 76,
+              "statusColor": "#6ee755",
+              "capColor": "#6ee755"
+            }
+          ],
+          "factories": [
+            {
+              "id": "new-flyer-winnipeg",
+              "parentGroupId": "namg",
+              "subsidiaryId": "new-flyer",
+              "name": "Winnipeg Manufacturing",
+              "city": "Winnipeg",
+              "country": "Canada",
+              "coordinates": {
+                "latitude": 49.8951,
+                "longitude": -97.1384
+              },
+              "status": "ONLINE",
+              "syncStability": 98.1,
+              "assets": 240,
+              "incidents": 1,
+              "description": "Primary production campus.",
+              "logo": "/assets/images/New-Flyer.jpg"
+            },
+            {
+              "id": "new-flyer-anniston",
+              "parentGroupId": "namg",
+              "subsidiaryId": "new-flyer",
+              "name": "Anniston Manufacturing",
+              "city": "Anniston, Alabama",
+              "country": "United States",
+              "coordinates": {
+                "latitude": 33.6598,
+                "longitude": -85.8316
+              },
+              "status": "ACTIVE",
+              "syncStability": 94.6,
+              "assets": 180,
+              "incidents": 3,
+              "description": "Southern production and retrofit center.",
+              "logo": "/assets/images/New-Flyer.jpg"
+            }
+          ]
+        },
+        {
+          "id": "nova",
+          "parentGroupId": "namg",
+          "name": "Nova Bus",
+          "status": "ACTIVE",
+          "metrics": {
+            "assetCount": 320,
+            "incidentCount": 3,
+            "syncStability": 95.8
+          },
+          "description": "High-capacity urban transit manufacturing.",
+          "location": "Saint-Eustache, Canada",
+          "logo": "/assets/images/Nova-Bus.png",
+          "quantumChart": {
+            "dataPoints": [
+              65,
+              70,
+              78,
+              85,
+              88,
+              90
+            ],
+            "highlightedIndex": 5
+          },
+          "hubs": [
+            {
+              "id": "hub-nv-01",
+              "code": "SEU",
+              "companyId": "nova",
+              "companyName": "Nova Bus",
+              "status": "ONLINE",
+              "capacity": "88% CAP",
+              "capacityPercentage": 88,
+              "statusColor": "#6ee755",
+              "capColor": "#6ee755"
+            }
+          ],
+          "factories": [
+            {
+              "id": "nova-saint-eustache",
+              "parentGroupId": "namg",
+              "subsidiaryId": "nova",
+              "name": "Saint-Eustache Assembly",
+              "city": "Saint-Eustache, Quebec",
+              "country": "Canada",
+              "coordinates": {
+                "latitude": 45.565,
+                "longitude": -73.9055
+              },
+              "status": "ONLINE",
+              "syncStability": 97.6,
+              "assets": 200,
+              "incidents": 2,
+              "description": "Primary platform build and systems integration.",
+              "logo": "/assets/images/Nova-Bus.png"
+            },
+            {
+              "id": "nova-saint-francois",
+              "parentGroupId": "namg",
+              "subsidiaryId": "nova",
+              "name": "Saint-Francois-du-Lac Facility",
+              "city": "Saint-Francois-du-Lac, Quebec",
+              "country": "Canada",
+              "coordinates": {
+                "latitude": 46.0,
+                "longitude": -72.95
+              },
+              "status": "ACTIVE",
+              "syncStability": 94.0,
+              "assets": 120,
+              "incidents": 1,
+              "description": "Component fabrication and test operations.",
+              "logo": "/assets/images/Nova-Bus.png"
+            }
+          ]
+        },
+        {
+          "id": "alex-dennis",
+          "parentGroupId": "namg",
+          "name": "Alexander Dennis",
+          "status": "PAUSED",
+          "metrics": {
+            "assetCount": 140,
+            "incidentCount": 5,
+            "syncStability": 78.2
+          },
+          "description": "Hybrid platform retrofit and idle production line.",
+          "location": "Plantation, Florida",
+          "logo": "/assets/images/alexander-dennis.jpg",
+          "quantumChart": {
+            "dataPoints": [
+              42,
+              55,
+              48,
+              52,
+              60,
+              46
+            ],
+            "highlightedIndex": 1
+          },
+          "hubs": [
+            {
+              "id": "hub-ad-01",
+              "code": "PLT",
+              "companyId": "alex-dennis",
+              "companyName": "Alexander Dennis",
+              "status": "OFFLINE",
+              "capacity": "30% CAP",
+              "capacityPercentage": 30,
+              "statusColor": "#ef4444",
+              "capColor": "#ef4444"
+            }
+          ],
+          "factories": [
+            {
+              "id": "alex-dennis-plantation",
+              "parentGroupId": "namg",
+              "subsidiaryId": "alex-dennis",
+              "name": "Plantation Retrofit Center",
+              "city": "Plantation, Florida",
+              "country": "United States",
+              "coordinates": {
+                "latitude": 26.1276,
+                "longitude": -80.2331
+              },
+              "status": "OFFLINE",
+              "syncStability": 72.5,
+              "assets": 140,
+              "incidents": 5,
+              "description": "Paused retrofit bay awaiting parts.",
+              "logo": "/assets/images/alexander-dennis.jpg"
+            }
+          ]
+        },
+        {
+          "id": "karsan",
+          "parentGroupId": "namg",
+          "name": "Karsan",
+          "status": "ACTIVE",
+          "metrics": {
+            "assetCount": 110,
+            "incidentCount": 2,
+            "syncStability": 93.1
+          },
+          "description": "European electric bus production.",
+          "location": "Bursa, Turkey",
+          "logo": "/assets/images/KARSAN.jpg",
+          "quantumChart": {
+            "dataPoints": [
+              58,
+              62,
+              71,
+              77,
+              83,
+              86
+            ],
+            "highlightedIndex": 4
+          },
+          "hubs": [
+            {
+              "id": "hub-ks-01",
+              "code": "BUR",
+              "companyId": "karsan",
+              "companyName": "Karsan",
+              "status": "ONLINE",
+              "capacity": "84% CAP",
+              "capacityPercentage": 84,
+              "statusColor": "#6ee755",
+              "capColor": "#6ee755"
+            }
+          ],
+          "factories": [
+            {
+              "id": "karsan-bursa",
+              "parentGroupId": "namg",
+              "subsidiaryId": "karsan",
+              "name": "Bursa Assembly Campus",
+              "city": "Bursa",
+              "country": "Turkey",
+              "coordinates": {
+                "latitude": 40.1828,
+                "longitude": 29.0665
+              },
+              "status": "ACTIVE",
+              "syncStability": 95.2,
+              "assets": 110,
+              "incidents": 2,
+              "description": "European production and integration center.",
+              "logo": "/assets/images/KARSAN.jpg"
+            }
+          ]
+        },
+        {
+          "id": "yutong",
+          "parentGroupId": "namg",
+          "name": "Yutong",
+          "status": "ACTIVE",
+          "metrics": {
+            "assetCount": 210,
+            "incidentCount": 3,
+            "syncStability": 94.3
+          },
+          "description": "Asia Pacific high-volume electric bus production.",
+          "location": "Zhengzhou, China",
+          "logo": "/assets/images/svgs/user.svg",
+          "quantumChart": {
+            "dataPoints": [
+              60,
+              68,
+              74,
+              80,
+              85,
+              88
+            ],
+            "highlightedIndex": 4
+          },
+          "hubs": [
+            {
+              "id": "hub-yt-01",
+              "code": "ZZU",
+              "companyId": "yutong",
+              "companyName": "Yutong",
+              "status": "ONLINE",
+              "capacity": "86% CAP",
+              "capacityPercentage": 86,
+              "statusColor": "#6ee755",
+              "capColor": "#6ee755"
+            }
+          ],
+          "factories": [
+            {
+              "id": "yutong-zhengzhou",
+              "parentGroupId": "namg",
+              "subsidiaryId": "yutong",
+              "name": "Zhengzhou Assembly Hub",
+              "city": "Zhengzhou",
+              "country": "China",
+              "coordinates": {
+                "latitude": 34.7466,
+                "longitude": 113.6254
+              },
+              "status": "ACTIVE",
+              "syncStability": 96.1,
+              "assets": 210,
+              "incidents": 3,
+              "description": "Asia Pacific production and export center.",
+              "logo": "/assets/images/svgs/user.svg"
+            }
+          ]
+        },
+        {
+          "id": "marcopolo",
+          "parentGroupId": "namg",
+          "name": "Marcopolo",
+          "status": "MAINTENANCE",
+          "metrics": {
+            "assetCount": 130,
+            "incidentCount": 6,
+            "syncStability": 82.4
+          },
+          "description": "LATAM production line under maintenance.",
+          "location": "Caxias do Sul, Brazil",
+          "logo": "/assets/images/svgs/user.svg",
+          "quantumChart": {
+            "dataPoints": [
+              48,
+              52,
+              56,
+              50,
+              54,
+              49
+            ],
+            "highlightedIndex": 2
+          },
+          "hubs": [
+            {
+              "id": "hub-mp-01",
+              "code": "CXS",
+              "companyId": "marcopolo",
+              "companyName": "Marcopolo",
+              "status": "OFFLINE",
+              "capacity": "40% CAP",
+              "capacityPercentage": 40,
+              "statusColor": "#ef4444",
+              "capColor": "#ef4444"
+            }
+          ],
+          "factories": [
+            {
+              "id": "marcopolo-caxias",
+              "parentGroupId": "namg",
+              "subsidiaryId": "marcopolo",
+              "name": "Caxias do Sul Plant",
+              "city": "Caxias do Sul",
+              "country": "Brazil",
+              "coordinates": {
+                "latitude": -29.1686,
+                "longitude": -51.1797
+              },
+              "status": "OFFLINE",
+              "syncStability": 70.2,
+              "assets": 130,
+              "incidents": 6,
+              "description": "LATAM assembly line under maintenance.",
+              "logo": "/assets/images/svgs/user.svg"
+            }
+          ]
+        },
+        {
+          "id": "fleetzero",
+          "parentGroupId": "namg",
+          "name": "FleetZero",
+          "status": "ACTIVE",
+          "metrics": {
+            "assetCount": 50,
+            "incidentCount": 0,
+            "syncStability": 99.9
+          },
+          "description": "Premium Fleet Intelligence & Operations Command Hub.",
+          "location": "Toronto, Ontario",
+          "logo": null,
+          "quantumChart": {
+            "dataPoints": [
+              95,
+              96,
+              98,
+              99,
+              99,
+              100
+            ],
+            "highlightedIndex": 5
+          },
+          "hubs": [
+            {
+              "id": "hub-fleetzero-yyz",
+              "code": "YYZ",
+              "companyId": "fleetzero",
+              "companyName": "FleetZero",
+              "status": "ONLINE",
+              "capacity": "95% CAP",
+              "capacityPercentage": 95,
+              "statusColor": "#00FF41",
+              "capColor": "#00FF41"
+            }
+          ],
+          "factories": [
+            {
+              "id": "fleetzero-toronto",
+              "parentGroupId": "namg",
+              "subsidiaryId": "fleetzero",
+              "name": "FleetZero HQ & Hub",
+              "city": "Toronto, Ontario",
+              "country": "Canada",
+              "coordinates": {
+                "latitude": 43.6532,
+                "longitude": -79.3832
+              },
+              "status": "ONLINE",
+              "syncStability": 99.9,
+              "assets": 50,
+              "incidents": 0,
+              "description": "Global command center and innovation laboratory.",
+              "logo": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "mapViewMode": "subsidiary",
+  "selectedEntity": {
+    "level": "parent",
+    "id": "namg",
+    "parentGroupId": "namg"
+  }
+}

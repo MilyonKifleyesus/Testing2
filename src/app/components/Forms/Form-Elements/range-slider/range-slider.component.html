@@ -1,0 +1,326 @@
+<app-page-header [title]="'Range  Slider'" [title1]="['Form Elements']"[activeitem]="'Range  Slider'"></app-page-header>
+<!-- Start:: row-1 -->
+<div class="row row-sm">
+    <div class="col-xl-3">
+        <app-showcode-card [title]="' Default Range'" [prism]="prismCode.rangeSliderTS">
+            <input type="range" class="form-range" id="customRange1">
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="'Disabled Range'" [prism]="prismCode.rangeSliderTS1">
+            <input type="range" class="form-range" id="disabledRange" disabled>
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="'Range With Min and Max Values'" [prism]="prismCode.rangeSliderTS2">
+            <input type="range" class="form-range" id="customRange2">
+        </app-showcode-card>
+    </div>
+    <div class="col-xl-3">
+        <app-showcode-card [title]="'Range With Steps'" [prism]="prismCode.rangeSliderTS3">
+            <input type="range" class="form-range" min="0" max="5" step="0.5" id="customRange3">
+        </app-showcode-card>
+    </div>
+</div>
+<!-- End:: row-1 -->
+
+<!-- Start:: row-2 -->
+<h6 class="mb-3">noUiSlider:</h6>
+<div class="row row-sm">
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Default-Styling
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="slider" class="transform-slider">
+                    <nouislider [connect]="true" [min]="0" [max]="15" [step]="1" [(ngModel)]="someRange"></nouislider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Fit Handles
+                </div>
+            </div>
+            <div class="card-body py-2">
+                <div id="slider-fit" class="transform-slider">
+                    <nouislider [connect]="true" [min]="0" [max]="15" [step]="1" [(ngModel)]="someRange1"></nouislider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Rounded Styling
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="slider-round">
+                    <nouislider [connect]="true" [min]="0" [max]="15" [step]="1" [(ngModel)]="someRange2"></nouislider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Square Styling
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="slider-square">
+                    <nouislider [connect]="true" [min]="0" [max]="15" [step]="1" [(ngModel)]="someRange3"></nouislider>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-2 -->
+
+<!-- Start:: row-3 -->
+<div class="row row-sm">
+    <div class="col-xl-3">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Color Picker Slider</div>
+            </div>
+            <div class="card-body">
+                <div #slider1 class="sliders" id="color1">
+                    <input type="range" min="0" max="255" [(ngModel)]="red" (input)="updateColor()" id="red" />
+                </div>
+                <div #slider2 class="sliders" id="color2">
+                    <input type="range" min="0" max="255" [(ngModel)]="green" (input)="updateColor()" id="green" />
+                </div>
+                <div #slider3 class="sliders" id="color3">
+                    <input type="range" min="0" max="255" [(ngModel)]="blue" (input)="updateColor()" id="blue" />
+                </div>
+                <div id="result" #result [style.background-color]="getColor()"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="col-xl-12">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">Locking Sliders</div>
+                </div>
+                <div class="card-body">
+                    <ngx-slider [options]="options" [formControl]="sliderControl"></ngx-slider>
+                    <p>Value: {{ sliderControl.value }}</p>
+                    <div id="slider1"></div>
+                    <div id="slider1-span" class="my-1"></div>
+                    <div id="slider2"></div>
+                    <div id="slider2-span" class="my-1"></div>
+                    <div id="slider3"></div>
+                    <div id="slider3-span" class="my-1"></div>
+                    <button id="lockbutton" class="btn btn-sm btn-primary float-end">Lock</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-12">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">Merging tooltips slider</div>
+                </div>
+                <div class="card-body">
+                    <div id="merging-tooltips">
+                        <ngx-slider [(value)]="minValue2" [(highValue)]="maxValue2" [options]="options"></ngx-slider>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3">
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="card-title">Non Linear Slider</div>
+                    </div>
+                    <div class="card-body">
+                        <div id="nonlinear"> <ngx-slider [(value)]="minValue17" [(highValue)]="maxValue17"
+                                [options]="options17"></ngx-slider>
+                            <p>Min value: <input type="number" [(ngModel)]="minValue12" /></p>
+                            <p class="mb-0">Max value: <input type="number" [(ngModel)]="maxValue12" /></p>
+                        </div>
+                        <div id="lower-value" class="mt-5"></div>
+                        <div id="upper-value" class="mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-12">
+                <div class="card custom-card">
+                    <div class="card-header">
+                        <div class="card-title">Sliding Handles Tooltips</div>
+                    </div>
+                    <div class="card-body">
+                        <div id="slider-hide">
+                            <nouislider [connect]="true" [min]="0" [max]="15" [step]="1" [(ngModel)]="someRange6"
+                                (ngModelChange)="onChange($event)"></nouislider>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-3 -->
+
+<!-- Start:: row-4 -->
+<div class="row row-sm">
+    <div class="col-xl-10">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Colored Connect Elements</div>
+            </div>
+            <div class="card-body">
+                <div class="slider" id="color-slider">
+                    <ngx-slider [(value)]="value1" [options]="options5"></ngx-slider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-2">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Slider Toggle</div>
+            </div>
+            <div class="card-body">
+                <div id="slider-toggle">
+                    <ngx-slider [(value)]="verticalSlider1.value5" [options]="verticalSlider1.options6"></ngx-slider>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-4 -->
+
+<!-- Start:: row-5 -->
+<div class="row row-sm">
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Toggle Movement By Clicking Pips</div>
+            </div>
+            <div class="card-body pb-5">
+                <div id="slider-pips">
+                    <nouislider [config]="someKeyboardConfig" [(ngModel)]="someKeyboard" (keyup)="blinkKeyupLabel()"
+                        (keydown)="blinkKeydownLabel()" style="margin-bottom: 5rem"></nouislider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-6">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">Soft Limits</div>
+            </div>
+            <div class="card-body pb-5">
+                <div id="soft">
+                    <nouislider [config]="someKeyboardConfig2" [(ngModel)]="someKeyboard2"></nouislider>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-5 -->
+
+<!-- Start:: row-6 -->
+<h6 class="mb-3">noUiSlider Colors:</h6>
+<div class="row row-sm">
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Primary
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="primary-colored-slider">
+                    <ngx-slider [(value)]="minValue11" [options]="options11"></ngx-slider>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Secondary
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="secondary-colored-slider">
+                    <ngx-slider [(value)]="minValue12" [options]="options12"></ngx-slider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Warning
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="warning-colored-slider">
+                    <ngx-slider [(value)]="minValue13" [options]="options13"></ngx-slider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Info
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="info-colored-slider">
+                    <ngx-slider [(value)]="minValue14" [options]="options14"></ngx-slider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Success
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="success-colored-slider">
+                    <ngx-slider [(value)]="minValue15" [options]="options15"></ngx-slider>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4">
+        <div class="card custom-card">
+            <div class="card-header">
+                <div class="card-title">
+                    Danger
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="danger-colored-slider">
+                    <ngx-slider [(value)]="minValue16" [options]="options16"></ngx-slider>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End:: row-6 -->

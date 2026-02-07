@@ -1,0 +1,26 @@
+<div class="card custom-card text-center">
+    <!-- Card Header -->
+    <div class="card-header">
+      <div class="card-title">{{ headerTitle }}</div>
+    </div>
+  
+    <!-- Card Body -->
+    <div class="card-body">
+      <h6 class="card-title fw-medium mb-2">{{ bodyTitle }}</h6>
+      <p class="card-text mb-4">{{ bodyText }}</p>
+  
+      <!-- Action Buttons -->
+      <a href="javascript:void(0);" class="btn btn-primary mt-2 me-1" (click)="primaryButton.action()">
+        {{ primaryButton.text }}
+      </a>
+      <a href="javascript:void(0);" class="btn btn-outline-secondary mt-2 me-1" (click)="secondaryButton.action()">
+        {{ secondaryButton.text }}
+      </a>
+    </div>
+  
+    <!-- Card Footer -->
+    <div class="card-footer text-muted">
+      {{ footerText }}
+    </div>
+  </div>
+  

@@ -1,0 +1,193 @@
+<app-page-header [title]="'Currency-exchange'" [title1]="['Crypto Currencies']"
+    [activeitem]="'Currency-exchange'"></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    <div class="col-md-12">
+        <div class="pt-0 card custom-card pt-7 bg-background2 card pb-7 border-0 overflow-hidden">
+            <div class="header-text mb-0">
+                <div class="main-container container-fluid p-5">
+                    <div class="text-start background-text">
+                        <h1 class="mb-3 fs-50 fw-medium">Buy and sell Coins without additional fees</h1>
+                        <p class="fs-18 mb-5 text-white-50">Buy now and get +50% extra bonus Minimum pre-sale
+                            amount 100 Crypto Coin. We accept BTC crypto-currency..</p>
+                    </div>
+                    <div class="row">
+                        <div class="col-xl-12 col-lg-12 col-md-12 d-block mx-auto">
+                            <div class="item-search-tabs mb-6">
+                                <div class="buy-sell">
+                                    <div class="form row mx-auto justify-content-center d-flex p-3 p-sm-4 py-4">
+                                        <div class="form-group col-xl-6 col-lg-6 col-md-12 mb-0">
+                                            <input type="text" class="form-control mb-4 mb-lg-0" id="text7"
+                                                placeholder="13.2458">
+                                        </div>
+                                        <div class="form-group col-xl-6 col-lg-6 col-md-12 mb-0">
+                                            <spk-ng-select [options]="Coins"
+                                                [selectClass]="'form-control select2 br-md-0 p-0'"
+                                                [clearable]="true" [multi]="true" [searchable]="true"
+                                                [placeholder]="'BTC'" [additionalProperties]="{}">
+                                            </spk-ng-select>
+
+                                        </div>
+                                        <div class="col-xl-12 col-lg-12 col-md-12 my-3 text-start position-relative">
+                                            <i class=" pe-7s-repeat exchange-icon fs-30 inline-block"></i>
+                                        </div>
+                                        <div class="form-group  col-xl-6 col-lg-6 col-md-12 mb-0">
+                                            <input type="text" class="form-control mb-4 mb-lg-0" id="text6"
+                                                placeholder="02.24">
+                                        </div>
+                                        <div class="form-group col-xl-6 col-lg-6 col-md-12 mb-0">
+                                            <spk-ng-select [options]="Coins1"
+                                                [selectClass]="'form-control p-0 select2 br-md-0'"
+                                                [clearable]="true" [multi]="true" [searchable]="true"
+                                                [placeholder]="'USD'" [additionalProperties]="{}">
+                                            </spk-ng-select>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-center background-text">
+                                <a href="javascript:void(0);"
+                                    class="btn btn-warning ps-6 pe-6 pt-2 pb-2 mx-auto float-start mt-5">EXCHANGE
+                                    NOW</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- /header-text -->
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="row row-sm">
+            <div class="col-xl-4 col-md-12 col-lg-6">
+                <div class="card custom-card crypto-card overflow-hidden shadow-sm">
+                    <div class="card-body pb-0">
+                        <div class="mb-0 d-flex">
+                            <h5 class="d-flex mb-0 align-items-center"><span class="cryp-icon bg-primary me-2"><i
+                                        class="cf cf-btc"></i></span>Bitcoin BTC</h5>
+                            <span class="float-end ms-auto btn btn-success btn-sm">24h</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <h5 class="d-flex my-auto fw-normal">0.00000434<span
+                                    class="text-info fs-14 mt-auto ms-2">$0.04</span> </h5>
+                            <div class="text-danger"><i class="me-1 text-success"></i> +4.16%</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div id="bitcoinchart">
+                                <spk-apex-charts [chartOptions]="cryptoExchangeApex"></spk-apex-charts>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12 col-lg-6">
+                <div class="card custom-card crypto-card overflow-hidden shadow-sm">
+                    <div class="card-body pb-0">
+                        <div class="mb-0 d-flex">
+                            <h5 class="d-flex mb-0 align-items-center"><span class="cryp-icon bg-primary me-2"><i
+                                        class="cf cf-eth"></i></span> Ethereum ETH</h5>
+                            <span class="float-end ms-auto btn btn-success btn-sm">24h</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <h5 class="d-flex my-auto fw-normal">0.00000235<span
+                                    class="text-info fs-14 mt-auto ms-2">$0.12</span> </h5>
+                            <div class="text-danger"><i class="me-1 text-success"></i> +2.12%</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div id="ethereumchart">
+                                <spk-apex-charts [chartOptions]="cryptoExApexData2"></spk-apex-charts>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12 col-lg-6">
+                <div class="card custom-card crypto-card overflow-hidden shadow-sm">
+                    <div class="card-body pb-0">
+                        <div class="mb-0 d-flex">
+                            <h5 class="d-flex mb-0 align-items-center"><span class="cryp-icon bg-primary me-2"><i
+                                        class="cf cf-xrp"></i></span> Ripple XRP</h5>
+                            <span class="float-end ms-auto btn btn-success btn-sm">24h</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <h5 class="d-flex my-auto fw-normal">0.00000434<span
+                                    class="text-info fs-14 mt-auto ms-2">$0.03</span> </h5>
+                            <div class="text-danger"><i class="me-1 text-success"></i> +3.12%</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div id="ripplechart">
+                                <spk-apex-charts [chartOptions]="cryptoExApexData3"></spk-apex-charts>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12 col-lg-6">
+                <div class="card custom-card crypto-card overflow-hidden shadow-sm">
+                    <div class="card-body pb-0">
+                        <div class="mb-0 d-flex">
+                            <h5 class="d-flex mb-0 align-items-center"><span class="cryp-icon bg-primary me-2"><i
+                                        class="cf cf-dash"></i></span>Dash DASH</h5>
+                            <span class="float-end ms-auto btn btn-success btn-sm">24h</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <h5 class="d-flex my-auto fw-normal">0.00000372<span
+                                    class="text-info fs-14 mt-auto ms-2">$0.12</span> </h5>
+                            <div class="text-danger"><i class="me-1 text-success"></i> +4.23%</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div id="dashchart">
+                                <spk-apex-charts [chartOptions]="cryptoExApexData4"></spk-apex-charts>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12 col-lg-6">
+                <div class="card custom-card crypto-card overflow-hidden shadow-sm">
+                    <div class="card-body pb-0">
+                        <div class="mb-0 d-flex">
+                            <h5 class="d-flex mb-0 align-items-center"><span class="cryp-icon bg-primary me-2"><i
+                                        class="cf cf-neos"></i></span> Neo NEO</h5>
+                            <span class="float-end ms-auto btn btn-success btn-sm">24h</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <h5 class="d-flex my-auto fw-normal">0.00000257<span
+                                    class="text-info fs-14 mt-auto ms-2">$0.07</span> </h5>
+                            <div class="text-danger"><i class="me-1 text-success"></i> +2.17%</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div id="neochart">
+                                <spk-apex-charts [chartOptions]="cryptoExApexData5"></spk-apex-charts>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12 col-lg-6">
+                <div class="card custom-card crypto-card overflow-hidden shadow-sm">
+                    <div class="card-body pb-0">
+                        <div class="mb-0 d-flex">
+                            <h5 class="d-flex mb-0 align-items-center"><span class="cryp-icon bg-primary me-2"><i
+                                        class="cf cf-ltc"></i></span> Litecoin LTC</h5>
+                            <span class="float-end ms-auto btn btn-success btn-sm">24h</span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-2">
+                            <h5 class="d-flex my-auto fw-normal">0.00000534<span
+                                    class="text-info fs-14 mt-auto ms-2">$0.32</span> </h5>
+                            <div class="text-danger"><i class="me-1 text-success"></i> +2.12%</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <div id="litecoinchart">
+                                <spk-apex-charts [chartOptions]="cryptoExApexData6"></spk-apex-charts>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--End::row-1 -->

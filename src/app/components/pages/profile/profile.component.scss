@@ -1,0 +1,16 @@
+.main-content-body-profile {
+    #ngb-nav-0-panel,
+    #ngb-nav-1-panel,
+    #ngb-nav-2-panel,
+    #ngb-nav-3-panel,
+    #ngb-nav-4-panel,
+    #ngb-nav-5-panel {
+      padding: 0;
+    }
+    .ng-select.ng-select-focused:not(.ng-select-opened) > .ng-select-container {
+        box-shadow:none;
+    }
+    .ng-clear-wrapper {
+        display: none;
+    }
+}

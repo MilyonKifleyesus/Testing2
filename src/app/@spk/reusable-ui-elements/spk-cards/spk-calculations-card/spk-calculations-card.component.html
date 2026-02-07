@@ -1,0 +1,14 @@
+<div class="card custom-card" [ngClass]="borderClass">
+    <div class="card-body">
+      <!-- SVG Content -->
+      <div class="footer-card-icon my-3" [innerHTML]="svgContent"></div>
+  
+      <!-- Title -->
+      <p class="mb-0 mt-3 fs-20 fw-medium lh-1">{{ title }}</p>
+    </div>
+    <!-- Footer -->
+    <div class="card-footer">
+      {{ footerText }}
+    </div>
+  </div>
+  

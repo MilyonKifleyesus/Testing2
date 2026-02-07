@@ -1,0 +1,25 @@
+/* User Edit Component Styles */
+
+.form-label {
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+  border-radius: 6px;
+  border: 1px solid #e0e6ed;
+  
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(var(--primary-rgb), 0.1);
+  }
+}
+
+hr {
+  opacity: 0.1;
+}
+
+h6 {
+  color: var(--default-text-color);
+}

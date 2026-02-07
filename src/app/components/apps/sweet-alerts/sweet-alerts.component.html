@@ -1,0 +1,176 @@
+<app-page-header [title]="'Sweet Alerts'" [title1]="['Apps']" [activeitem]="'Sweet Alerts'"></app-page-header>
+       <!-- Start:: row-1 -->
+       <div class="row row-sm">
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Basic Alert
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="basic-alert" (click)="basicAlert()">Basic Alert</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Custom HTML Description
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-description" (click)="htmlAlert()">Custom HTML Alert</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Alert With Multiple Buttons
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="three-buttons" (click)="multipleButtons()">Multiple Buttons</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End:: row-1 -->
+
+    <!-- Start:: row-2 -->
+    <div class="row row-sm">
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Alert With Long Window
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="long-window" (click)="longWindow()" >Long Window Here</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Title With Text Under
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-text" (click)="basicAlert1()">Title With Text</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        With Text,Error Icon & Footer
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-footer" (click)="basicAlert2()">Alert Footer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End:: row-2 -->
+
+    <!-- Start:: row-3 -->
+    <div class="row row-sm">
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Alert With Parameters
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-parameter" (click)="parameters()">Alert Parameters</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Alert With Image
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-image" (click)="ImageAlert()">Image Alert</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Alert With Image
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-custom-bg" (click)="customAlert()">Custom Alert</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End:: row-3 -->
+
+    <!-- Start:: row-4 -->
+    <div class="row row-sm">
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Custom Positioned Dialog Alert
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-dialog"  (click)="alertDialog()"> Alert Dialog</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Ajax Request Alert
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-ajax" (click)="ajaxRequst()">Ajax Request</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Confirm Alert
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-confirm" (click)="confirmAlert()">Confirm Alert</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4">
+            <div class="card custom-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        Auto Close Alert
+                    </div>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-primary" id="alert-auto-close" (click)="autoClose()">Auto Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End:: row-4 -->

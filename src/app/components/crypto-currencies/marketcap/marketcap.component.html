@@ -1,0 +1,46 @@
+<app-page-header [title]="'Crypto-Market'" [title1]="['Crypto Currencies']"[activeitem]="'Crypto-Market'"></app-page-header>
+<!-- Start::row-1 -->
+<div class="row row-sm">
+    @for(card of cryptoCards;track $index){
+    <div class="col-lg-6 col-xl-6 col-xxl-3 col-md-6 col-12">
+        <spk-market-cap [pair]="card.pair" [value]="card.value" [usdValue]="card.usdValue"
+            [percentage]="card.percentage" [percentageClass]="card.percentageClass" [volume]="card.volume"
+            [chartOptions]="card.chartOptions"></spk-market-cap>
+    </div>
+    }
+</div>
+<!--End::row-1 -->
+<!-- Start::row-2 -->
+<div class="row row-sm">
+    <div class="col-xl-12 col-lg-12 col-md-12">
+        <div class="card custom-card">
+            <div class="card-header border-bottom-0">
+                <label class="main-content-label my-auto">Crypt Marketing Values</label>
+            </div>
+            <div class="card-body">
+                <div class="">
+                    <div class="table-responsive">
+                        <spk-reusable-tables [columns]="marketcapColumns" [tableClass]="'text-nowrap border'">
+                            @for(crypto of cryptoData;track $index){
+                            <tr class="border-bottom">
+                                <td>{{ crypto.rank }}</td>
+                                <td>
+                                    <img [src]="crypto.icon" class="wd-30 ht-30 me-3" alt="" />
+                                    {{ crypto.name }} <b>{{ crypto.symbol }}</b>
+                                </td>
+                                <td>{{ crypto.price }}</td>
+                                <td>{{ crypto.marketCap }}</td>
+                                <td><span [class]="crypto.changeClass">{{ crypto.change }}</span></td>
+                                <td>
+                                    <a href="javascript:void(0);" class="btn btn-outline-primary btn-sm">Trade</a>
+                                </td>
+                            </tr>
+                            }
+                        </spk-reusable-tables>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Start::row-2 -->
